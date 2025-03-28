@@ -1,0 +1,57 @@
+@import '@fortawesome/fontawesome-free/css/all.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --blue: rgb(11, 27, 43);
+    --orange: #FF611C;
+}
+
+body {
+    font-family: 'Sora', sans-serif;
+}
+
+.bg-dark-pattern {
+    /*background-color: rgb(11, 27, 43);*/
+    background-image: url('../images/bg-dark.svg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.bg-light-pattern {
+    background-image: url('../images/bg-light.svg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+
+.c-bg-blue {
+    background-color: var(--blue);
+}
+
+.c-bg-orange {
+    background-color: var(--orange);
+}
+
+nav a {
+    /*color: #1C3350;*/
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 22.5px;
+}
+
+#dynamic-word {
+    transition: opacity 0.5s ease-in-out;
+}
+
+.fade-out {
+    opacity: 0;
+}
+
+.fade-in {
+    opacity: 1;
+}
