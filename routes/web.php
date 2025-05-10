@@ -8,6 +8,7 @@ use App\Http\Controllers\LessonController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MailController;
 
 //Route::get('/', function () {
 //    return view('welcome');
@@ -36,6 +37,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/learn/{lesson}/mark-as-watched', [LearnController::class, 'markAsWatched'])->name('learn.markAsWatched');
     Route::get('/learn/{course}', [LearnController::class, 'continue'])->name('learn.continue');
 });
+
+Route::get('/send-test-mail', [MailController::class, 'sendTestMail'])->name('send.test.mail');
 
 
 

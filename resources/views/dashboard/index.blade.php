@@ -36,6 +36,7 @@
 
         <div class="mt-6">
             <a href="{{ route('profile.edit', $user->id) }}" class="bg-cyan-500 text-white text-lg px-10 py-3 rounded hover:bg-cyan-600 transition duration-300">Go to Profile</a>
+            <a href="{{ route('send.test.mail') }}" class="bg-green-500 text-white text-lg px-10 py-3 rounded hover:bg-green-600 transition duration-300 ml-4">Mail Test</a>
         </div>
     </div>
 @endsection
