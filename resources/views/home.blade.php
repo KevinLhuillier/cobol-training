@@ -5,7 +5,7 @@
         <div class="container mx-auto grid grid-cols-2 items-center">
             <div>
                 <h1 class="text-5xl font-bold mb-4">Join Our <span id="dynamic-word" class="text-cyan-500">Cobol</span> School</h1>
-                <p class="text-xl mb-10">The only place to learn and practice mainframe skills. Donec sagittis, tellus ac imperdiet feugiat, erat ex
+                <p class="text-xl mb-10">The only place to learn and practice mainframe skills. Donec sagittist, tellus ac imperdiet feugiat, erat ex
                     pellentesque nulla, ut posuere tortor magna ac risus.</p>
                 <a href="{{ route('courses.index') }}" class="bg-cyan-500 text-white text-lg px-10 py-3 rounded">Discover</a>
             </div>
