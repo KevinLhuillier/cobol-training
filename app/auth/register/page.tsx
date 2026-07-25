@@ -1,36 +1,69 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Terminal, AlertCircle } from "lucide-react";
+import { Terminal, AlertCircle, Loader2 } from "lucide-react";
 
 export default function RegisterPage() {
+    const router = useRouter();
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(null);
+        setIsLoading(true);
 
         const formData = new FormData(e.currentTarget);
+        const name = formData.get("name") as string;
+        const email = formData.get("email") as string;
         const password = formData.get("password") as string;
         const confirmPassword = formData.get("confirmPassword") as string;
 
-        // Vérification côté client
+        // 1. Vérification côté client
         if (password.length < 8) {
             setError("Le mot de passe doit contenir au moins 8 caractères.");
+            setIsLoading(false);
             return;
         }
 
         if (password !== confirmPassword) {
             setError("Les mots de passe ne correspondent pas.");
+            setIsLoading(false);
             return;
         }
 
-        // Si tout est bon, on peut appeler la Server Action ici
-        console.log("Validation réussie, prêt pour l'inscription !");
+        // 2. Appel à l'API
+        try {
+            const res = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ name, email, password }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                // Affiche l'erreur renvoyée par le backend (ex: email déjà utilisé)
+                setError(data.error || "Une erreur est survenue lors de l'inscription.");
+                setIsLoading(false);
+                return;
+            }
+
+            // 3. Succès : Redirection vers la page de connexion
+            router.push("/auth/login?registered=true");
+
+        } catch (err) {
+            console.error("Erreur de requête:", err);
+            setError("Impossible de contacter le serveur. Veuillez réessayer.");
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -73,7 +106,8 @@ export default function RegisterPage() {
                             type="text"
                             placeholder="Jean Dupont"
                             required
-                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11"
+                            disabled={isLoading}
+                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
                         />
                     </div>
 
@@ -87,7 +121,8 @@ export default function RegisterPage() {
                             type="email"
                             placeholder="etudiant@exemple.com"
                             required
-                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11"
+                            disabled={isLoading}
+                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
                         />
                     </div>
 
@@ -102,7 +137,8 @@ export default function RegisterPage() {
                             placeholder="••••••••"
                             required
                             minLength={8}
-                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11"
+                            disabled={isLoading}
+                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
                         />
                         <p className="text-xs text-slate-500 font-medium">8 caractères minimum</p>
                     </div>
@@ -118,15 +154,24 @@ export default function RegisterPage() {
                             placeholder="••••••••"
                             required
                             minLength={8}
-                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11"
+                            disabled={isLoading}
+                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
                         />
                     </div>
 
                     <Button
                         type="submit"
-                        className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md text-base font-semibold mt-4"
+                        disabled={isLoading}
+                        className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md text-base font-semibold mt-4 disabled:opacity-80"
                     >
-                        Créer mon compte
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                Création en cours...
+                            </>
+                        ) : (
+                            "Créer mon compte"
+                        )}
                     </Button>
 
                 </form>
