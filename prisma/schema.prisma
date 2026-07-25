@@ -1,0 +1,148 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+}
+
+enum SubmissionStatus {
+  PENDING
+  CORRECTED
+}
+
+// ==========================================
+// UTILISATEURS & ABONNEMENTS (STRIPE)
+// ==========================================
+
+model User {
+  id                    String    @id @default(cuid())
+  email                 String    @unique
+  passwordHash          String?   // Si authentification par mot de passe
+  name                  String?
+  role                  Role      @default(USER)
+
+  // Champs Stripe
+  stripeCustomerId      String?   @unique
+  stripeSubscriptionId  String?   @unique
+  stripePriceId         String?
+  subscriptionStatus    SubscriptionStatus?
+  subscriptionPeriodEnd DateTime?
+
+  // Relations
+  progress              LessonProgress[]
+  submissions           ExerciseSubmission[]
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+// ==========================================
+// CATALOGUE DE COURS
+// ==========================================
+
+model Course {
+  id          String    @id @default(cuid())
+  title       String
+  description String?   @db.Text
+  imageUrl    String?
+  isPublished Boolean   @default(false)
+
+  chapters    Chapter[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Chapter {
+  id          String    @id @default(cuid())
+  title       String
+  position    Int       // Pour ordonner les chapitres
+
+  courseId    String
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessons     Lesson[]
+}
+
+model Lesson {
+  id          String    @id @default(cuid())
+  title       String
+  vimeoUrl    String?   // URL ou ID de la vidéo Vimeo
+  content     String?   @db.LongText // Texte additionnel sous la vidéo
+  position    Int
+  isFreePreview Boolean @default(false) // Permet de laisser des vidéos gratuites
+
+  chapterId   String
+  chapter     Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  progress    LessonProgress[]
+  exercises   Exercise[]
+}
+
+model LessonProgress {
+  id          String    @id @default(cuid())
+  isCompleted Boolean   @default(true)
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  lessonId    String
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  // Un utilisateur ne peut avoir qu'une seule progression par leçon
+  @@unique([userId, lessonId])
+}
+
+// ==========================================
+// EXERCICES & CORRECTIONS
+// ==========================================
+
+model Exercise {
+  id          String    @id @default(cuid())
+  title       String
+  statement   String    @db.LongText // L'énoncé formaté (Markdown ou HTML)
+
+  lessonId    String
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  submissions ExerciseSubmission[]
+}
+
+model ExerciseSubmission {
+  id          String    @id @default(cuid())
+  content     String    @db.LongText // Le code ou la réponse soumise par l'étudiant
+  feedback    String?   @db.LongText // La correction/commentaire de l'administrateur
+  status      SubmissionStatus @default(PENDING)
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  exerciseId  String
+  exercise    Exercise  @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  submittedAt DateTime  @default(now())
+  correctedAt DateTime?
+}
