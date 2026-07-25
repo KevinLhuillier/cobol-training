@@ -12,6 +12,7 @@ import {
   Database,
   Server
 } from "lucide-react";
+import LogoutButton from "@/components/LogoutButton";
 
 export default function StudentDashboard() {
   // Données factices pour les cours
@@ -195,10 +196,7 @@ export default function StudentDashboard() {
 
             {/* ZONE DE DÉCONNEXION (En bas de la sidebar) */}
             <div className="mt-8 pt-6 border-t border-slate-100">
-              <button className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-medium text-red-600 hover:bg-red-50 w-full">
-                <LogOut className="h-5 w-5" />
-                Déconnexion
-              </button>
+              <LogoutButton />
             </div>
 
           </aside>
