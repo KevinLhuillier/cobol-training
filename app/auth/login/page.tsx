@@ -36,7 +36,7 @@ export default function LoginPage() {
                             type="email"
                             placeholder="etudiant@exemple.com"
                             required
-                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11"
+                            className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11"
                         />
                     </div>
 
@@ -57,7 +57,7 @@ export default function LoginPage() {
                             type="password"
                             placeholder="••••••••"
                             required
-                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11"
+                            className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11"
                         />
                     </div>
 
@@ -73,7 +73,7 @@ export default function LoginPage() {
                 {/* REDIRECTION INSCRIPTION */}
                 <div className="mt-8 pt-6 border-t border-slate-100 text-center">
                     <p className="text-sm text-slate-600">
-                        Vous n'avez pas encore de compte ?{" "}
+                        Vous n&apos;avez pas encore de compte ?{" "}
                         <Link
                             href="/auth/register"
                             className="font-bold text-slate-900 hover:underline"

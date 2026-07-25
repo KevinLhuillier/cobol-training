@@ -107,7 +107,7 @@ export default function RegisterPage() {
                             placeholder="Jean Dupont"
                             required
                             disabled={isLoading}
-                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                            className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
                         />
                     </div>
 
@@ -122,7 +122,7 @@ export default function RegisterPage() {
                             placeholder="etudiant@exemple.com"
                             required
                             disabled={isLoading}
-                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                            className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
                         />
                     </div>
 
@@ -138,7 +138,7 @@ export default function RegisterPage() {
                             required
                             minLength={8}
                             disabled={isLoading}
-                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                            className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
                         />
                         <p className="text-xs text-slate-500 font-medium">8 caractères minimum</p>
                     </div>
@@ -155,7 +155,7 @@ export default function RegisterPage() {
                             required
                             minLength={8}
                             disabled={isLoading}
-                            className="rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                            className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
                         />
                     </div>
 
