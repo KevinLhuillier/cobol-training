@@ -43,7 +43,7 @@ export default function LoginPage() {
             }
 
             // Succès : Le cookie est enregistré, on va vers le tableau de bord
-            router.push("/");
+            router.push("/dashboard");
             router.refresh();
 
         } catch (err) {
