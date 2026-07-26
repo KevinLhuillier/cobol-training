@@ -50,7 +50,6 @@ export default function HomePage() {
     }
   ];
 
-  // Les fonctionnalités incluses dans les offres
   const includedFeatures = [
     "Access to all training modules",
     "Quizzes, exercises, and final project",
@@ -404,13 +403,14 @@ export default function HomePage() {
                 Invest in your career
               </h2>
               <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                Transparent, commitment-free pricing to access the entire Code Legacy ecosystem.
+                Transparent, commitment-free pricing to access the entire Code Legacy ecosystem.<br/>
+                <span className="font-semibold text-slate-900">All plans start with a 7-day free trial.</span>
               </p>
             </div>
 
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
 
-              {/* MONTHLY PLAN (Light) */}
+              {/* MONTHLY PLAN */}
               <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-200 shadow-sm flex flex-col hover:border-slate-300 transition-colors">
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Monthly</h3>
                 <p className="text-slate-500 text-sm mb-6">Total flexibility, cancel anytime.</p>
@@ -429,15 +429,20 @@ export default function HomePage() {
                   ))}
                 </ul>
 
-                <Link
-                    href="/auth/register"
-                    className="inline-flex items-center justify-center w-full bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl font-bold h-14 px-8 text-base transition-colors"
-                >
-                  Get started
-                </Link>
+                <div className="mt-auto">
+                  <Link
+                      href="/auth/register"
+                      className="inline-flex items-center justify-center w-full bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl font-bold h-14 px-8 text-base transition-colors"
+                  >
+                    Start your 7-day free trial
+                  </Link>
+                  <p className="text-center text-xs text-slate-500 mt-4 font-medium">
+                    Then €39/month. Cancel anytime.
+                  </p>
+                </div>
               </div>
 
-              {/* YEARLY PLAN (Dark - Highlighted) */}
+              {/* YEARLY PLAN */}
               <div className="bg-slate-900 text-white rounded-[2.5rem] p-8 md:p-10 border border-slate-800 shadow-xl flex flex-col relative overflow-hidden transform md:-translate-y-4">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl" />
 
@@ -464,12 +469,17 @@ export default function HomePage() {
                     ))}
                   </ul>
 
-                  <Link
-                      href="/auth/register"
-                      className="inline-flex items-center justify-center w-full bg-white hover:bg-slate-100 text-slate-900 rounded-xl font-bold h-14 px-8 text-base transition-colors shadow-sm"
-                  >
-                    Subscribe (Yearly)
-                  </Link>
+                  <div className="mt-auto">
+                    <Link
+                        href="/auth/register"
+                        className="inline-flex items-center justify-center w-full bg-white hover:bg-slate-100 text-slate-900 rounded-xl font-bold h-14 px-8 text-base transition-colors shadow-sm"
+                    >
+                      Start your 7-day free trial
+                    </Link>
+                    <p className="text-center text-xs text-slate-400 mt-4 font-medium">
+                      Then €390/year. Cancel anytime.
+                    </p>
+                  </div>
                 </div>
               </div>
 
