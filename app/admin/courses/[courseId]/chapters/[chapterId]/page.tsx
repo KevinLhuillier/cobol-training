@@ -1,4 +1,4 @@
-import { prisma } from "@/prisma/client";
+import { prisma } from "@/prisma/client"; // Assure-toi que c'est le bon chemin pour ton client Prisma
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -10,17 +10,23 @@ import {
     Plus,
     GripVertical
 } from "lucide-react";
+import LessonForm from "@/components/courses/lesson-form";
 
 export default async function ChapterDetailsPage({
                                                      params
                                                  }: {
-    params: { id: string; chapterId: string }
+    params: Promise<{ courseId: string; chapterId: string }>
 }) {
-    // 1. Fetch the chapter and its lessons
+
+    // 1. On "attend" la résolution de la promesse params
+    const resolvedParams = await params;
+    const { courseId, chapterId } = resolvedParams;
+
+    // 2. Fetch the chapter and its lessons
     const chapter = await prisma.chapter.findUnique({
         where: {
-            id: params.chapterId,
-            courseId: params.id // Ensures the chapter actually belongs to this course
+            id: chapterId,
+            courseId: courseId // Ensures the chapter actually belongs to this course
         },
         include: {
             lessons: {
@@ -31,7 +37,7 @@ export default async function ChapterDetailsPage({
         }
     });
 
-    // 2. 404 if not found
+    // 3. 404 if not found
     if (!chapter) {
         return notFound();
     }
@@ -40,11 +46,12 @@ export default async function ChapterDetailsPage({
         <div className="min-h-screen bg-slate-50 font-sans p-4 md:p-6 lg:p-8">
             <div className="max-w-5xl mx-auto">
 
-                {/* HEADER */}
+                {/* EN TÊTE */}
                 <div className="mb-8 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
+                        {/* Bouton retour vers la page du cours */}
                         <Link
-                            href={`/admin/courses/${params.id}`}
+                            href={`/admin/courses/${courseId}`}
                             className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
                         >
                             <ArrowLeft className="h-5 w-5" />
@@ -62,7 +69,7 @@ export default async function ChapterDetailsPage({
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-                    {/* LEFT COLUMN: Chapter Details */}
+                    {/* COLONNE GAUCHE: Détails du chapitre */}
                     <div className="space-y-8">
                         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6">
                             <div className="flex items-center justify-between mb-6">
@@ -86,22 +93,18 @@ export default async function ChapterDetailsPage({
                         </div>
                     </div>
 
-                    {/* RIGHT COLUMN: Lessons */}
+                    {/* COLONNE DROITE: Les leçons (vidéos) */}
                     <div className="space-y-8">
                         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6">
-                            <div className="flex items-start justify-between mb-6">
-                                <div className="flex items-center gap-2 text-slate-900 font-bold text-lg">
+                            <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
+                                <div className="flex items-center gap-2 text-slate-900 font-bold text-lg shrink-0">
                                     <div className="h-8 w-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
                                         <Video className="h-4 w-4" />
                                     </div>
                                     Lessons
                                 </div>
 
-                                {/* Future LessonForm will go here */}
-                                <button className="inline-flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-900 rounded-xl h-9 px-4 text-sm font-bold transition-colors">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Add Lesson
-                                </button>
+                                <LessonForm courseId={courseId} chapterId={chapterId} />
                             </div>
 
                             {chapter.lessons.length === 0 ? (
@@ -127,9 +130,12 @@ export default async function ChapterDetailsPage({
                                                     </Badge>
                                                 )}
                                                 <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button className="p-1.5 text-slate-400 hover:text-slate-900 transition-colors rounded-md hover:bg-slate-200">
+                                                    <Link
+                                                        href={`/admin/courses/${courseId}/chapters/${chapterId}/lessons/${lesson.id}`}
+                                                        className="p-1.5 text-slate-400 hover:text-slate-900 transition-colors rounded-md hover:bg-slate-200"
+                                                    >
                                                         <Pencil className="h-3.5 w-3.5" />
-                                                    </button>
+                                                    </Link>
                                                 </div>
                                             </div>
                                         </div>

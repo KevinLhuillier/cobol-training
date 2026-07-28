@@ -11,11 +11,11 @@ import {
     Trash2,
     GripVertical
 } from "lucide-react";
-import { ChapterForm } from "./_components/chapter-form";
+import { ChapterForm } from "@/components/courses/chapter-form";
 
 // Server Component to fetch and display course data
 // On type params comme une Promesse (Standard Next.js 15)
-export default async function CourseDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CourseDetailsPage({ params }: { params: Promise<{ courseId: string }> }) {
 
     // 1. On "attend" la résolution des paramètres de l'URL
     const resolvedParams = await params;
@@ -23,7 +23,7 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
     // 2. On utilise l'ID résolu (Si ton dossier s'appelle [courseId], change en resolvedParams.courseId)
     const course = await prisma.course.findUnique({
         where: {
-            id: resolvedParams.id
+            id: resolvedParams.courseId
         },
         include: {
             chapters: {
@@ -144,16 +144,20 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
                     <div className="space-y-8">
 
                         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6">
-                            <div className="flex items-start justify-between mb-6">
-                                <div className="flex items-center gap-2 text-slate-900 font-bold text-lg">
-                                    <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                                        <ListChecks className="h-4 w-4" />
-                                    </div>
+
+                            {/* Ajout de flex-wrap ici pour éviter tout débordement */}
+                            <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
+
+                                <div className="flex items-center gap-2 text-slate-900 font-bold text-lg shrink-0">
+                                    <ListChecks className="h-5 w-5 text-emerald-600" />
                                     Course Chapters
                                 </div>
 
-                                {/* Client Component injected here! */}
-                                <ChapterForm courseId={course.id} />
+                                {/* On enveloppe le composant pour qu'il prenne l'espace restant sans s'écraser */}
+                                <div className="flex-1 flex justify-end min-w-[200px]">
+                                    <ChapterForm courseId={course.id} />
+                                </div>
+
                             </div>
 
                             {course.chapters.length === 0 ? (
@@ -173,9 +177,13 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
                                             </div>
 
                                             <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="p-1.5 text-slate-400 hover:text-slate-900 transition-colors rounded-md hover:bg-slate-200">
+                                                <Link
+                                                    href={`/admin/courses/${course.id}/chapters/${chapter.id}`}
+                                                    className="p-1.5 text-slate-400 hover:text-slate-900 transition-colors rounded-md hover:bg-slate-200"
+                                                    title="Edit Chapter"
+                                                >
                                                     <Pencil className="h-3.5 w-3.5" />
-                                                </button>
+                                                </Link>
                                             </div>
                                         </div>
                                     ))}

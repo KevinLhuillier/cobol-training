@@ -32,7 +32,7 @@ export function ChapterForm({ courseId }: { courseId: string }) {
             }
 
             toggleCreating();
-            router.refresh(); // This magically re-fetches the Server Component to show the new chapter!
+            router.refresh();
         } catch (error) {
             console.error(error);
             alert("Something went wrong while creating the chapter.");
@@ -43,28 +43,28 @@ export function ChapterForm({ courseId }: { courseId: string }) {
 
     if (isCreating) {
         return (
-            <form onSubmit={onSubmit} className="flex items-center gap-2 mt-2">
+            <form onSubmit={onSubmit} className="flex items-center gap-2 w-full justify-end">
                 <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     disabled={isLoading}
                     placeholder="e.g. Introduction to DB2"
-                    className="flex-1 h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm"
+                    className="flex-1 max-w-[250px] h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm font-medium"
                     autoFocus
                 />
                 <button
                     type="button"
                     onClick={toggleCreating}
                     disabled={isLoading}
-                    className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                    className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors shrink-0"
                 >
                     <X className="h-4 w-4" />
                 </button>
                 <button
                     type="submit"
                     disabled={isLoading || !title.trim()}
-                    className="h-9 px-4 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center"
+                    className="h-9 px-4 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center shrink-0"
                 >
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
                 </button>
@@ -75,7 +75,7 @@ export function ChapterForm({ courseId }: { courseId: string }) {
     return (
         <button
             onClick={toggleCreating}
-            className="inline-flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-900 rounded-xl h-9 px-4 text-sm font-bold transition-colors"
+            className="inline-flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-900 rounded-xl h-9 px-4 text-sm font-bold transition-colors shrink-0"
         >
             <Plus className="mr-2 h-4 w-4" />
             Add Chapter

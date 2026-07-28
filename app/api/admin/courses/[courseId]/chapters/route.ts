@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/prisma/client"; // Adjust path if needed
+import { prisma } from "@/prisma/client";
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { courseId: string } }
+    { params }: { params: Promise<{ courseId: string }> } // 1. On type params comme une Promesse
 ) {
     try {
-        // Note: In a real app, verify the admin JWT session here
+        // 2. On attend la résolution des paramètres avant de les utiliser
+        const resolvedParams = await params;
+        const courseId = resolvedParams.courseId;
 
         const { title } = await request.json();
-        const { courseId } = params;
 
-        // Basic validation
+        // Validation
         if (!title) {
             return NextResponse.json(
                 { error: "The chapter title is required." },
@@ -19,10 +20,10 @@ export async function POST(
             );
         }
 
-        // Check if the course exists to avoid orphan chapters
+        // Vérification de l'existence du cours
         const courseOwner = await prisma.course.findUnique({
             where: {
-                id: courseId,
+                id: courseId, // Maintenant, courseId contient bien la vraie chaîne de caractères
             }
         });
 
@@ -33,20 +34,19 @@ export async function POST(
             );
         }
 
-        // Find the last chapter to calculate the new position
+        // Trouver le dernier chapitre pour calculer la position
         const lastChapter = await prisma.chapter.findFirst({
             where: {
                 courseId: courseId,
             },
             orderBy: {
-                position: "desc", // Get the highest position
+                position: "desc",
             },
         });
 
-        // If there is a last chapter, add 1. Otherwise, it's the first chapter (position 1)
         const newPosition = lastChapter ? lastChapter.position + 1 : 1;
 
-        // Create the new chapter
+        // Création du chapitre
         const newChapter = await prisma.chapter.create({
             data: {
                 title,
