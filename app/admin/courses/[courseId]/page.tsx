@@ -12,6 +12,7 @@ import {
     GripVertical
 } from "lucide-react";
 import { ChapterForm } from "@/components/courses/chapter-form";
+import { ChapterDeleteButton } from "@/components/courses/chapter-delete-button";
 
 // Server Component to fetch and display course data
 // On type params comme une Promesse (Standard Next.js 15)
@@ -176,7 +177,8 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
                                                 <span className="font-bold text-slate-900 text-sm">{chapter.title}</span>
                                             </div>
 
-                                            <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {/* Bouton d'édition existant */}
                                                 <Link
                                                     href={`/admin/courses/${course.id}/chapters/${chapter.id}`}
                                                     className="p-1.5 text-slate-400 hover:text-slate-900 transition-colors rounded-md hover:bg-slate-200"
@@ -184,6 +186,13 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
                                                 >
                                                     <Pencil className="h-3.5 w-3.5" />
                                                 </Link>
+
+                                                {/* Nouveau composant de suppression */}
+                                                <ChapterDeleteButton
+                                                    courseId={course.id}
+                                                    chapterId={chapter.id}
+                                                    chapterTitle={chapter.title}
+                                                />
                                             </div>
                                         </div>
                                     ))}

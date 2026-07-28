@@ -11,6 +11,7 @@ import {
     GripVertical
 } from "lucide-react";
 import LessonForm from "@/components/courses/lesson-form";
+import { ChapterTitleForm } from "@/components/courses/chapter-title-form";
 
 export default async function ChapterDetailsPage({
                                                      params
@@ -72,22 +73,22 @@ export default async function ChapterDetailsPage({
                     {/* COLONNE GAUCHE: Détails du chapitre */}
                     <div className="space-y-8">
                         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-2 text-slate-900 font-bold text-lg">
-                                    <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                                        <LayoutDashboard className="h-4 w-4" />
-                                    </div>
-                                    Customize chapter
+                            <div className="flex items-center gap-2 text-slate-900 font-bold text-lg mb-6">
+                                <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                                    <LayoutDashboard className="h-4 w-4" />
                                 </div>
-                                <button className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
-                                    <Pencil className="h-4 w-4" />
-                                </button>
+                                Customize chapter
                             </div>
 
                             <div className="space-y-4">
                                 <div>
                                     <p className="text-sm font-bold text-slate-500 mb-1">Chapter Title</p>
-                                    <p className="text-slate-900 font-medium">{chapter.title}</p>
+                                    {/* Le nouveau composant remplace le texte statique */}
+                                    <ChapterTitleForm
+                                        initialData={chapter}
+                                        courseId={courseId}
+                                        chapterId={chapterId}
+                                    />
                                 </div>
                             </div>
                         </div>
