@@ -43,24 +43,37 @@ export async function DELETE(
         const resolvedParams = await params;
         const { courseId, chapterId } = resolvedParams;
 
-        // 1. Sécurité : vérifier que le chapitre appartient bien à ce cours
-        const chapterOwner = await prisma.chapter.findUnique({
+        // 1. On récupère le chapitre pour connaître sa position AVANT de le supprimer
+        const chapterToDelete = await prisma.chapter.findUnique({
             where: {
                 id: chapterId,
                 courseId: courseId,
             }
         });
 
-        if (!chapterOwner) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        if (!chapterToDelete) {
+            return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
 
-        // 2. Suppression en cascade
-        // Grâce au onDelete: Cascade dans ton schéma Prisma, cela supprimera
-        // automatiquement toutes les leçons liées à ce chapitre.
+        // 2. On supprime le chapitre
         const deletedChapter = await prisma.chapter.delete({
             where: {
                 id: chapterId,
+            }
+        });
+
+        // 3. LA MAGIE PRISMA : On recalcule les positions des chapitres suivants
+        await prisma.chapter.updateMany({
+            where: {
+                courseId: courseId,
+                position: {
+                    gt: chapterToDelete.position, // "gt" = greater than (strictement supérieur à)
+                }
+            },
+            data: {
+                position: {
+                    decrement: 1, // Baisse la position de 1 pour combler le trou
+                }
             }
         });
 

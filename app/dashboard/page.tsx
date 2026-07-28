@@ -111,7 +111,7 @@ export default async function DashboardPage() {
                                     </div>
 
                                     {/* Lien vers la page de lecture/cours de l'étudiant */}
-                                    <Link href={`/courses/${course.id}`} className="w-full">
+                                    <Link href={`/dashboard/courses/${course.id}`} className="w-full">
                                         <Button
                                             className="w-full rounded-xl shadow-sm bg-slate-900 hover:bg-slate-800 text-white"
                                         >

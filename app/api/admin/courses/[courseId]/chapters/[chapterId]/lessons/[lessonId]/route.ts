@@ -55,16 +55,33 @@ export async function DELETE(
         const resolvedParams = await params;
         const { courseId, chapterId, lessonId } = resolvedParams;
 
-        const chapterOwner = await prisma.chapter.findUnique({
-            where: { id: chapterId, courseId: courseId }
+        // 1. On récupère la leçon pour connaître sa position
+        const lessonToDelete = await prisma.lesson.findUnique({
+            where: { id: lessonId, chapterId: chapterId }
         });
 
-        if (!chapterOwner) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        if (!lessonToDelete) {
+            return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
 
+        // 2. On supprime la leçon
         const deletedLesson = await prisma.lesson.delete({
-            where: { id: lessonId, chapterId: chapterId } // Double vérification
+            where: { id: lessonId }
+        });
+
+        // 3. On recalcule les positions des leçons suivantes dans CE chapitre précis
+        await prisma.lesson.updateMany({
+            where: {
+                chapterId: chapterId,
+                position: {
+                    gt: lessonToDelete.position,
+                }
+            },
+            data: {
+                position: {
+                    decrement: 1,
+                }
+            }
         });
 
         return NextResponse.json(deletedLesson, { status: 200 });
