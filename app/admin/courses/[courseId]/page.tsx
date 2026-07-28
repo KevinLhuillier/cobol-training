@@ -12,8 +12,8 @@ import {
     GripVertical
 } from "lucide-react";
 import { ChapterForm } from "@/components/courses/chapter-form";
-import { ChapterDeleteButton } from "@/components/courses/chapter-delete-button";
 import { ChapterList } from "@/components/courses/chapter-list";
+import { CoursePublishButton } from "@/components/courses/course-publish-button";
 
 // Server Component to fetch and display course data
 // On type params comme une Promesse (Standard Next.js 15)
@@ -74,9 +74,10 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
                         >
                             {course.isPublished ? "Published" : "Draft"}
                         </Badge>
-                        <button className="h-10 px-4 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-sm">
-                            {course.isPublished ? "Unpublish" : "Publish"}
-                        </button>
+                        <CoursePublishButton
+                            courseId={course.id}
+                            isPublished={course.isPublished}
+                        />
                     </div>
                 </div>
 
@@ -158,10 +159,8 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
 
                             {/* Notre nouveau composant s'occupe de l'affichage et de l'ordre ! */}
                             <ChapterList items={course.chapters} courseId={course.id} />
-
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
