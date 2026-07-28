@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { ChapterForm } from "@/components/courses/chapter-form";
 import { ChapterDeleteButton } from "@/components/courses/chapter-delete-button";
+import { ChapterList } from "@/components/courses/chapter-list";
 
 // Server Component to fetch and display course data
 // On type params comme une Promesse (Standard Next.js 15)
@@ -143,63 +144,22 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
 
                     {/* RIGHT COLUMN: Chapters */}
                     <div className="space-y-8">
-
                         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6">
 
-                            {/* Ajout de flex-wrap ici pour éviter tout débordement */}
                             <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-
                                 <div className="flex items-center gap-2 text-slate-900 font-bold text-lg shrink-0">
                                     <ListChecks className="h-5 w-5 text-emerald-600" />
                                     Course Chapters
                                 </div>
-
-                                {/* On enveloppe le composant pour qu'il prenne l'espace restant sans s'écraser */}
                                 <div className="flex-1 flex justify-end min-w-[200px]">
                                     <ChapterForm courseId={course.id} />
                                 </div>
-
                             </div>
 
-                            {course.chapters.length === 0 ? (
-                                <p className="text-sm text-slate-500 italic text-center py-6">
-                                    No chapters yet. Add your first chapter to structure your course.
-                                </p>
-                            ) : (
-                                <div className="space-y-3 mt-4">
-                                    {course.chapters.map((chapter) => (
-                                        <div
-                                            key={chapter.id}
-                                            className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 group"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <GripVertical className="h-5 w-5 text-slate-400 cursor-grab hover:text-slate-600" />
-                                                <span className="font-bold text-slate-900 text-sm">{chapter.title}</span>
-                                            </div>
+                            {/* Notre nouveau composant s'occupe de l'affichage et de l'ordre ! */}
+                            <ChapterList items={course.chapters} courseId={course.id} />
 
-                                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                {/* Bouton d'édition existant */}
-                                                <Link
-                                                    href={`/admin/courses/${course.id}/chapters/${chapter.id}`}
-                                                    className="p-1.5 text-slate-400 hover:text-slate-900 transition-colors rounded-md hover:bg-slate-200"
-                                                    title="Edit Chapter"
-                                                >
-                                                    <Pencil className="h-3.5 w-3.5" />
-                                                </Link>
-
-                                                {/* Nouveau composant de suppression */}
-                                                <ChapterDeleteButton
-                                                    courseId={course.id}
-                                                    chapterId={chapter.id}
-                                                    chapterTitle={chapter.title}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
                         </div>
-
                     </div>
 
                 </div>
