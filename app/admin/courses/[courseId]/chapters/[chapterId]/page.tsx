@@ -11,6 +11,7 @@ import {
     GripVertical
 } from "lucide-react";
 import LessonForm from "@/components/courses/lesson-form";
+import { LessonList } from "@/components/courses/lesson-list";
 import { ChapterTitleForm } from "@/components/courses/chapter-title-form";
 
 export default async function ChapterDetailsPage({
@@ -108,41 +109,11 @@ export default async function ChapterDetailsPage({
                                 <LessonForm courseId={courseId} chapterId={chapterId} />
                             </div>
 
-                            {chapter.lessons.length === 0 ? (
-                                <p className="text-sm text-slate-500 italic text-center py-6">
-                                    No lessons yet. Add a video or text lesson to get started.
-                                </p>
-                            ) : (
-                                <div className="space-y-3 mt-4">
-                                    {chapter.lessons.map((lesson) => (
-                                        <div
-                                            key={lesson.id}
-                                            className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 group"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <GripVertical className="h-5 w-5 text-slate-400 cursor-grab hover:text-slate-600" />
-                                                <span className="font-bold text-slate-900 text-sm">{lesson.title}</span>
-                                            </div>
-
-                                            <div className="flex items-center gap-3">
-                                                {lesson.isFreePreview && (
-                                                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 border-none">
-                                                        Free Preview
-                                                    </Badge>
-                                                )}
-                                                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Link
-                                                        href={`/admin/courses/${courseId}/chapters/${chapterId}/lessons/${lesson.id}`}
-                                                        className="p-1.5 text-slate-400 hover:text-slate-900 transition-colors rounded-md hover:bg-slate-200"
-                                                    >
-                                                        <Pencil className="h-3.5 w-3.5" />
-                                                    </Link>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                            <LessonList
+                                courseId={courseId}
+                                chapterId={chapterId}
+                                items={chapter.lessons}
+                            />
                         </div>
                     </div>
 

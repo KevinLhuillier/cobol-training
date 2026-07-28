@@ -46,3 +46,33 @@ export async function PATCH(
         );
     }
 }
+
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: Promise<{ courseId: string; chapterId: string; lessonId: string }> }
+) {
+    try {
+        const resolvedParams = await params;
+        const { courseId, chapterId, lessonId } = resolvedParams;
+
+        const chapterOwner = await prisma.chapter.findUnique({
+            where: { id: chapterId, courseId: courseId }
+        });
+
+        if (!chapterOwner) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const deletedLesson = await prisma.lesson.delete({
+            where: { id: lessonId, chapterId: chapterId } // Double vérification
+        });
+
+        return NextResponse.json(deletedLesson, { status: 200 });
+    } catch (error) {
+        console.error("Error deleting lesson:", error);
+        return NextResponse.json(
+            { error: "An error occurred while deleting the lesson." },
+            { status: 500 }
+        );
+    }
+}
