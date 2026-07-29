@@ -1,5 +1,7 @@
 import { prisma } from "@/prisma/client";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { jwtVerify } from "jose";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,6 +18,7 @@ import {
     Check,
     ChevronLeft
 } from "lucide-react";
+import { CourseProgressButton } from "@/components/courses/course-progress-button";
 
 export default async function CoursePlayer({
                                                params,
@@ -28,7 +31,35 @@ export default async function CoursePlayer({
     const resolvedSearchParams = await searchParams;
     const { courseId } = resolvedParams;
 
-    // 1. Récupération du cours, de ses chapitres et de ses leçons depuis Prisma
+    const cookieStore = await cookies();
+    const token = cookieStore.get("session_token")?.value;
+
+    if (!token) {
+        return redirect("/login"); // À adapter selon l'URL de ta page de connexion
+    }
+
+    let userId: string;
+    // Décodage et vérification du JWT avec jose
+    try {
+        // On doit encoder la clé secrète exactement comme lors de la création
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+
+        // jwtVerify valide la signature ET l'expiration du token
+        const { payload } = await jwtVerify(token, secret);
+
+        // On récupère le userId que tu avais placé dans le payload
+        userId = payload.userId as string;
+
+        if (!userId) {
+            return redirect("/login");
+        }
+    } catch (error) {
+        // Si le token est expiré, malformé ou que la signature est mauvaise
+        console.error("Session invalide :", error);
+        return redirect("/login");
+    }
+
+
     const course = await prisma.course.findUnique({
         where: { id: courseId },
         include: {
@@ -37,6 +68,12 @@ export default async function CoursePlayer({
                 include: {
                     lessons: {
                         orderBy: { position: "asc" },
+                        include: {
+                            // On récupère uniquement la progression de l'utilisateur connecté
+                            lessonProgress: {
+                                where: { userId: userId }
+                            }
+                        }
                     }
                 }
             }
@@ -66,9 +103,15 @@ export default async function CoursePlayer({
 
     // 2. Détermination de la leçon active (soit celle passée en ?lessonId=..., soit la première du cours)
     const currentLesson = allLessons.find(l => l.id === resolvedSearchParams.lessonId) || allLessons[0];
-
+    // On trouve l'index de la leçon actuelle dans la liste globale
+    const currentLessonIndex = allLessons.findIndex(l => l.id === currentLesson.id);
+    // On récupère la leçon suivante (si elle existe, sinon nextLesson sera undefined)
+    const nextLesson = allLessons[currentLessonIndex + 1];
     // Trouver à quel chapitre appartient cette leçon active
     const currentChapter = course.chapters.find(chap => chap.lessons.some(l => l.id === currentLesson.id));
+
+    // Si un enregistrement de progression existe et qu'il est "true"
+    const isCurrentLessonCompleted = !!currentLesson?.lessonProgress?.[0]?.isCompleted;
 
     // Fonction utilitaire pour extraire l'embed Vimeo
     const getVimeoEmbedUrl = (url: string | null) => {
@@ -141,10 +184,13 @@ export default async function CoursePlayer({
                                     <p className="italic text-slate-400">Aucun contenu textuel pour cette leçon.</p>
                                 )}
                             </div>
-                            <Button size="lg" className="shrink-0 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md">
-                                <Check className="mr-2 h-4 w-4" />
-                                Valider la leçon
-                            </Button>
+                            <CourseProgressButton
+                                courseId={courseId}
+                                chapterId={currentChapter!.id}
+                                lessonId={currentLesson.id}
+                                isCompleted={isCurrentLessonCompleted}
+                                nextLessonId={nextLesson?.id}
+                            />
                         </div>
                     </div>
                 </section>
@@ -180,20 +226,24 @@ export default async function CoursePlayer({
                                         <div className="space-y-1">
                                             {chapter.lessons.map((lesson) => {
                                                 const isCurrent = lesson.id === currentLesson.id;
+                                                const isCompleted = !!lesson.lessonProgress?.[0]?.isCompleted;
 
                                                 return (
                                                     <Link
                                                         key={lesson.id}
-                                                        href={`/courses/${courseId}?lessonId=${lesson.id}`}
+                                                        href={`/dashboard/courses/${courseId}?lessonId=${lesson.id}`}
                                                         className={`flex items-start gap-3 p-3 rounded-lg transition-all block ${
                                                             isCurrent
                                                                 ? "bg-white shadow-sm ring-1 ring-slate-200"
                                                                 : "hover:bg-slate-100/50"
                                                         }`}
                                                     >
+
                                                         <div className="mt-0.5 shrink-0">
                                                             {isCurrent ? (
                                                                 <PlayCircle className="h-5 w-5 text-blue-600" />
+                                                            ) : isCompleted ? (
+                                                                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                                                             ) : (
                                                                 <CheckCircle2 className="h-5 w-5 text-slate-300" />
                                                             )}

@@ -38,25 +38,25 @@ enum SubmissionStatus {
 // ==========================================
 
 model User {
-  id                    String    @id @default(cuid())
-  email                 String    @unique
-  passwordHash          String?   // Si authentification par mot de passe
-  name                  String?
-  role                  Role      @default(USER)
+  id           String  @id @default(cuid())
+  email        String  @unique
+  passwordHash String? // Si authentification par mot de passe
+  name         String?
+  role         Role    @default(USER)
 
   // Champs Stripe
-  stripeCustomerId      String?   @unique
-  stripeSubscriptionId  String?   @unique
+  stripeCustomerId      String?             @unique
+  stripeSubscriptionId  String?             @unique
   stripePriceId         String?
   subscriptionStatus    SubscriptionStatus?
   subscriptionPeriodEnd DateTime?
 
   // Relations
-  progress              LessonProgress[]
-  submissions           ExerciseSubmission[]
+  progress    LessonProgress[]
+  submissions ExerciseSubmission[]
 
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ==========================================
@@ -64,53 +64,53 @@ model User {
 // ==========================================
 
 model Course {
-  id          String    @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
-  description String?   @db.Text
+  description String? @db.Text
   imageUrl    String?
-  isPublished Boolean   @default(false)
+  isPublished Boolean @default(false)
 
-  chapters    Chapter[]
+  chapters Chapter[]
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Chapter {
-  id          String    @id @default(cuid())
-  title       String
-  position    Int       // Pour ordonner les chapitres
+  id       String @id @default(cuid())
+  title    String
+  position Int // Pour ordonner les chapitres
 
-  courseId    String
-  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-  lessons     Lesson[]
+  lessons Lesson[]
 }
 
 model Lesson {
-  id          String    @id @default(cuid())
-  title       String
-  vimeoUrl    String?   // URL ou ID de la vidéo Vimeo
-  content     String?   @db.LongText // Texte additionnel sous la vidéo
-  position    Int
+  id            String  @id @default(cuid())
+  title         String
+  vimeoUrl      String? // URL ou ID de la vidéo Vimeo
+  content       String? @db.LongText // Texte additionnel sous la vidéo
+  position      Int
   isFreePreview Boolean @default(false) // Permet de laisser des vidéos gratuites
 
-  chapterId   String
-  chapter     Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapterId String
+  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
-  progress    LessonProgress[]
-  exercises   Exercise[]
+  lessonProgress LessonProgress[]
+  exercises      Exercise[]
 }
 
 model LessonProgress {
-  id          String    @id @default(cuid())
-  isCompleted Boolean   @default(true)
+  id          String  @id @default(cuid())
+  isCompleted Boolean @default(true)
 
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  lessonId    String
-  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   // Un utilisateur ne peut avoir qu'une seule progression par leçon
   @@unique([userId, lessonId])
@@ -121,27 +121,27 @@ model LessonProgress {
 // ==========================================
 
 model Exercise {
-  id          String    @id @default(cuid())
-  title       String
-  statement   String    @db.LongText // L'énoncé formaté (Markdown ou HTML)
+  id        String @id @default(cuid())
+  title     String
+  statement String @db.LongText // L'énoncé formaté (Markdown ou HTML)
 
-  lessonId    String
-  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   submissions ExerciseSubmission[]
 }
 
 model ExerciseSubmission {
-  id          String    @id @default(cuid())
-  content     String    @db.LongText // Le code ou la réponse soumise par l'étudiant
-  feedback    String?   @db.LongText // La correction/commentaire de l'administrateur
-  status      SubmissionStatus @default(PENDING)
+  id       String           @id @default(cuid())
+  content  String           @db.LongText // Le code ou la réponse soumise par l'étudiant
+  feedback String?          @db.LongText // La correction/commentaire de l'administrateur
+  status   SubmissionStatus @default(PENDING)
 
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  exerciseId  String
-  exercise    Exercise  @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
 
   submittedAt DateTime  @default(now())
   correctedAt DateTime?
