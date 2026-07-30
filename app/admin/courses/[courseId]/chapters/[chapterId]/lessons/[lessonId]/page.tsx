@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { LessonTitleForm } from "@/components/courses/lesson-title-form";
 import { LessonVideoForm } from "@/components/courses/lesson-video-form";
+import {LessonDescriptionForm} from "@/components/courses/lesson-description-form";
 
 export default async function LessonDetailsPage({
                                                     params
@@ -70,6 +71,14 @@ export default async function LessonDetailsPage({
                                     <p className="text-sm font-bold text-slate-500 mb-1">Lesson Title</p>
                                     {/* Composant dynamique pour le titre */}
                                     <LessonTitleForm
+                                        initialData={lesson}
+                                        courseId={courseId}
+                                        chapterId={chapterId}
+                                        lessonId={lessonId}
+                                    />
+                                </div>
+                                <div>
+                                    <LessonDescriptionForm
                                         initialData={lesson}
                                         courseId={courseId}
                                         chapterId={chapterId}
