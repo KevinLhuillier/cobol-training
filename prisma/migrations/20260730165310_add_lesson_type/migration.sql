@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `lesson` ADD COLUMN `type` ENUM('VIDEO', 'EXERCISE', 'QUIZ') NOT NULL DEFAULT 'VIDEO';

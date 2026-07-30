@@ -10,7 +10,7 @@ export async function PUT(
     try {
         const resolvedParams = await params;
         const { lessonId } = resolvedParams;
-        const { isCompleted } = await request.json();
+        const { isCompleted, exerciseAnswer } = await request.json();
 
         // 1. Récupération du cookie de session
         const cookieStore = await cookies();
@@ -47,12 +47,14 @@ export async function PUT(
                 }
             },
             update: {
-                isCompleted
+                isCompleted,
+                exerciseAnswer
             },
             create: {
                 userId,
                 lessonId,
-                isCompleted
+                isCompleted,
+                exerciseAnswer
             }
         });
 

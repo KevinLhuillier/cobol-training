@@ -127,3 +127,15 @@
     @apply font-sans;
   }
 }
+
+/* Forcer React Quill (Editor & Preview) à hériter de la police Inter (Tailwind) */
+.ql-container,
+.ql-editor {
+  font-family: inherit !important;
+  font-size: inherit !important;
+}
+
+/* Optionnel : Ajuster l'espacement par défaut des paragraphes dans l'éditeur */
+.ql-editor p {
+  margin-bottom: 0.75rem;
+}

@@ -88,13 +88,20 @@ model Chapter {
   lessons Lesson[]
 }
 
+enum LessonType {
+  VIDEO
+  EXERCISE
+  QUIZ
+}
+
 model Lesson {
-  id            String  @id @default(cuid())
+  id            String     @id @default(cuid())
   title         String
   vimeoUrl      String? // URL ou ID de la vidéo Vimeo
-  content       String? @db.LongText // Texte additionnel sous la vidéo
+  content       String?    @db.LongText // Texte additionnel sous la vidéo
   position      Int
-  isFreePreview Boolean @default(false) // Permet de laisser des vidéos gratuites
+  isFreePreview Boolean    @default(false) // Permet de laisser des vidéos gratuites
+  type          LessonType @default(VIDEO)
 
   chapterId String
   chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
@@ -110,8 +117,9 @@ model LessonProgress {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  lessonId String
-  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId       String
+  lesson         Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  exerciseAnswer String? @db.Text
 
   // Un utilisateur ne peut avoir qu'une seule progression par leçon
   @@unique([userId, lessonId])

@@ -5,16 +5,16 @@ import { useRouter } from "next/navigation";
 import { Editor } from "@/components/editor";
 import { Preview } from "@/components/preview";
 import { Button } from "@/components/ui/button";
-import { Pencil, X } from "lucide-react"; // 🟢 Ajout de la croix (X)
+import { Pencil, X, Loader2 } from "lucide-react";
 
-interface LessonDescriptionFormProps {
+interface LessonContentFormProps {
     initialData: { content: string | null };
     courseId: string;
     chapterId: string;
     lessonId: string;
 }
 
-export function LessonDescriptionForm({ initialData, courseId, chapterId, lessonId }: LessonDescriptionFormProps) {
+export function LessonContentForm({ initialData, courseId, chapterId, lessonId }: LessonContentFormProps) {
     const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [content, setContent] = useState(initialData.content || "");
@@ -43,12 +43,10 @@ export function LessonDescriptionForm({ initialData, courseId, chapterId, lesson
     };
 
     return (
-        // Alignement parfait avec les autres éléments de ton interface
-        <div className="mt-6 bg-slate-50 border border-slate-100 rounded-2xl p-4 shadow-sm">
+        <div className="mt-6 bg-slate-50 border border-slate-100 rounded-2xl p-4 shadow-sm w-full">
             <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-slate-500">Lesson Description</span>
+                <span className="text-sm font-bold text-slate-500">Lesson Content</span>
 
-                {/* 🟢 Bouton "Icon" pour correspondre aux autres champs */}
                 <Button
                     onClick={toggleEdit}
                     variant="ghost"
@@ -68,20 +66,22 @@ export function LessonDescriptionForm({ initialData, courseId, chapterId, lesson
                     {initialData.content ? (
                         <Preview value={initialData.content} />
                     ) : (
-                        "Aucune description fournie"
+                        "No content provided"
                     )}
                 </div>
             )}
 
             {isEditing && (
-                <div className="space-y-4 mt-4">
+                <div className="space-y-4 mt-4 w-full">
+                    {/* L'éditeur va maintenant s'étendre sur toute la largeur */}
                     <Editor
                         value={content}
                         onChange={(val) => setContent(val)}
                     />
                     <div className="flex items-center gap-x-2">
                         <Button disabled={isLoading} onClick={onSubmit} className="bg-slate-900 text-white rounded-xl shadow-sm">
-                            Sauvegarder
+                            {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                            Save Content
                         </Button>
                     </div>
                 </div>

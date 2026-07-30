@@ -11,7 +11,7 @@ export async function POST(
         const { courseId, chapterId } = resolvedParams;
 
         // 2. Récupération des données envoyées par le formulaire
-        const { title } = await request.json();
+        const { title, type } = await request.json();
 
         if (!title) {
             return NextResponse.json(
@@ -53,6 +53,7 @@ export async function POST(
                 title,
                 chapterId,
                 position: newPosition,
+                type: type || "VIDEO",
             },
         });
 

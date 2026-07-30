@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useMemo } from "react";
 import "react-quill-new/dist/quill.snow.css";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
@@ -11,9 +12,22 @@ interface EditorProps {
 }
 
 export const Editor = ({ onChange, value }: EditorProps) => {
+    // 🟢 Configuration de la barre d'outils (mémorisée pour éviter de perdre le focus)
+    const modules = useMemo(() => ({
+        toolbar: [
+            [{ header: [1, 2, 3, 4, 5, 6, false] }],
+            ["bold", "italic", "underline", "strike"],
+            [{ list: "ordered" }, { list: "bullet" }],
+            // 🟢 Ajout de l'image et du bloc de code ici
+            ["link", "image", "code-block"],
+            [{ color: [] }, { background: [] }],
+            ["clean"],
+        ],
+    }), []);
+
     return (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-slate-900 focus-within:border-transparent">
-            {/* 🟢 Refonte complète du design de Quill via Tailwind */}
+            {/* Ton design Tailwind conservé intact */}
             <div className="
                 [&_.ql-toolbar.ql-snow]:border-none
                 [&_.ql-toolbar.ql-snow]:border-b
@@ -34,6 +48,7 @@ export const Editor = ({ onChange, value }: EditorProps) => {
                     theme="snow"
                     value={value}
                     onChange={onChange}
+                    modules={modules} // 🟢 Injection des modules
                 />
             </div>
         </div>

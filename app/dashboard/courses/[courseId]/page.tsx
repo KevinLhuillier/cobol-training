@@ -14,11 +14,11 @@ import {
 import {
     PlayCircle,
     CheckCircle2,
-    Lock,
-    Check,
     ChevronLeft
 } from "lucide-react";
+import { Preview } from "@/components/preview";
 import { CourseProgressButton } from "@/components/courses/course-progress-button";
+import { ExerciseForm } from "@/components/courses/exercise-form";
 
 export default async function CoursePlayer({
                                                params,
@@ -35,30 +35,22 @@ export default async function CoursePlayer({
     const token = cookieStore.get("session_token")?.value;
 
     if (!token) {
-        return redirect("/login"); // À adapter selon l'URL de ta page de connexion
+        return redirect("/login");
     }
 
     let userId: string;
-    // Décodage et vérification du JWT avec jose
     try {
-        // On doit encoder la clé secrète exactement comme lors de la création
         const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-
-        // jwtVerify valide la signature ET l'expiration du token
         const { payload } = await jwtVerify(token, secret);
-
-        // On récupère le userId que tu avais placé dans le payload
         userId = payload.userId as string;
 
         if (!userId) {
             return redirect("/login");
         }
     } catch (error) {
-        // Si le token est expiré, malformé ou que la signature est mauvaise
         console.error("Session invalide :", error);
         return redirect("/login");
     }
-
 
     const course = await prisma.course.findUnique({
         where: { id: courseId },
@@ -69,7 +61,6 @@ export default async function CoursePlayer({
                     lessons: {
                         orderBy: { position: "asc" },
                         include: {
-                            // On récupère uniquement la progression de l'utilisateur connecté
                             lessonProgress: {
                                 where: { userId: userId }
                             }
@@ -84,7 +75,6 @@ export default async function CoursePlayer({
         return notFound();
     }
 
-    // Aplatir toutes les leçons pour trouver facilement la leçon active
     const allLessons = course.chapters.flatMap(chap => chap.lessons);
 
     if (allLessons.length === 0) {
@@ -101,19 +91,13 @@ export default async function CoursePlayer({
         );
     }
 
-    // 2. Détermination de la leçon active (soit celle passée en ?lessonId=..., soit la première du cours)
     const currentLesson = allLessons.find(l => l.id === resolvedSearchParams.lessonId) || allLessons[0];
-    // On trouve l'index de la leçon actuelle dans la liste globale
     const currentLessonIndex = allLessons.findIndex(l => l.id === currentLesson.id);
-    // On récupère la leçon suivante (si elle existe, sinon nextLesson sera undefined)
     const nextLesson = allLessons[currentLessonIndex + 1];
-    // Trouver à quel chapitre appartient cette leçon active
     const currentChapter = course.chapters.find(chap => chap.lessons.some(l => l.id === currentLesson.id));
 
-    // Si un enregistrement de progression existe et qu'il est "true"
     const isCurrentLessonCompleted = !!currentLesson?.lessonProgress?.[0]?.isCompleted;
 
-    // Fonction utilitaire pour extraire l'embed Vimeo
     const getVimeoEmbedUrl = (url: string | null) => {
         if (!url) return null;
         const match = url.match(/(?:vimeo\.com\/|video\/|channels\/.+\/|groups\/.+\/videos\/|album\/.+\/video\/)(\d+)/);
@@ -147,51 +131,64 @@ export default async function CoursePlayer({
             {/* LAYOUT PRINCIPAL */}
             <main className="flex-1 max-w-[1600px] w-full mx-auto flex flex-col lg:flex-row gap-6 overflow-hidden">
 
-                {/* ZONE VIDÉO (Panneau central) */}
+                {/* ZONE DE CONTENU (Panneau central) */}
                 <section className="flex-1 bg-white rounded-3xl shadow-sm p-6 lg:p-8 flex flex-col overflow-y-auto">
                     <div className="max-w-5xl mx-auto w-full space-y-6">
 
                         <div>
                             <p className="text-sm font-medium text-blue-600 mb-1">
-                                {currentChapter?.title} • Leçon {currentLesson.position}
+                                {currentChapter?.title} • Lesson {currentLesson.position}
                             </p>
                             <h2 className="text-2xl font-bold text-slate-900">{currentLesson.title}</h2>
                         </div>
 
-                        {/* LECTEUR VIDÉO VIMEO */}
-                        <div className="w-full aspect-video bg-slate-900 rounded-2xl shadow-md flex flex-col items-center justify-center relative overflow-hidden border-4 border-slate-50">
-                            {vimeoEmbedUrl ? (
+                        {/* 1. LECTEUR VIDÉO (Seulement si une URL est présente) */}
+                        {vimeoEmbedUrl && (
+                            <div className="w-full aspect-video bg-slate-900 rounded-2xl shadow-md flex flex-col items-center justify-center relative overflow-hidden border-4 border-slate-50">
                                 <iframe
                                     src={vimeoEmbedUrl}
                                     className="absolute top-0 left-0 w-full h-full border-0"
                                     allow="autoplay; fullscreen; picture-in-picture"
                                     allowFullScreen
                                 />
-                            ) : (
-                                <div className="flex flex-col items-center justify-center text-slate-400 p-6 text-center">
-                                    <PlayCircle className="h-16 w-16 text-slate-600 mb-2" />
-                                    <p className="text-sm font-medium">Aucune vidéo disponible pour cette leçon.</p>
+                            </div>
+                        )}
+
+                        {/* 2. CONTENU TEXTUEL */}
+                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                            {currentLesson.content ? (
+                                // 🟢 On utilise Preview au lieu de dangerouslySetInnerHTML
+                                <div className="text-slate-800">
+                                    <Preview value={currentLesson.content} />
                                 </div>
+                            ) : (
+                                <p className="italic text-slate-500">No instructions or content provided.</p>
                             )}
                         </div>
 
-                        {/* ACTION & DESCRIPTION */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6">
-                            <div className="text-slate-600 max-w-2xl text-sm leading-relaxed">
-                                {currentLesson.content ? (
-                                    <div dangerouslySetInnerHTML={{ __html: currentLesson.content }} />
-                                ) : (
-                                    <p className="italic text-slate-400">Aucun contenu textuel pour cette leçon.</p>
-                                )}
-                            </div>
-                            <CourseProgressButton
-                                courseId={courseId}
-                                chapterId={currentChapter!.id}
-                                lessonId={currentLesson.id}
-                                isCompleted={isCurrentLessonCompleted}
-                                nextLessonId={nextLesson?.id}
-                            />
+                        {/* 3. ACTIONS DE VALIDATION */}
+                        <div className="pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
+                            {currentLesson.type === "EXERCISE" ? (
+                                <div className="w-full">
+                                    <ExerciseForm
+                                        courseId={courseId}
+                                        chapterId={currentChapter!.id}
+                                        lessonId={currentLesson.id}
+                                        initialAnswer={currentLesson.lessonProgress?.[0]?.exerciseAnswer}
+                                        isCompleted={isCurrentLessonCompleted}
+                                    />
+                                </div>
+                            ) : (
+                                <CourseProgressButton
+                                    courseId={courseId}
+                                    chapterId={currentChapter!.id}
+                                    lessonId={currentLesson.id}
+                                    isCompleted={isCurrentLessonCompleted}
+                                    nextLessonId={nextLesson?.id}
+                                />
+                            )}
                         </div>
+
                     </div>
                 </section>
 
