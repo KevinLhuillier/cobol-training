@@ -209,7 +209,7 @@ export default async function CoursePlayer({
 
                     <ScrollArea className="flex-1 p-4">
                         {/* @ts-expect-error - Contournement conflit type Radix/React 19 */}
-                        <Accordion type="multiple" defaultValue={[currentChapter?.id || ""]} className="w-full space-y-3">
+                        <Accordion key={currentChapter?.id || "accordion"} type="multiple" defaultValue={[currentChapter?.id || ""]} className="w-full space-y-3">
                             {course.chapters.map((chapter, index) => (
                                 <AccordionItem key={chapter.id} value={chapter.id} className="border-none bg-slate-50 rounded-xl px-2">
                                     <AccordionTrigger className="hover:no-underline py-4 px-3 text-left rounded-xl transition-colors hover:bg-slate-100">
