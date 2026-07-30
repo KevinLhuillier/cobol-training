@@ -176,6 +176,7 @@ export default async function CoursePlayer({
                                         lessonId={currentLesson.id}
                                         initialAnswer={currentLesson.lessonProgress?.[0]?.exerciseAnswer}
                                         isCompleted={isCurrentLessonCompleted}
+                                        nextLessonId={nextLesson?.id}
                                     />
                                 </div>
                             ) : (

@@ -11,9 +11,10 @@ interface ExerciseFormProps {
     lessonId: string;
     initialAnswer?: string | null;
     isCompleted: boolean;
+    nextLessonId?: string;
 }
 
-export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isCompleted }: ExerciseFormProps) {
+export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isCompleted, nextLessonId }: ExerciseFormProps) {
     const router = useRouter();
     const [answer, setAnswer] = useState(initialAnswer || "");
     const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +38,10 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
 
             if (!response.ok) {
                 throw new Error("Failed to submit exercise.");
+            }
+
+            if (nextLessonId) {
+                router.push(`/dashboard/courses/${courseId}?lessonId=${nextLessonId}`);
             }
 
             router.refresh();
