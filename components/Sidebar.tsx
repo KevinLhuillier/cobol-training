@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Dumbbell, Settings, LayoutGrid } from "lucide-react";
+import { Lock, Dumbbell, Settings, LayoutGrid } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 
-export default function Sidebar() {
+// 🟢 On ajoute la prop isAdmin (par défaut à false par sécurité)
+export default function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
     const pathname = usePathname();
 
     const menuItems = [
-        { icon: LayoutGrid, label: "Tableau de bord", href: "/dashboard" },
-        { icon: BookOpen, label: "Mes Cours", href: "/dashboard/cours" },
-        { icon: Dumbbell, label: "Exercices", href: "/dashboard/exercices" },
+        { icon: LayoutGrid, label: "Dashboard", href: "/dashboard" },
+        { icon: Dumbbell, label: "Exercises", href: "/dashboard/exercises" },
+        ...(isAdmin ? [{ icon: Lock, label: "Admin", href: "/admin" }] : []),
         { icon: Settings, label: "Paramètres", href: "/dashboard/settings" },
     ];
 
@@ -42,8 +43,7 @@ export default function Sidebar() {
                     );
                 })}
 
-                {/* Le bouton est maintenant directement à la suite dans la liste */}
-                <div className="[&>button]:w-full [&>button]:justify-start [&>button]:px-4 [&>button]:py-3 [&>button]:h-auto [&>button]:border-transparent [&>button]:shadow-none [&>button]:text-sm">
+                <div className="[&>button]:w-full [&>button]:justify-start [&>button]:px-4 [&>button]:py-3 [&>button]:h-auto [&>button]:border-transparent [&>button]:shadow-none [&>button]:text-sm mt-auto pt-4 border-t border-slate-100">
                     <LogoutButton />
                 </div>
             </nav>
