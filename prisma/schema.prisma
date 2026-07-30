@@ -54,6 +54,7 @@ model User {
   // Relations
   progress    LessonProgress[]
   submissions ExerciseSubmission[]
+  tsoUsers    TsoUser[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -145,4 +146,25 @@ model ExerciseSubmission {
 
   submittedAt DateTime  @default(now())
   correctedAt DateTime?
+}
+
+enum TsoStatus {
+  AVAILABLE // Disponible pour être attribué
+  ASSIGNED // Attribué à un étudiant
+  BLOCKED // Bloqué (incident, erreur)
+  RESET_REQUIRED // À réinitialiser
+}
+
+model TsoUser {
+  id       String    @id @default(cuid())
+  username String    @unique // Ex: TSOUSER1
+  password String // Stocké en clair comme demandé
+  status   TsoStatus @default(AVAILABLE)
+
+  // Relation optionnelle avec un utilisateur de ton application
+  assignedToUserId String?
+  assignedToUser   User?   @relation(fields: [assignedToUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

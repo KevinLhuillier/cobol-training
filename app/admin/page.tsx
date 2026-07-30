@@ -64,6 +64,16 @@ export default async function AdminDashboardPage() {
                     >
                         Back to website
                     </Link>
+
+                    {/* 🟢 NOUVEAU LIEN : Comptes TSO */}
+                    <Link
+                        href="/admin/users-tso"
+                        className="inline-flex items-center justify-center bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-xl shadow-sm h-10 px-4 text-sm font-medium transition-colors"
+                    >
+                        <Terminal className="mr-2 h-4 w-4 text-slate-500" />
+                        Comptes TSO
+                    </Link>
+
                     <Link
                         href="/admin/courses/new"
                         className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-10 px-5 text-sm font-medium transition-colors"

@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Terminal, Lock, Play, BookOpen, CheckCircle } from "lucide-react";
 
 export default async function DashboardPage() {
-    // 1. Authentification : Récupération du cookie et du userId
+    // 1. Authentication: Retrieve cookie and userId
     const cookieStore = await cookies();
     const token = cookieStore.get("session_token")?.value;
 
@@ -24,7 +24,12 @@ export default async function DashboardPage() {
         return redirect("/login");
     }
 
-    // 2. Récupération des cours AVEC la progression de l'utilisateur
+    // 2. Retrieve the user's TSO account
+    const tsoAccount = await prisma.tsoUser.findFirst({
+        where: { assignedToUserId: userId }
+    });
+
+    // 3. Retrieve courses WITH user progress
     const courses = await prisma.course.findMany({
         where: { isPublished: true },
         orderBy: { createdAt: "desc" },
@@ -47,45 +52,78 @@ export default async function DashboardPage() {
 
     return (
         <>
+            {/* TSO ACCESS CARD */}
+            <div className="mb-10 bg-slate-900 rounded-[2rem] p-6 md:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-slate-800">
+                <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700 shrink-0">
+                        <Terminal className="h-7 w-7 text-emerald-400" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-white">Your Mainframe Access (TSO)</h2>
+                        <p className="text-slate-400 text-sm mt-1">
+                            Use these credentials to connect to the emulator.
+                        </p>
+                    </div>
+                </div>
+
+                {tsoAccount ? (
+                    <div className="flex flex-wrap items-center gap-4 bg-slate-800 p-4 rounded-xl border border-slate-700 w-full md:w-auto">
+                        <div>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Username</p>
+                            <span className="font-mono text-emerald-400 font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 block">
+                                {tsoAccount.username}
+                            </span>
+                        </div>
+                        <div className="hidden sm:block h-10 w-px bg-slate-700"></div>
+                        <div>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Password</p>
+                            <span className="font-mono text-white font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 block">
+                                {tsoAccount.password}
+                            </span>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 w-full md:w-auto flex items-center gap-3">
+                        <div className="p-2 bg-slate-900 rounded-lg">
+                            <Lock className="h-5 w-5 text-slate-400" />
+                        </div>
+                        <p className="text-sm text-slate-300 font-medium">
+                            No access assigned.<br/>
+                            <span className="text-xs text-slate-400 font-normal">Please contact your instructor.</span>
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            {/* COURSES SECTION */}
             <div className="mb-8">
-                <h2 className="text-2xl font-bold text-slate-900">Reprendre l&apos;apprentissage</h2>
-                <p className="text-slate-500 mt-1">Voici les modules de votre parcours.</p>
+                <h2 className="text-2xl font-bold text-slate-900">Resume Learning</h2>
+                <p className="text-slate-500 mt-1">Here are the modules in your learning path.</p>
             </div>
 
             {courses.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center shadow-sm">
                     <BookOpen className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-                    <h3 className="text-lg font-bold text-slate-900">Aucun cours disponible</h3>
-                    <p className="text-sm text-slate-500 mt-1">Les modules d'apprentissage apparaîtront ici prochainement.</p>
+                    <h3 className="text-lg font-bold text-slate-900">No courses available</h3>
+                    <p className="text-sm text-slate-500 mt-1">Learning modules will appear here soon.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {courses.map((course, index) => {
-                        // Aplatir toutes les leçons pour les calculs
                         const allLessons = course.chapters.flatMap(chap => chap.lessons);
                         const totalLessons = allLessons.length;
-
-                        // Calcul de la progression
                         const completedLessons = allLessons.filter(l => l.lessonProgress?.[0]?.isCompleted);
                         const progress = totalLessons === 0 ? 0 : Math.round((completedLessons.length / totalLessons) * 100);
-
-                        // Déterminer la prochaine leçon à faire (la première qui n'est pas terminée)
                         const nextUncompletedLesson = allLessons.find(l => !l.lessonProgress?.[0]?.isCompleted);
 
-                        // Construire l'URL du bouton
                         let href = `/dashboard/courses/${course.id}`;
                         if (nextUncompletedLesson) {
-                            // S'il reste des leçons à faire, on pointe vers la première non terminée
                             href = `/dashboard/courses/${course.id}?lessonId=${nextUncompletedLesson.id}`;
                         } else if (allLessons.length > 0) {
-                            // Si tout est terminé, on renvoie vers la première leçon pour révision
                             href = `/dashboard/courses/${course.id}?lessonId=${allLessons[0].id}`;
                         }
 
-                        // Simulation de verrouillage (à adapter si tu as une logique d'achat)
                         const isLocked = false;
-
-                        // Gradients pour les images de fallback
                         const gradients = [
                             "from-blue-500 to-cyan-400",
                             "from-slate-700 to-slate-900",
@@ -101,14 +139,13 @@ export default async function DashboardPage() {
                                     isLocked ? "opacity-75 grayscale-[20%]" : "hover:shadow-md hover:-translate-y-1"
                                 }`}
                             >
-                                {/* En-tête avec Image ou Gradient */}
                                 {course.imageUrl ? (
                                     <div className="h-40 w-full relative">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" />
                                         <div className="absolute top-4 right-4">
                                             <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                                <span>{progress === 100 ? "Terminé" : "Disponible"}</span>
+                                                <span>{progress === 100 ? "Completed" : "Available"}</span>
                                             </Badge>
                                         </div>
                                     </div>
@@ -118,7 +155,7 @@ export default async function DashboardPage() {
                                             <Terminal className="h-8 w-8 text-white drop-shadow-md" />
                                         </div>
                                         <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                            <span>{progress === 100 ? "Terminé" : "Disponible"}</span>
+                                            <span>{progress === 100 ? "Completed" : "Available"}</span>
                                         </Badge>
                                     </div>
                                 )}
@@ -129,12 +166,12 @@ export default async function DashboardPage() {
                                     </h3>
 
                                     <p className="text-xs text-slate-500 mb-6 line-clamp-2">
-                                        {course.description || "Aucune description pour ce module."}
+                                        {course.description || "No description for this module."}
                                     </p>
 
                                     <div className="mb-6 mt-auto">
                                         <div className="flex justify-between text-xs font-semibold text-slate-600 mb-2">
-                                            <span>Progression</span>
+                                            <span>Progress</span>
                                             <span className={progress === 100 ? "text-emerald-600" : ""}>{progress}%</span>
                                         </div>
                                         <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
@@ -145,7 +182,6 @@ export default async function DashboardPage() {
                                         </div>
                                     </div>
 
-                                    {/* Bouton dynamique */}
                                     <Link href={href} className="w-full">
                                         <Button
                                             className={`w-full rounded-xl shadow-sm text-white ${
@@ -155,11 +191,11 @@ export default async function DashboardPage() {
                                             }`}
                                         >
                                             {progress === 100 ? (
-                                                <><CheckCircle className="mr-2 h-4 w-4" /> Terminé (Revoir)</>
+                                                <><CheckCircle className="mr-2 h-4 w-4" /> Completed (Review)</>
                                             ) : progress > 0 ? (
-                                                <><Play className="mr-2 h-4 w-4 fill-current" /> Continuer</>
+                                                <><Play className="mr-2 h-4 w-4 fill-current" /> Continue</>
                                             ) : (
-                                                <><Play className="mr-2 h-4 w-4 fill-current" /> Démarrer</>
+                                                <><Play className="mr-2 h-4 w-4 fill-current" /> Start</>
                                             )}
                                         </Button>
                                     </Link>
