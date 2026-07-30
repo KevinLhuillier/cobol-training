@@ -37,8 +37,26 @@ export async function PUT(
             return NextResponse.json({ error: "Unauthorized - Invalid or expired token" }, { status: 401 });
         }
 
-        // 3. Mise à jour ou création de la progression avec le VRAI userId
-        // Upsert = Met à jour si la ligne existe, sinon la crée
+        // 3. Préparation dynamique des données selon le type d'action
+        const dataToUpdate: any = {};
+        const dataToCreate: any = { userId, lessonId };
+
+        if (exerciseAnswer !== undefined) {
+            // 🟢 CAS 1 : Soumission d'un exercice
+            dataToUpdate.exerciseAnswer = exerciseAnswer;
+            dataToUpdate.exerciseStatus = "PENDING_REVIEW";
+            dataToUpdate.isCompleted = false; // Reste faux tant que le formateur ne valide pas
+
+            dataToCreate.exerciseAnswer = exerciseAnswer;
+            dataToCreate.exerciseStatus = "PENDING_REVIEW";
+            dataToCreate.isCompleted = false;
+        } else if (isCompleted !== undefined) {
+            // 🟢 CAS 2 : Validation d'une leçon standard (Vidéo)
+            dataToUpdate.isCompleted = isCompleted;
+            dataToCreate.isCompleted = isCompleted;
+        }
+
+        // 4. Mise à jour ou création de la progression
         const lessonProgress = await prisma.lessonProgress.upsert({
             where: {
                 userId_lessonId: {
@@ -46,16 +64,8 @@ export async function PUT(
                     lessonId: lessonId,
                 }
             },
-            update: {
-                isCompleted,
-                exerciseAnswer
-            },
-            create: {
-                userId,
-                lessonId,
-                isCompleted,
-                exerciseAnswer
-            }
+            update: dataToUpdate,
+            create: dataToCreate
         });
 
         return NextResponse.json(lessonProgress, { status: 200 });
