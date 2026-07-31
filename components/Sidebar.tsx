@@ -11,7 +11,7 @@ export default function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
 
     const menuItems = [
         { icon: LayoutGrid, label: "Dashboard", href: "/dashboard" },
-        { icon: Dumbbell, label: "Exercises", href: "/dashboard/exercises" },
+        { icon: Dumbbell, label: "Exercises", href: "/dashboard/review" },
         ...(isAdmin ? [{ icon: Lock, label: "Admin", href: "/admin" }] : []),
         { icon: Settings, label: "Paramètres", href: "/dashboard/settings" },
     ];

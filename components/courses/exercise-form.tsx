@@ -12,10 +12,11 @@ interface ExerciseFormProps {
     initialAnswer?: string | null;
     isCompleted: boolean;
     nextLessonId?: string;
-    exerciseStatus?: string | null; // 🟢 Ajout du statut
+    exerciseStatus?: string | null;
+    reviewFeedback?: string | null;
 }
 
-export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isCompleted, nextLessonId, exerciseStatus }: ExerciseFormProps) {
+export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isCompleted, nextLessonId, exerciseStatus, reviewFeedback }: ExerciseFormProps) {
     const router = useRouter();
     const [answer, setAnswer] = useState(initialAnswer || "");
     const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +78,18 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                     </span>
                 )}
             </div>
+
+            {reviewFeedback && (
+                <div className="mb-6 p-4 bg-blue-50/50 border border-blue-100 rounded-xl relative overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
+                    <h4 className="text-sm font-bold text-blue-900 flex items-center mb-1">
+                        Formateur
+                    </h4>
+                    <p className="text-sm text-blue-800 whitespace-pre-wrap">
+                        {reviewFeedback}
+                    </p>
+                </div>
+            )}
 
             <form onSubmit={onSubmit} className="space-y-4">
                 {error && (
