@@ -51,6 +51,7 @@ export default function RegisterPage() {
                     data: {
                         name: name,
                     },
+                    emailRedirectTo: `${window.location.origin}/auth/login`
                 },
             });
 
