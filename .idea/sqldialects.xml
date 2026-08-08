@@ -2,5 +2,6 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/supabase/migrations/20260802055631_init.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/supabase/migrations/20260808120610_add_welcome_email_flag.sql" dialect="GenericSQL" />
   </component>
 </project>
