@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:mysql://localhost:3306/cobol-training</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="supabase" uuid="eb4f50d0-bdaa-4822-b875-bb910f2e0927">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://db.tozaebgfofjzjhhfnnpi.supabase.co:5432/postgres</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

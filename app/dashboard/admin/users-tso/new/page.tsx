@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Terminal, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 export default function NewTsoUserPage() {
     const router = useRouter();
+    const supabase = createClient();
+
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -19,25 +23,28 @@ export default function NewTsoUserPage() {
             setIsLoading(true);
             setError("");
 
-            const response = await fetch("/api/admin/tso-users", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ username, password }),
-            });
+            // 🟢 Insertion directe et sécurisée dans Supabase
+            const { error: insertError } = await supabase
+                .from("tso_users")
+                .insert({
+                    username: username.trim().toUpperCase(),
+                    password: password.trim(),
+                    status: "AVAILABLE" // Statut par défaut à la création
+                });
 
-            if (!response.ok) {
-                const errorMessage = await response.text();
-                throw new Error(errorMessage || "Something went wrong.");
+            if (insertError) {
+                // Gestion spécifique si le TSO existe déjà (violation de contrainte d'unicité PostgreSQL)
+                if (insertError.code === '23505') {
+                    throw new Error("This TSO username already exists in the database.");
+                }
+                throw insertError;
             }
 
-            // Rafraîchir les données et rediriger vers la liste
+            // Rediriger vers la liste et rafraîchir
+            router.push("/dashboard/admin/users-tso");
             router.refresh();
-            router.push("/admin/users-tso");
 
         } catch (err) {
-            // 🟢 Correction ici : on retire le ": any" et on vérifie le type
             if (err instanceof Error) {
                 setError(err.message);
             } else {
@@ -54,8 +61,9 @@ export default function NewTsoUserPage() {
 
                 {/* EN-TÊTE */}
                 <div className="mb-8 flex items-center gap-4">
+                    {/* 🟢 Lien mis à jour */}
                     <Link
-                        href="/admin/users-tso"
+                        href="/dashboard/admin/users-tso"
                         className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm shrink-0"
                     >
                         <ArrowLeft className="h-5 w-5" />
@@ -124,7 +132,8 @@ export default function NewTsoUserPage() {
                         </div>
 
                         <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
-                            <Link href="/admin/users-tso">
+                            {/* 🟢 Lien mis à jour */}
+                            <Link href="/dashboard/admin/users-tso">
                                 <Button type="button" variant="ghost" disabled={isLoading} className="text-slate-500">
                                     Cancel
                                 </Button>

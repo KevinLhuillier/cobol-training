@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 interface LessonFormProps {
     courseId: string;
@@ -11,6 +13,7 @@ interface LessonFormProps {
 
 export default function LessonForm({ courseId, chapterId }: LessonFormProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -25,36 +28,43 @@ export default function LessonForm({ courseId, chapterId }: LessonFormProps) {
         try {
             setIsLoading(true);
 
-            const response = await fetch(
-                `/api/admin/courses/${courseId}/chapters/${chapterId}/lessons`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ title }),
-                }
-            );
+            // 1. Trouver la position de la dernière leçon du chapitre
+            const { data: lastLesson } = await supabase
+                .from("lessons")
+                .select("position")
+                .eq("chapter_id", chapterId)
+                .order("position", { ascending: false })
+                .limit(1)
+                .single();
 
-            if (!response.ok) {
-                throw new Error("Something went wrong");
-            }
+            const newPosition = lastLesson ? lastLesson.position + 1 : 1;
+
+            // 2. Insérer la nouvelle leçon avec Supabase
+            const { error: insertError } = await supabase
+                .from("lessons")
+                .insert({
+                    title: title.trim(),
+                    chapter_id: chapterId,
+                    position: newPosition,
+                    is_free_preview: false
+                });
+
+            if (insertError) throw insertError;
 
             // Réinitialisation et fermeture du formulaire
             setTitle("");
             toggleEdit();
 
-            // Force Next.js à rafraîchir les données du serveur (Server Component)
+            // Force Next.js à rafraîchir les données du serveur
             router.refresh();
         } catch (error) {
-            console.error(error);
-            alert("Une erreur est survenue lors de la création de la leçon.");
+            console.error("Error creating lesson:", error);
+            alert("An error occurred while creating the lesson.");
         } finally {
             setIsLoading(false);
         }
     };
 
-    // 1. État : Formulaire d'édition ouvert
     if (isEditing) {
         return (
             <form onSubmit={onSubmit} className="space-y-4 mt-4 w-full">
@@ -73,7 +83,7 @@ export default function LessonForm({ courseId, chapterId }: LessonFormProps) {
                         type="submit"
                         className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-9 px-4 text-sm font-bold transition-colors disabled:opacity-50"
                     >
-                        Create
+                        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
                     </button>
                     <button
                         disabled={isLoading}
@@ -88,7 +98,6 @@ export default function LessonForm({ courseId, chapterId }: LessonFormProps) {
         );
     }
 
-    // 2. État : Bouton par défaut
     return (
         <button
             onClick={toggleEdit}

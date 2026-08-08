@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Loader2 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 interface ChapterDeleteButtonProps {
     courseId: string;
@@ -12,29 +13,64 @@ interface ChapterDeleteButtonProps {
 
 export function ChapterDeleteButton({ courseId, chapterId, chapterTitle }: ChapterDeleteButtonProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [isLoading, setIsLoading] = useState(false);
 
     const onDelete = async () => {
-        // Confirmation simple pour éviter les suppressions accidentelles
         const isConfirmed = window.confirm(
-            `Êtes-vous sûr de vouloir supprimer le chapitre "${chapterTitle}" et toutes ses leçons ? Cette action est irréversible.`
+            `Are you sure you want to delete the chapter "${chapterTitle}" and all its lessons? This action cannot be undone.`
         );
 
         if (!isConfirmed) return;
 
         try {
             setIsLoading(true);
-            const response = await fetch(`/api/admin/courses/${courseId}/chapters/${chapterId}`, {
-                method: "DELETE",
-            });
 
-            if (!response.ok) {
-                throw new Error("Failed to delete chapter");
+            // 1. Suppression du chapitre
+            const { error: deleteError } = await supabase
+                .from("chapters")
+                .delete()
+                .eq("id", chapterId)
+                .eq("course_id", courseId);
+
+            if (deleteError) throw deleteError;
+
+            // 2. Récupération des chapitres restants, triés par leur ancienne position
+            const { data: remainingChapters, error: fetchError } = await supabase
+                .from("chapters")
+                .select("id, position")
+                .eq("course_id", courseId)
+                .order("position", { ascending: true });
+
+            if (fetchError) throw fetchError;
+
+            // 3. Recalcul des positions s'il reste des chapitres
+            if (remainingChapters && remainingChapters.length > 0) {
+                // On prépare un tableau de requêtes d'update
+                const updatePromises = remainingChapters.map((chapter, index) => {
+                    const expectedPosition = index + 1;
+
+                    // On ne fait une requête QUE si la position doit être corrigée
+                    if (chapter.position !== expectedPosition) {
+                        return supabase
+                            .from("chapters")
+                            .update({ position: expectedPosition })
+                            .eq("id", chapter.id);
+                    }
+                    return null;
+                }).filter(Boolean); // Retire les valeurs "null"
+
+                // On exécute toutes les mises à jour en parallèle pour la rapidité
+                if (updatePromises.length > 0) {
+                    await Promise.all(updatePromises);
+                }
             }
 
-            router.refresh(); // Rafraîchit la page pour faire disparaître le chapitre
+            // Rafraîchit l'interface utilisateur
+            router.refresh();
         } catch (error) {
-            alert("Une erreur est survenue lors de la suppression.");
+            console.error("Delete error:", error);
+            alert("An error occurred while deleting the chapter and updating positions.");
         } finally {
             setIsLoading(false);
         }

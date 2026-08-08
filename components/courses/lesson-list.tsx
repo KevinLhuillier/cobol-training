@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Pencil, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { LessonDeleteButton } from "./lesson-delete-button";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 interface LessonListProps {
     courseId: string;
@@ -20,6 +22,7 @@ interface LessonListProps {
 
 export function LessonList({ courseId, chapterId, items }: LessonListProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [isUpdating, setIsUpdating] = useState(false);
 
     const onMove = async (currentIndex: number, direction: "up" | "down") => {
@@ -30,23 +33,22 @@ export function LessonList({ courseId, chapterId, items }: LessonListProps) {
         const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
         const targetItem = items[targetIndex];
 
-        const bulkUpdateData = [
-            { id: itemToMove.id, position: targetItem.position },
-            { id: targetItem.id, position: itemToMove.position }
-        ];
-
         try {
             setIsUpdating(true);
-            const response = await fetch(`/api/admin/courses/${courseId}/chapters/${chapterId}/lessons/reorder`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ list: bulkUpdateData })
-            });
 
-            if (!response.ok) throw new Error("Failed to reorder");
+            // 🟢 Lancement des deux updates en parallèle
+            const [res1, res2] = await Promise.all([
+                supabase.from("lessons").update({ position: targetItem.position }).eq("id", itemToMove.id),
+                supabase.from("lessons").update({ position: itemToMove.position }).eq("id", targetItem.id)
+            ]);
+
+            if (res1.error) throw res1.error;
+            if (res2.error) throw res2.error;
+
             router.refresh();
         } catch (error) {
-            alert("Erreur lors de la réorganisation.");
+            console.error("Reorder error:", error);
+            alert("An error occurred while reordering lessons.");
         } finally {
             setIsUpdating(false);
         }
@@ -87,7 +89,8 @@ export function LessonList({ courseId, chapterId, items }: LessonListProps) {
                             <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 border-none">Free Preview</Badge>
                         )}
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Link href={`/admin/courses/${courseId}/chapters/${chapterId}/lessons/${lesson.id}`} className="p-1.5 text-slate-400 hover:text-slate-900 transition-colors rounded-md hover:bg-slate-200" title="Edit Lesson">
+                            {/* 🟢 Lien mis à jour vers l'espace Dashboard */}
+                            <Link href={`/dashboard/admin/courses/${courseId}/chapters/${chapterId}/lessons/${lesson.id}`} className="p-1.5 text-slate-400 hover:text-slate-900 transition-colors rounded-md hover:bg-slate-200" title="Edit Lesson">
                                 <Pencil className="h-3.5 w-3.5" />
                             </Link>
                             <LessonDeleteButton courseId={courseId} chapterId={chapterId} lessonId={lesson.id} lessonTitle={lesson.title} />

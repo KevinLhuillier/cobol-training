@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Loader2, X } from "lucide-react";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 interface LessonTitleFormProps {
     initialData: {
         title: string;
-        type: "VIDEO" | "EXERCISE" | "QUIZ"; // 🟢 Ajout du type dans l'interface
+        type: "VIDEO" | "EXERCISE" | "QUIZ";
     };
     courseId: string;
     chapterId: string;
@@ -16,6 +18,7 @@ interface LessonTitleFormProps {
 
 export function LessonTitleForm({ initialData, courseId, chapterId, lessonId }: LessonTitleFormProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(initialData.title);
     const [type, setType] = useState<"VIDEO" | "EXERCISE" | "QUIZ">(initialData.type);
@@ -24,31 +27,36 @@ export function LessonTitleForm({ initialData, courseId, chapterId, lessonId }: 
     const toggleEdit = () => {
         setIsEditing((prev) => !prev);
         setTitle(initialData.title); // Reset if cancelled
-        setType(initialData.type);   // 🟢 Reset du type avec la valeur initiale
+        setType(initialData.type);
     };
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // 🟢 On annule si le titre est vide, ou si RIEN n'a changé (ni le titre, ni le type)
         if (!title.trim() || (title === initialData.title && type === initialData.type)) {
             return toggleEdit();
         }
 
         try {
             setIsLoading(true);
-            const response = await fetch(`/api/admin/courses/${courseId}/chapters/${chapterId}/lessons/${lessonId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, type }),
-            });
 
-            if (!response.ok) throw new Error("Something went wrong");
+            // 🟢 Mise à jour directe et sécurisée dans Supabase
+            const { error } = await supabase
+                .from("lessons")
+                .update({
+                    title: title.trim(),
+                    type: type
+                })
+                .eq("id", lessonId)
+                .eq("chapter_id", chapterId); // Sécurité supplémentaire
+
+            if (error) throw error;
 
             toggleEdit();
             router.refresh();
         } catch (error) {
-            alert("Une erreur est survenue.");
+            console.error("Title update error:", error);
+            alert("An error occurred while updating the lesson title and type.");
         } finally {
             setIsLoading(false);
         }
@@ -56,7 +64,6 @@ export function LessonTitleForm({ initialData, courseId, chapterId, lessonId }: 
 
     if (isEditing) {
         return (
-            // 🟢 Passage en flex-wrap au cas où l'écran serait un peu petit
             <form onSubmit={onSubmit} className="flex flex-wrap items-center gap-2">
                 <input
                     type="text"
@@ -67,7 +74,6 @@ export function LessonTitleForm({ initialData, courseId, chapterId, lessonId }: 
                     autoFocus
                 />
 
-                {/* 🟢 Le menu déroulant pour le type */}
                 <select
                     value={type}
                     onChange={(e) => setType(e.target.value as "VIDEO" | "EXERCISE" | "QUIZ")}
@@ -95,7 +101,6 @@ export function LessonTitleForm({ initialData, courseId, chapterId, lessonId }: 
         <div className="flex items-center gap-x-3">
             <div className="flex items-center gap-2">
                 <p className="text-slate-900 font-medium">{initialData.title}</p>
-                {/* 🟢 Petit badge pour repérer le type de leçon d'un coup d'œil */}
                 <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 rounded-md">
                     {initialData.type}
                 </span>

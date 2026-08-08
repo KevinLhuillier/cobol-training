@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 interface CoursePublishButtonProps {
     courseId: string;
@@ -11,22 +13,28 @@ interface CoursePublishButtonProps {
 
 export function CoursePublishButton({ courseId, isPublished }: CoursePublishButtonProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [isLoading, setIsLoading] = useState(false);
 
     const onClick = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch(`/api/admin/courses/${courseId}/publish`, {
-                method: "PATCH",
-            });
 
-            if (!response.ok) {
-                throw new Error("Failed to update publication status");
+            // 🟢 Bascule (toggle) du statut de publication directement dans Supabase
+            const { error } = await supabase
+                .from("courses")
+                .update({ is_published: !isPublished })
+                .eq("id", courseId);
+
+            if (error) {
+                throw error;
             }
 
-            router.refresh(); // Met à jour l'interface (badge Draft/Published)
+            // Met à jour l'interface (rafraîchit le badge Draft/Published de la page parente)
+            router.refresh();
         } catch (error) {
-            alert("Une erreur est survenue lors du changement de statut.");
+            console.error("Publish toggle error:", error);
+            alert("An error occurred while changing the publication status.");
         } finally {
             setIsLoading(false);
         }

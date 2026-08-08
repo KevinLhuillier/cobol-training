@@ -13,7 +13,7 @@ export function DashboardLayoutWrapper({ header, sidebar, children }: DashboardL
     const pathname = usePathname();
 
     // On vérifie si on est sur la page de lecture d'un cours
-    const isCoursePlayerPage = pathname?.includes("/courses/");
+    const isCoursePlayerPage = pathname?.includes("/dashboard/courses/");
 
     // Si on est sur le cours : on affiche directement l'enfant,
     // car ton composant CoursePlayer gère déjà son propre plein écran et son design.

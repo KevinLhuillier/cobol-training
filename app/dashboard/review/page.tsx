@@ -1,43 +1,75 @@
-import { prisma } from "@/prisma/client";
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import { redirect } from "next/navigation";
 import { Terminal, User, BookOpen, Check } from "lucide-react";
 import { ReviewActionButtons } from "@/components/review-action-button";
+// 🟢 Import du client serveur Supabase
+import { createClient } from "@/utils/supabase/server";
 
 export default async function AdminReviewsPage() {
-    // Admin session verification
-    const cookieStore = await cookies();
-    const token = cookieStore.get("session_token")?.value;
-    if (!token) return redirect("/login");
+    const supabase = await createClient();
 
-    try {
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        await jwtVerify(token, secret);
-        // Add admin role verification here if needed
-    } catch {
-        return redirect("/login");
+    // 1. SÉCURITÉ : Vérification de la session et du rôle Admin
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return redirect("/auth/login");
+
+    const { data: profile } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+    if (!profile || profile.role !== "ADMIN") {
+        return redirect("/dashboard");
     }
 
-    // Fetch all pending exercises with their relations
-    const pendingReviews = await prisma.lessonProgress.findMany({
-        where: {
-            exerciseStatus: "PENDING_REVIEW"
-        },
-        include: {
-            lesson: {
-                include: {
-                    chapter: {
-                        include: {
-                            course: true
-                        }
-                    }
-                }
-            },
-            // 🟢 We include the user to get their name
-            user: true
-        },
-        orderBy: { updatedAt: "asc" } // Oldest first
+    // 2. FETCH SUPABASE : Récupération des exercices en attente avec toutes les relations
+    const { data: rawReviews, error } = await supabase
+        .from("lesson_progress")
+        .select(`
+            id,
+            updatedAt:updated_at,
+            exerciseAnswer:exercise_answer,
+            userId:user_id,
+            user:users (
+                name,
+                email
+            ),
+            lesson:lessons (
+                title,
+                chapter:chapters (
+                    title,
+                    course:courses (
+                        title
+                    )
+                )
+            )
+        `)
+        .eq("exercise_status", "PENDING_REVIEW")
+        .order("updated_at", { ascending: true }); // Les plus anciens en premier
+
+    if (error) {
+        console.error("Erreur récupération reviews:", error);
+    }
+
+    // 3. FORMATAGE ET TYPAGE DES DONNÉES
+    // Supabase renvoie des objets imbriqués qu'on formate pour correspondre à ton JSX
+    const pendingReviews = (rawReviews || []).map((review: any) => {
+        // Comme les relations "un-à-un" peuvent être retournées comme tableaux par PostgREST
+        // selon la configuration des clés étrangères, on sécurise l'extraction.
+        const student = Array.isArray(review.user) ? review.user[0] : review.user;
+        const lesson = Array.isArray(review.lesson) ? review.lesson[0] : review.lesson;
+        const chapter = lesson?.chapter ? (Array.isArray(lesson.chapter) ? lesson.chapter[0] : lesson.chapter) : null;
+        const course = chapter?.course ? (Array.isArray(chapter.course) ? chapter.course[0] : chapter.course) : null;
+
+        return {
+            id: review.id,
+            updatedAt: review.updatedAt,
+            exerciseAnswer: review.exerciseAnswer,
+            userId: review.userId,
+            studentName: student?.name || student?.email || review.userId,
+            courseTitle: course?.title || "Unknown Course",
+            chapterTitle: chapter?.title || "Unknown Chapter",
+            lessonTitle: lesson?.title || "Unknown Lesson"
+        };
     });
 
     return (
@@ -78,16 +110,15 @@ export default async function AdminReviewsPage() {
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-wider">
                                             <BookOpen className="h-3.5 w-3.5" />
-                                            {review.lesson.chapter.course.title}
+                                            {review.courseTitle}
                                         </div>
                                         <h3 className="text-lg font-bold text-slate-900">
-                                            {review.lesson.chapter.title} - {review.lesson.title}
+                                            {review.chapterTitle} - {review.lessonTitle}
                                         </h3>
                                     </div>
                                     <div className="flex items-center gap-2 text-sm font-medium text-slate-600 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
                                         <User className="h-4 w-4 text-slate-400" />
-                                        {/* 🟢 Display the user's name (fallback to ID if name is missing) */}
-                                        <span>Student: <span className="font-bold text-slate-900">{review.user?.name || review.userId}</span></span>
+                                        <span>Student: <span className="font-bold text-slate-900">{review.studentName}</span></span>
                                     </div>
                                 </div>
 

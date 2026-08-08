@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Loader2 } from "lucide-react";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 interface LessonDeleteButtonProps {
     courseId: string;
@@ -13,22 +15,56 @@ interface LessonDeleteButtonProps {
 
 export function LessonDeleteButton({ courseId, chapterId, lessonId, lessonTitle }: LessonDeleteButtonProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [isLoading, setIsLoading] = useState(false);
 
     const onDelete = async () => {
-        if (!window.confirm(`Supprimer la leçon "${lessonTitle}" ? Action irréversible.`)) return;
+        // Traduction en anglais du message d'alerte
+        if (!window.confirm(`Are you sure you want to delete the lesson "${lessonTitle}"? This action cannot be undone.`)) return;
 
         try {
             setIsLoading(true);
-            const response = await fetch(`/api/admin/courses/${courseId}/chapters/${chapterId}/lessons/${lessonId}`, {
-                method: "DELETE",
-            });
 
-            if (!response.ok) throw new Error("Failed to delete lesson");
+            // 1. Suppression de la leçon
+            const { error: deleteError } = await supabase
+                .from("lessons")
+                .delete()
+                .eq("id", lessonId)
+                .eq("chapter_id", chapterId); // On ajoute le chapter_id par sécurité
+
+            if (deleteError) throw deleteError;
+
+            // 2. Récupération des leçons restantes du chapitre, triées par ancienne position
+            const { data: remainingLessons, error: fetchError } = await supabase
+                .from("lessons")
+                .select("id, position")
+                .eq("chapter_id", chapterId)
+                .order("position", { ascending: true });
+
+            if (fetchError) throw fetchError;
+
+            // 3. Recalcul des positions
+            if (remainingLessons && remainingLessons.length > 0) {
+                const updatePromises = remainingLessons.map((lesson, index) => {
+                    const expectedPosition = index + 1;
+                    if (lesson.position !== expectedPosition) {
+                        return supabase
+                            .from("lessons")
+                            .update({ position: expectedPosition })
+                            .eq("id", lesson.id);
+                    }
+                    return null;
+                }).filter(Boolean);
+
+                if (updatePromises.length > 0) {
+                    await Promise.all(updatePromises);
+                }
+            }
 
             router.refresh();
         } catch (error) {
-            alert("Une erreur est survenue.");
+            console.error("Lesson delete error:", error);
+            alert("An error occurred while deleting the lesson.");
         } finally {
             setIsLoading(false);
         }

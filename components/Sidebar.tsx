@@ -5,21 +5,21 @@ import { usePathname } from "next/navigation";
 import { Lock, Dumbbell, Settings, LayoutGrid } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 
-// 🟢 On ajoute la prop isAdmin (par défaut à false par sécurité)
+// La prop isAdmin est désormais injectée par le Layout serveur Supabase
 export default function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
     const pathname = usePathname();
 
     const menuItems = [
         { icon: LayoutGrid, label: "Dashboard", href: "/dashboard" },
-        { icon: Dumbbell, label: "Exercises", href: "/dashboard/review" },
-        ...(isAdmin ? [{ icon: Lock, label: "Admin", href: "/admin" }] : []),
-        { icon: Settings, label: "Paramètres", href: "/dashboard/settings" },
+        ...(isAdmin ? [{ icon: Dumbbell, label: "Exercises", href: "/dashboard/review" }] : []),
+        ...(isAdmin ? [{ icon: Lock, label: "Admin", href: "/dashboard/admin" }] : []),
+        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
     ];
 
     return (
         <aside className="w-full lg:w-[280px] xl:w-[320px] bg-white rounded-3xl shadow-sm p-6 flex flex-col shrink-0 lg:sticky lg:top-8 lg:max-h-[calc(100vh-4rem)] border border-slate-100">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-3">
-                Menu Principal
+                Main Menu
             </h3>
 
             <nav className="flex flex-col gap-2">
