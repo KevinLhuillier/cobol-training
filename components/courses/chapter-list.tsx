@@ -6,8 +6,9 @@ import Link from "next/link";
 import { Pencil, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ChapterDeleteButton } from "./chapter-delete-button";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
-// On définit la forme des données que le composant va recevoir
 interface ChapterListProps {
     courseId: string;
     items: {
@@ -20,36 +21,33 @@ interface ChapterListProps {
 
 export function ChapterList({ courseId, items }: ChapterListProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [isUpdating, setIsUpdating] = useState(false);
 
     const onMove = async (currentIndex: number, direction: "up" | "down") => {
-        // Sécurité anti-débordement
         if (direction === "up" && currentIndex === 0) return;
         if (direction === "down" && currentIndex === items.length - 1) return;
 
-        // On identifie le chapitre à bouger et celui avec lequel il va échanger sa place
         const itemToMove = items[currentIndex];
         const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
         const targetItem = items[targetIndex];
 
-        // On prépare le tableau pour l'API (on échange leurs positions)
-        const bulkUpdateData = [
-            { id: itemToMove.id, position: targetItem.position },
-            { id: targetItem.id, position: itemToMove.position }
-        ];
-
         try {
             setIsUpdating(true);
-            const response = await fetch(`/api/admin/courses/${courseId}/chapters/reorder`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ list: bulkUpdateData })
-            });
 
-            if (!response.ok) throw new Error("Failed to reorder");
+            // 🟢 L'API JS de Supabase ne fait pas de Bulk Update facilement.
+            // On lance donc les deux mises à jour en parallèle.
+            const [res1, res2] = await Promise.all([
+                supabase.from("chapters").update({ position: targetItem.position }).eq("id", itemToMove.id),
+                supabase.from("chapters").update({ position: itemToMove.position }).eq("id", targetItem.id)
+            ]);
+
+            if (res1.error) throw res1.error;
+            if (res2.error) throw res2.error;
 
             router.refresh();
         } catch (error) {
+            console.error("Erreur de réorganisation:", error);
             alert("Une erreur est survenue lors de la réorganisation.");
         } finally {
             setIsUpdating(false);
@@ -66,7 +64,6 @@ export function ChapterList({ courseId, items }: ChapterListProps) {
 
     return (
         <div className="space-y-3 mt-4 relative">
-            {/* Overlay de chargement pendant la réorganisation */}
             {isUpdating && (
                 <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-xl">
                     <Loader2 className="h-6 w-6 animate-spin text-slate-900" />
@@ -79,8 +76,6 @@ export function ChapterList({ courseId, items }: ChapterListProps) {
                     className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 group"
                 >
                     <div className="flex items-center gap-3">
-
-                        {/* Les flèches remplacent le GripVertical */}
                         <div className="flex flex-col gap-0.5">
                             <button
                                 onClick={() => onMove(index, "up")}
@@ -102,8 +97,9 @@ export function ChapterList({ courseId, items }: ChapterListProps) {
                     </div>
 
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {/* 🟢 Le lien pointe maintenant vers /dashboard/admin/... */}
                         <Link
-                            href={`/admin/courses/${courseId}/chapters/${chapter.id}`}
+                            href={`/dashboard/admin/courses/${courseId}/chapters/${chapter.id}`}
                             className="p-1.5 text-slate-400 hover:text-slate-900 transition-colors rounded-md hover:bg-slate-200"
                             title="Edit Chapter"
                         >

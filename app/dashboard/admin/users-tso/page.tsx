@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import {
     Terminal,
@@ -6,27 +7,69 @@ import {
     Users,
     CheckCircle,
     Server,
-    Pencil,
-    Trash2
+    Pencil
 } from "lucide-react";
-import { prisma } from "@/prisma/client";
+// 🟢 Import du client serveur Supabase
+import { createClient } from "@/utils/supabase/server";
 import { TsoDeleteButton } from "@/components/tso-delete-button";
 
 export default async function AdminTsoUsersPage() {
-    // 1. Fetch TSO accounts from the database
-    const tsoUsers = await prisma.tsoUser.findMany({
-        include: {
-            assignedToUser: true
-        },
-        orderBy: { username: "asc" }
+    const supabase = await createClient();
+
+    // 1. SÉCURITÉ : Vérification stricte du rôle Admin
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return redirect("/auth/login");
+
+    const { data: profile } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+    if (!profile || profile.role !== "ADMIN") {
+        return redirect("/dashboard");
+    }
+
+    // 2. FETCH SUPABASE : Récupération des comptes TSO et de l'email de l'étudiant assigné
+    // L'alias `assignedToUser:users` permet de renommer la jointure pour que le code UI reste identique
+    const { data: tsoUsers, error } = await supabase
+        .from("tso_users")
+        .select(`
+            id,
+            username,
+            password,
+            status,
+            assignedToUser:users (
+                email,
+                name
+            )
+        `)
+        .order("username", { ascending: true });
+
+    if (error) {
+        console.error("Erreur récupération comptes TSO:", error);
+    }
+
+    // 3. Calcul des statistiques
+    // 3. Calcul des statistiques et formatage pour TypeScript
+    const formattedTsoUsers = (tsoUsers || []).map(tso => {
+        // Supabase peut renvoyer la jointure sous forme de tableau ou d'objet selon le schéma.
+        // On s'assure de récupérer le premier élément si c'est un tableau.
+        const user = Array.isArray(tso.assignedToUser)
+            ? tso.assignedToUser[0]
+            : tso.assignedToUser;
+
+        return {
+            ...tso,
+            assignedToUser: user as { email: string; name: string | null } | null
+        };
     });
 
-    // 2. Calculate global statistics
-    const totalAccounts = tsoUsers.length;
-    const availableAccounts = tsoUsers.filter(t => t.status === "AVAILABLE").length;
-    const assignedAccounts = tsoUsers.filter(t => t.status === "ASSIGNED").length;
+    const totalAccounts = formattedTsoUsers.length;
+    const availableAccounts = formattedTsoUsers.filter(t => t.status === "AVAILABLE").length;
+    const assignedAccounts = formattedTsoUsers.filter(t => t.status === "ASSIGNED").length;
 
-    // Helper to generate badges
+    // Helper pour générer les badges
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "AVAILABLE":
@@ -43,10 +86,10 @@ export default async function AdminTsoUsersPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans p-4 md:p-6 lg:p-8">
+        <div className="font-sans">
 
             {/* ADMIN HEADER */}
-            <header className="max-w-[1200px] w-full mx-auto mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <header className="mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className="h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-md">
                         <Terminal className="h-6 w-6 text-white" />
@@ -61,13 +104,13 @@ export default async function AdminTsoUsersPage() {
 
                 <div className="flex items-center gap-3">
                     <Link
-                        href="/admin"
+                        href="/dashboard/admin"
                         className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors px-4 py-2"
                     >
                         Back to admin
                     </Link>
                     <Link
-                        href="/admin/users-tso/new"
+                        href="/dashboard/admin/users-tso/new"
                         className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-10 px-5 text-sm font-medium transition-colors"
                     >
                         <Plus className="mr-2 h-4 w-4" />
@@ -76,7 +119,7 @@ export default async function AdminTsoUsersPage() {
                 </div>
             </header>
 
-            <main className="max-w-[1200px] w-full mx-auto">
+            <main className="w-full mx-auto">
 
                 {/* QUICK STATS */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -127,14 +170,14 @@ export default async function AdminTsoUsersPage() {
                             </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                            {tsoUsers.length === 0 ? (
+                            {formattedTsoUsers.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="p-8 text-center text-slate-500">
                                         No TSO accounts found. Click &quot;New Account&quot; to create one.
                                     </td>
                                 </tr>
                             ) : (
-                                tsoUsers.map((tso) => (
+                                formattedTsoUsers.map((tso) => (
                                     <tr key={tso.id} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
@@ -151,6 +194,7 @@ export default async function AdminTsoUsersPage() {
                                             {getStatusBadge(tso.status)}
                                         </td>
                                         <td className="p-4">
+                                            {/* Supabase renvoie les objets liés directement ! */}
                                             {tso.assignedToUser ? (
                                                 <p className="text-sm font-medium text-slate-900">{tso.assignedToUser.email}</p>
                                             ) : (
@@ -160,7 +204,7 @@ export default async function AdminTsoUsersPage() {
                                         <td className="p-4">
                                             <div className="flex items-center justify-end gap-2">
                                                 <Link
-                                                    href={`/admin/users-tso/${tso.id}`}
+                                                    href={`/dashboard/admin/users-tso/${tso.id}`}
                                                     className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                                                     title="Edit"
                                                 >

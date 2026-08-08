@@ -1,54 +1,65 @@
-import { prisma } from "@/prisma/client";
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Terminal, Lock, Play, BookOpen, CheckCircle } from "lucide-react";
 
+// 🟢 Import du client serveur Supabase
+import { createClient } from "@/utils/supabase/server";
+
 export default async function DashboardPage() {
-    // 1. Authentication: Retrieve cookie and userId
-    const cookieStore = await cookies();
-    const token = cookieStore.get("session_token")?.value;
+    const supabase = await createClient();
 
-    if (!token) return redirect("/login");
+    // 1. Authentification : Récupération de l'utilisateur
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    let userId: string;
-    try {
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const { payload } = await jwtVerify(token, secret);
-        userId = payload.userId as string;
-        if (!userId) return redirect("/login");
-    } catch (error) {
-        return redirect("/login");
+    if (authError || !user) {
+        return redirect("/auth/login");
     }
 
-    // 2. Retrieve the user's TSO account
-    const tsoAccount = await prisma.tsoUser.findFirst({
-        where: { assignedToUserId: userId }
-    });
+    // 2. Récupération du compte TSO (Si inexistant, Supabase renvoie null silencieusement grâce à single())
+    const { data: tsoAccount } = await supabase
+        .from("tso_users")
+        .select("username, password")
+        .eq("assigned_to_user_id", user.id)
+        .maybeSingle();
 
-    // 3. Retrieve courses WITH user progress
-    const courses = await prisma.course.findMany({
-        where: { isPublished: true },
-        orderBy: { createdAt: "desc" },
-        include: {
-            chapters: {
-                orderBy: { position: "asc" },
-                include: {
-                    lessons: {
-                        orderBy: { position: "asc" },
-                        include: {
-                            lessonProgress: {
-                                where: { userId: userId }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    });
+    // 3. Récupération des cours AVEC la progression
+    // On utilise des alias (ex: imageUrl:image_url) pour conserver le camelCase attendu par ton UI
+    const { data: rawCourses } = await supabase
+        .from("courses")
+        .select(`
+            id,
+            title,
+            description,
+            imageUrl:image_url,
+            isPublished:is_published,
+            chapters (
+                id,
+                position,
+                lessons (
+                    id,
+                    position,
+                    lessonProgress:lesson_progress (
+                        isCompleted:is_completed,
+                        userId:user_id
+                    )
+                )
+            )
+        `)
+        .eq("is_published", true)
+        .order("created_at", { ascending: false });
+
+    // 4. Tri des chapitres et leçons par position (PostgREST ne garantit pas l'ordre des relations imbriquées sans syntaxe complexe)
+    const courses = rawCourses?.map(course => {
+        const sortedChapters = [...course.chapters].sort((a, b) => a.position - b.position).map(chapter => {
+            return {
+                ...chapter,
+                lessons: [...chapter.lessons].sort((a, b) => a.position - b.position)
+            };
+        });
+        return { ...course, chapters: sortedChapters };
+    }) || [];
 
     return (
         <>
@@ -141,7 +152,6 @@ export default async function DashboardPage() {
                             >
                                 {course.imageUrl ? (
                                     <div className="h-40 w-full relative">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" />
                                         <div className="absolute top-4 right-4">
                                             <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">

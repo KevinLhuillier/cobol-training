@@ -3,9 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X, Loader2 } from "lucide-react";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 export function ChapterForm({ courseId }: { courseId: string }) {
     const router = useRouter();
+    const supabase = createClient();
+
     const [isCreating, setIsCreating] = useState(false);
     const [title, setTitle] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -21,20 +25,35 @@ export function ChapterForm({ courseId }: { courseId: string }) {
 
         try {
             setIsLoading(true);
-            const response = await fetch(`/api/admin/courses/${courseId}/chapters`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title }),
-            });
 
-            if (!response.ok) {
-                throw new Error("Failed to create chapter");
+            // 1. Trouver la position du dernier chapitre
+            const { data: lastChapter } = await supabase
+                .from("chapters")
+                .select("position")
+                .eq("course_id", courseId)
+                .order("position", { ascending: false })
+                .limit(1)
+                .single();
+
+            const newPosition = lastChapter ? lastChapter.position + 1 : 1;
+
+            // 2. Insérer le nouveau chapitre
+            const { error: insertError } = await supabase
+                .from("chapters")
+                .insert({
+                    title: title.trim(),
+                    course_id: courseId,
+                    position: newPosition
+                });
+
+            if (insertError) {
+                throw insertError;
             }
 
             toggleCreating();
             router.refresh();
         } catch (error) {
-            console.error(error);
+            console.error("Erreur création chapitre:", error);
             alert("Something went wrong while creating the chapter.");
         } finally {
             setIsLoading(false);

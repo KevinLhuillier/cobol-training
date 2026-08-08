@@ -1,5 +1,4 @@
-import { prisma } from "@/prisma/client";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,31 +14,51 @@ import { ChapterForm } from "@/components/courses/chapter-form";
 import { ChapterList } from "@/components/courses/chapter-list";
 import { CoursePublishButton } from "@/components/courses/course-publish-button";
 
-// Server Component to fetch and display course data
-// On type params comme une Promesse (Standard Next.js 15)
-export default async function CourseDetailsPage({ params }: { params: Promise<{ courseId: string }> }) {
+// 🟢 Import du client serveur Supabase
+import { createClient } from "@/utils/supabase/server";
 
-    // 1. On "attend" la résolution des paramètres de l'URL
+export default async function CourseDetailsPage({ params }: { params: Promise<any> }) {
+    const supabase = await createClient();
+
+    // 1. SÉCURITÉ
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return redirect("/auth/login");
+
+    const { data: profile } = await supabase.from("users").select("role").eq("id", user.id).single();
+    if (!profile || profile.role !== "ADMIN") return redirect("/dashboard");
+
+    // 2. RÉSOLUTION DES PARAMÈTRES (Accepte [id] ou [courseId])
     const resolvedParams = await params;
+    const actualId = resolvedParams.courseId || resolvedParams.id;
 
-    // 2. On utilise l'ID résolu (Si ton dossier s'appelle [courseId], change en resolvedParams.courseId)
-    const course = await prisma.course.findUnique({
-        where: {
-            id: resolvedParams.courseId
-        },
-        include: {
-            chapters: {
-                orderBy: {
-                    position: 'asc'
-                }
-            }
-        }
-    });
+    // 3. FETCH : On extrait explicitement l'erreur !
+    const { data: rawCourse, error } = await supabase
+        .from("courses")
+        .select(`
+            id,
+            title,
+            description,
+            isPublished:is_published,
+            imageUrl:image_url,
+            chapters (
+                id,
+                title,
+                position,
+                courseId:course_id
+            )
+        `)
+        .eq("id", actualId)
+        .maybeSingle();
 
-    // 2. If the course doesn't exist, show a 404 page
-    if (!course) {
+    if (!rawCourse) {
         return notFound();
     }
+
+    // 4. Tri des chapitres par position (Côté JS pour garantir l'ordre exact)
+    const course = {
+        ...rawCourse,
+        chapters: rawCourse.chapters ? [...rawCourse.chapters].sort((a, b) => a.position - b.position) : []
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans p-4 md:p-6 lg:p-8">
@@ -48,8 +67,9 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
                 {/* HEADER */}
                 <div className="mb-8 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
+                        {/* 🟢 Lien mis à jour vers le nouveau chemin */}
                         <Link
-                            href="/admin"
+                            href="/dashboard/admin"
                             className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
                         >
                             <ArrowLeft className="h-5 w-5" />
@@ -157,7 +177,6 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
                                 </div>
                             </div>
 
-                            {/* Notre nouveau composant s'occupe de l'affichage et de l'ordre ! */}
                             <ChapterList items={course.chapters} courseId={course.id} />
                         </div>
                     </div>

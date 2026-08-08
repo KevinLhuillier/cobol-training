@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Loader2, X } from "lucide-react";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 interface ChapterTitleFormProps {
     initialData: { title: string };
@@ -12,6 +14,7 @@ interface ChapterTitleFormProps {
 
 export function ChapterTitleForm({ initialData, courseId, chapterId }: ChapterTitleFormProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(initialData.title);
     const [isLoading, setIsLoading] = useState(false);
@@ -27,18 +30,23 @@ export function ChapterTitleForm({ initialData, courseId, chapterId }: ChapterTi
 
         try {
             setIsLoading(true);
-            const response = await fetch(`/api/admin/courses/${courseId}/chapters/${chapterId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title }),
-            });
 
-            if (!response.ok) throw new Error("Something went wrong");
+            // 🟢 Mise à jour directe et sécurisée dans Supabase
+            const { error } = await supabase
+                .from("chapters")
+                .update({ title: title.trim() })
+                .eq("id", chapterId)
+                .eq("course_id", courseId); // Sécurité supplémentaire
+
+            if (error) {
+                throw error;
+            }
 
             toggleEdit();
             router.refresh();
         } catch (error) {
-            alert("Une erreur est survenue lors de la modification.");
+            console.error("Title update error:", error);
+            alert("An error occurred while updating the chapter title.");
         } finally {
             setIsLoading(false);
         }

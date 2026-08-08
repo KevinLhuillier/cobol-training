@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Send, Loader2, CheckCircle, Clock, AlertCircle } from "lucide-react"; // 🟢 Ajout de Clock et AlertCircle
+import { Send, Loader2, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 interface ExerciseFormProps {
     courseId: string;
@@ -18,11 +20,12 @@ interface ExerciseFormProps {
 
 export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isCompleted, nextLessonId, exerciseStatus, reviewFeedback }: ExerciseFormProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [answer, setAnswer] = useState(initialAnswer || "");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // 🟢 Calcul de l'état actuel de l'exercice
+    // Calcul de l'état actuel de l'exercice
     const isPending = exerciseStatus === "PENDING_REVIEW";
     const isApproved = exerciseStatus === "APPROVED" || isCompleted;
 
@@ -32,23 +35,37 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
             setIsLoading(true);
             setError("");
 
-            // 🟢 On passe uniquement la réponse, l'API gère isCompleted et le statut "PENDING_REVIEW"
-            const response = await fetch(`/api/courses/${courseId}/chapters/${chapterId}/lessons/${lessonId}/progress`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    exerciseAnswer: answer
-                }),
-            });
+            // 1. Récupérer l'utilisateur connecté
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                throw new Error("You must be logged in to submit an exercise.");
+            }
 
-            if (!response.ok) {
+            // 2. Upsert de la progression dans Supabase
+            // Si une ligne existe déjà pour cet utilisateur et cette leçon, elle est mise à jour.
+            const { error: upsertError } = await supabase
+                .from("lesson_progress")
+                .upsert({
+                    lesson_id: lessonId,
+                    user_id: user.id,
+                    exercise_answer: answer.trim(),
+                    exercise_status: "PENDING_REVIEW", // Passe automatiquement en statut "en attente"
+                    is_completed: false // L'exercice n'est validé (true) que lorsque l'admin l'approuve
+                }, {
+                    onConflict: "user_id, lesson_id" // Utilise la contrainte d'unicité pour mettre à jour
+                });
+
+            if (upsertError) {
+                console.error("Upsert Progress Error:", upsertError);
                 throw new Error("Failed to submit exercise.");
             }
 
+            // 3. Redirection si une leçon suivante existe
             if (nextLessonId) {
                 router.push(`/dashboard/courses/${courseId}?lessonId=${nextLessonId}`);
             }
 
+            // Rafraîchir la page courante pour mettre à jour l'UI (le badge passera à "Review Pending")
             router.refresh();
         } catch (err) {
             if (err instanceof Error) setError(err.message);
@@ -60,7 +77,7 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
 
     return (
         <div className="mt-8 bg-slate-50 border border-slate-100 rounded-2xl p-6">
-            {/* 🟢 En-tête avec statuts */}
+            {/* En-tête avec statuts */}
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-slate-900">Your Solution</h3>
 
@@ -100,7 +117,7 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
 
                 <textarea
                     required
-                    // 🟢 On grise le champ si approuvé OU en attente de review
+                    // On grise le champ si approuvé OU en attente de review
                     disabled={isLoading || isPending || isApproved}
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
@@ -109,7 +126,7 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                 />
 
                 <div className="flex items-center justify-between">
-                    {/* 🟢 Messages informatifs selon l'état */}
+                    {/* Messages informatifs selon l'état */}
                     {isPending && (
                         <p className="text-xs text-amber-600 font-medium flex items-center">
                             <AlertCircle className="h-4 w-4 mr-1.5" />
@@ -124,7 +141,7 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                         </div>
                     )}
 
-                    {/* 🟢 Bouton d'envoi affiché uniquement si ni en attente ni approuvé */}
+                    {/* Bouton d'envoi affiché uniquement si ni en attente ni approuvé */}
                     {!isApproved && !isPending && (
                         <div className="ml-auto">
                             <Button

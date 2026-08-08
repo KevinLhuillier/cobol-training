@@ -4,11 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 export default function NewCoursePage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+
+    // Initialisation du client Supabase
+    const supabase = createClient();
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -21,20 +26,25 @@ export default function NewCoursePage() {
         const imageUrl = formData.get("imageUrl") as string;
 
         try {
-            const response = await fetch("/api/admin/courses", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, description, imageUrl }),
-            });
+            // 🟢 Insertion directe et sécurisée dans Supabase
+            // Le RLS vérifie automatiquement si l'utilisateur est Admin
+            const { error: insertError } = await supabase
+                .from("courses")
+                .insert({
+                    title,
+                    description: description || null, // Gestion des champs vides
+                    image_url: imageUrl || null,      // Conversion en snake_case pour Postgres
+                    is_published: false               // Brouillon par défaut
+                });
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Failed to create course");
+            if (insertError) {
+                console.error("Supabase Insert Error:", insertError);
+                throw new Error(insertError.message || "Failed to create course");
             }
 
-            // Redirect back to the admin dashboard after success
-            router.push("/admin");
-            router.refresh(); // Forces the dashboard to fetch the fresh data
+            // Redirection vers le dashboard admin après succès
+            router.push("/dashboard/admin");
+            router.refresh(); // Force le rafraîchissement des données
 
         } catch (err) {
             if (err instanceof Error) {
@@ -53,7 +63,7 @@ export default function NewCoursePage() {
                 {/* Header */}
                 <div className="mb-8 flex items-center gap-4">
                     <Link
-                        href="/admin"
+                        href="/dashboard/admin"
                         className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
                     >
                         <ArrowLeft className="h-5 w-5" />
@@ -126,7 +136,7 @@ export default function NewCoursePage() {
                         {/* SUBMIT BUTTON */}
                         <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
                             <Link
-                                href="/admin"
+                                href="/dashboard/admin"
                                 className="px-6 h-12 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-colors flex items-center justify-center"
                             >
                                 Cancel

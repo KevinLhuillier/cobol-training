@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, X, Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 interface ReviewActionButtonsProps {
     progressId: string;
@@ -11,20 +13,31 @@ interface ReviewActionButtonsProps {
 
 export function ReviewActionButtons({ progressId }: ReviewActionButtonsProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [isLoading, setIsLoading] = useState(false);
     const [feedback, setFeedback] = useState("");
 
     const onAction = async (status: "APPROVED" | "REJECTED") => {
         try {
             setIsLoading(true);
-            const response = await fetch(`/api/reviews/${progressId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status, feedback }),
-            });
 
-            if (!response.ok) throw new Error("Failed to update review");
+            // 🟢 Mise à jour directe de la ligne dans la table lesson_progress
+            const { error } = await supabase
+                .from("lesson_progress")
+                .update({
+                    exercise_status: status,
+                    review_feedback: feedback || null,
+                    // Si on approuve, la leçon est officiellement validée pour l'étudiant
+                    is_completed: status === "APPROVED"
+                })
+                .eq("id", progressId);
 
+            if (error) {
+                console.error("Review Update Error:", error);
+                throw new Error("Failed to update review");
+            }
+
+            // Rafraîchir la page pour faire disparaître l'exercice de la liste "En attente"
             router.refresh();
         } catch (error) {
             alert("An error occurred while updating the review.");

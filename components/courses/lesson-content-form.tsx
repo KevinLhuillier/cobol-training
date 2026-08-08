@@ -6,6 +6,8 @@ import { Editor } from "@/components/editor";
 import { Preview } from "@/components/preview";
 import { Button } from "@/components/ui/button";
 import { Pencil, X, Loader2 } from "lucide-react";
+// 🟢 Import du client Supabase
+import { createClient } from "@/utils/supabase/client";
 
 interface LessonContentFormProps {
     initialData: { content: string | null };
@@ -16,6 +18,7 @@ interface LessonContentFormProps {
 
 export function LessonContentForm({ initialData, courseId, chapterId, lessonId }: LessonContentFormProps) {
     const router = useRouter();
+    const supabase = createClient();
     const [isEditing, setIsEditing] = useState(false);
     const [content, setContent] = useState(initialData.content || "");
     const [isLoading, setIsLoading] = useState(false);
@@ -25,18 +28,21 @@ export function LessonContentForm({ initialData, courseId, chapterId, lessonId }
     const onSubmit = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch(`/api/admin/courses/${courseId}/chapters/${chapterId}/lessons/${lessonId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ content }),
-            });
 
-            if (!response.ok) throw new Error("Erreur lors de la sauvegarde");
+            // 🟢 Mise à jour directe et sécurisée dans Supabase
+            const { error } = await supabase
+                .from("lessons")
+                .update({ content: content || null }) // Convertit une chaîne vide en null pour la BDD
+                .eq("id", lessonId)
+                .eq("chapter_id", chapterId); // Sécurité
+
+            if (error) throw error;
 
             toggleEdit();
             router.refresh();
-        } catch {
-            alert("Une erreur est survenue.");
+        } catch (error) {
+            console.error("Content update error:", error);
+            alert("An error occurred while saving the lesson content.");
         } finally {
             setIsLoading(false);
         }
@@ -73,7 +79,6 @@ export function LessonContentForm({ initialData, courseId, chapterId, lessonId }
 
             {isEditing && (
                 <div className="space-y-4 mt-4 w-full">
-                    {/* L'éditeur va maintenant s'étendre sur toute la largeur */}
                     <Editor
                         value={content}
                         onChange={(val) => setContent(val)}
