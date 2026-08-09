@@ -1,7 +1,5 @@
 -- Création des types ENUM
 CREATE TYPE user_role AS ENUM ('USER', 'ADMIN');
-CREATE TYPE subscription_status AS ENUM ('ACTIVE', 'CANCELED', 'PAST_DUE', 'UNPAID');
-CREATE TYPE submission_status AS ENUM ('PENDING', 'CORRECTED');
 CREATE TYPE lesson_type AS ENUM ('VIDEO', 'EXERCISE', 'QUIZ');
 CREATE TYPE exercise_status AS ENUM ('PENDING_REVIEW', 'APPROVED', 'REJECTED');
 CREATE TYPE tso_status AS ENUM ('AVAILABLE', 'ASSIGNED', 'BLOCKED', 'RESET_REQUIRED');
@@ -24,13 +22,7 @@ CREATE TABLE users (
                        email TEXT UNIQUE NOT NULL,
                        name TEXT,
                        role user_role DEFAULT 'USER'::user_role,
-
-                       stripe_customer_id TEXT UNIQUE,
-                       stripe_subscription_id TEXT UNIQUE,
-                       stripe_price_id TEXT,
-                       subscription_status subscription_status,
-                       subscription_period_end TIMESTAMPTZ,
-
+                       welcome_email_sent BOOLEAN DEFAULT false NOT NULL,
                        created_at TIMESTAMPTZ DEFAULT now(),
                        updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -68,7 +60,6 @@ CREATE TABLE lessons (
                          vimeo_url TEXT,
                          content TEXT, -- LongText devient simplement TEXT sur Postgres
                          position INTEGER NOT NULL,
-                         is_free_preview BOOLEAN DEFAULT false,
                          type lesson_type DEFAULT 'VIDEO'::lesson_type,
                          chapter_id UUID NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
 
@@ -96,30 +87,6 @@ CREATE TABLE lesson_progress (
                                  UNIQUE(user_id, lesson_id)
 );
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON lesson_progress FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
-
-CREATE TABLE exercises (
-                           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                           title TEXT NOT NULL,
-                           statement TEXT NOT NULL,
-                           lesson_id UUID NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
-
-                           created_at TIMESTAMPTZ DEFAULT now(),
-                           updated_at TIMESTAMPTZ DEFAULT now()
-);
-CREATE TRIGGER set_updated_at BEFORE UPDATE ON exercises FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
-
-CREATE TABLE exercise_submissions (
-                                      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                                      content TEXT NOT NULL,
-                                      feedback TEXT,
-                                      status submission_status DEFAULT 'PENDING'::submission_status,
-
-                                      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                                      exercise_id UUID NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,
-
-                                      submitted_at TIMESTAMPTZ DEFAULT now(),
-                                      corrected_at TIMESTAMPTZ
-);
 
 -- ==========================================
 -- TSO USERS

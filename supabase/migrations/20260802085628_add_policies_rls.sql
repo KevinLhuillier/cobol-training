@@ -6,8 +6,6 @@ ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chapters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lessons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lesson_progress ENABLE ROW LEVEL SECURITY;
-ALTER TABLE exercises ENABLE ROW LEVEL SECURITY;
-ALTER TABLE exercise_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tso_users ENABLE ROW LEVEL SECURITY;
 
 -- ==========================================
@@ -44,17 +42,12 @@ CREATE POLICY "Admins full access chapters" ON chapters FOR ALL USING (public.is
 CREATE POLICY "Leçons en lecture libre" ON lessons FOR SELECT USING (true);
 CREATE POLICY "Admins full access lessons" ON lessons FOR ALL USING (public.is_admin());
 
-CREATE POLICY "Exercices en lecture libre" ON exercises FOR SELECT USING (true);
-CREATE POLICY "Admins full access exercises" ON exercises FOR ALL USING (public.is_admin());
-
 -- ==========================================
 -- 5. POLITIQUES : DONNÉES ÉTUDIANTS (Privé)
 -- ==========================================
 CREATE POLICY "Etudiants gèrent leur progression" ON lesson_progress FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Admins full access progression" ON lesson_progress FOR ALL USING (public.is_admin());
 
-CREATE POLICY "Etudiants gèrent leurs soumissions" ON exercise_submissions FOR ALL USING (auth.uid() = user_id);
-CREATE POLICY "Admins full access soumissions" ON exercise_submissions FOR ALL USING (public.is_admin());
 
 -- ==========================================
 -- 6. POLITIQUES : ACCÈS TSO
