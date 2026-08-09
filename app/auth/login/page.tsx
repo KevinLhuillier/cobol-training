@@ -55,6 +55,10 @@ function LoginForm() {
                 return;
             }
 
+            fetch("/api/auth/welcome", { method: "POST" }).catch(err =>
+                console.error("Welcome email trigger failed", err)
+            );
+
             // Succès : Redirection vers le tableau de bord
             router.push("/dashboard");
             router.refresh();
