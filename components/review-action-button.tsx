@@ -1,19 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+// Plus besoin de useRouter() grâce au revalidatePath de l'action serveur
 import { Check, X, Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-// 🟢 Import du client Supabase
-import { createClient } from "@/utils/supabase/client";
+
+// 🟢 Import de la Server Action
+import { processReviewAction } from "@/app/actions/review";
 
 interface ReviewActionButtonsProps {
     progressId: string;
 }
 
 export function ReviewActionButtons({ progressId }: ReviewActionButtonsProps) {
-    const router = useRouter();
-    const supabase = createClient();
     const [isLoading, setIsLoading] = useState(false);
     const [feedback, setFeedback] = useState("");
 
@@ -21,25 +20,14 @@ export function ReviewActionButtons({ progressId }: ReviewActionButtonsProps) {
         try {
             setIsLoading(true);
 
-            // 🟢 Mise à jour directe de la ligne dans la table lesson_progress
-            const { error } = await supabase
-                .from("lesson_progress")
-                .update({
-                    exercise_status: status,
-                    review_feedback: feedback || null,
-                    // Si on approuve, la leçon est officiellement validée pour l'étudiant
-                    is_completed: status === "APPROVED"
-                })
-                .eq("id", progressId);
+            // 🟢 Appel de la Server Action (BDD + Email sont gérés côté serveur)
+            await processReviewAction(progressId, status, feedback);
 
-            if (error) {
-                console.error("Review Update Error:", error);
-                throw new Error("Failed to update review");
-            }
+            // On peut vider le champ (la page va se rafraîchir toute seule via revalidatePath)
+            setFeedback("");
 
-            // Rafraîchir la page pour faire disparaître l'exercice de la liste "En attente"
-            router.refresh();
         } catch (error) {
+            console.error(error);
             alert("An error occurred while updating the review.");
         } finally {
             setIsLoading(false);

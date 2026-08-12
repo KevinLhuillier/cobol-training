@@ -47,7 +47,6 @@ export default async function LessonDetailsPage({
             content,
             position,
             videoUrl:vimeo_url,
-            isFreePreview:is_free_preview,
             type,
             chapterId:chapter_id
         `)
