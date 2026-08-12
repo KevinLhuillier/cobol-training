@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Terminal, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { triggerWelcomeEmailAction } from "@/app/actions/auth";
 
 // Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
@@ -55,13 +56,15 @@ function LoginForm() {
                 return;
             }
 
-            fetch("/api/auth/welcome", { method: "POST" }).catch(err =>
-                console.error("Welcome email trigger failed", err)
-            );
+            try {
+                await triggerWelcomeEmailAction();
+            } catch (err) {
+                console.error("Erreur lors de l'envoi de l'email :", err);
+            }
 
             // Succès : Redirection vers le tableau de bord
+            router.refresh(); // Important : on rafraîchit d'abord le cache pour le router
             router.push("/dashboard");
-            router.refresh();
 
         } catch (err) {
             console.error("Login Error:", err);
