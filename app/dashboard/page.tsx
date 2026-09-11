@@ -48,7 +48,7 @@ export default async function DashboardPage() {
             )
         `)
         .eq("is_published", true)
-        .order("created_at", { ascending: false });
+        .order("position", { ascending: true });
 
     // 4. Tri des chapitres et leçons par position (PostgREST ne garantit pas l'ordre des relations imbriquées sans syntaxe complexe)
     const courses = rawCourses?.map(course => {
