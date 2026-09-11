@@ -20,7 +20,7 @@ export default async function DashboardPage() {
     // 2. Récupération du compte TSO (Si inexistant, Supabase renvoie null silencieusement grâce à single())
     const { data: tsoAccount } = await supabase
         .from("tso_users")
-        .select("username, password")
+        .select("username, password, host, port")
         .eq("assigned_to_user_id", user.id)
         .maybeSingle();
 
@@ -92,6 +92,28 @@ export default async function DashboardPage() {
                                 {tsoAccount.password}
                             </span>
                         </div>
+                        {tsoAccount.host && (
+                            <>
+                                <div className="hidden sm:block h-10 w-px bg-slate-700"></div>
+                                <div>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Host</p>
+                                    <span className="font-mono text-white font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 block">
+                                        {tsoAccount.host}
+                                    </span>
+                                </div>
+                            </>
+                        )}
+                        {tsoAccount.port && (
+                            <>
+                                <div className="hidden sm:block h-10 w-px bg-slate-700"></div>
+                                <div>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Port</p>
+                                    <span className="font-mono text-white font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 block">
+                                        {tsoAccount.port}
+                                    </span>
+                                </div>
+                            </>
+                        )}
                     </div>
                 ) : (
                     <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 w-full md:w-auto flex items-center gap-3">

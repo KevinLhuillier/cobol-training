@@ -12,6 +12,8 @@ interface TsoEditFormProps {
         id: string;
         username: string;
         password: string;
+        host: string | null;
+        port: number | null;
         status: string;
         assignedToUserId: string | null;
     };
@@ -22,6 +24,8 @@ export function TsoEditForm({ initialData, users }: TsoEditFormProps) {
     const router = useRouter();
     const supabase = createClient();
     const [password, setPassword] = useState(initialData.password);
+    const [host, setHost] = useState(initialData.host || "");
+    const [port, setPort] = useState(initialData.port?.toString() || "");
     const [status, setStatus] = useState(initialData.status);
     const [assignedToUserId, setAssignedToUserId] = useState(initialData.assignedToUserId || "");
     const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +44,8 @@ export function TsoEditForm({ initialData, users }: TsoEditFormProps) {
                 .from("tso_users")
                 .update({
                     password,
+                    host: host.trim() || null,
+                    port: port.trim() ? parseInt(port.trim(), 10) : null,
                     status: finalStatus,
                     assigned_to_user_id: assignedToUserId || null
                 })
@@ -71,6 +77,31 @@ export function TsoEditForm({ initialData, users }: TsoEditFormProps) {
                         onChange={(e) => setPassword(e.target.value)}
                         className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none font-mono"
                     />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="sm:col-span-2">
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Host</label>
+                        <input
+                            type="text"
+                            disabled={isLoading}
+                            placeholder="e.g. mainframe.example.com"
+                            value={host}
+                            onChange={(e) => setHost(e.target.value)}
+                            className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none font-mono"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Port</label>
+                        <input
+                            type="number"
+                            disabled={isLoading}
+                            placeholder="e.g. 23"
+                            value={port}
+                            onChange={(e) => setPort(e.target.value)}
+                            className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none font-mono"
+                        />
+                    </div>
                 </div>
 
                 <div>
