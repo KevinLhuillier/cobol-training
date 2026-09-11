@@ -1,0 +1,60 @@
+-- ==========================================
+-- SEED : COMPTES TSO
+-- ==========================================
+-- Insère le pool de comptes TSO (mainframe.example) avec le même host/port.
+-- ON CONFLICT (username) DO NOTHING permet de relancer le seed sans dupliquer
+-- ni écraser des comptes déjà assignés à des étudiants.
+
+INSERT INTO tso_users (username, password, status, host, port)
+VALUES
+    ('USER21', 'LONDON06', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER22', 'BERLIN54', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER23', 'DUBLIN78', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER24', 'LISBON96', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER25', 'ATHENS88', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER26', 'MOSCOU41', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER27', 'OTTAWA23', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER28', 'BOGOTA17', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER29', 'MANILA54', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER30', 'MUMBAI84', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER31', 'TAIPEI96', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER32', 'YANGON61', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER33', 'BAGDAD23', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER34', 'TEHRAN47', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER35', 'RIYADH52', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER36', 'ZURICH47', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER37', 'VIENNA63', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER38', 'WARSAW67', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER39', 'MUNICH24', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER40', 'NAPLES57', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER41', 'DENVER67', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER42', 'BOSTON52', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER43', 'DALLAS16', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER44', 'AUSTIN04', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER45', 'BEIRUT64', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER46', 'KUWAIT35', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER47', 'ANKARA38', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER48', 'MOSCOW37', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER49', 'BRAZIL12', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER50', 'CANADA11', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER51', 'MEXICO10', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER52', 'FRANCE16', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER53', 'NORWAY19', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER54', 'POLAND29', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER55', 'SWEDEN39', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER56', 'TURKEY49', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER57', 'GREECE59', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER58', 'ISRAEL84', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER59', 'UGANDA82', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER60', 'ZAMBIA81', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER61', 'ANGOLA88', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER62', 'JORDAN41', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER63', 'GENEVA08', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER64', 'MALAWI41', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER65', 'GUYANA07', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER66', 'PANAMA06', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER67', 'HAVANA43', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER68', 'LAHORE03', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER69', 'ALBANY02', 'AVAILABLE', '15.235.81.45', 23),
+    ('USER70', 'DADBAG51', 'AVAILABLE', '15.235.81.45', 23)
+ON CONFLICT (username) DO NOTHING;
