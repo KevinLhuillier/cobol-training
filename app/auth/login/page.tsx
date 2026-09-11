@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Terminal, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
-import { triggerWelcomeEmailAction } from "@/app/actions/auth";
+import { triggerWelcomeEmailAction, ensureTrialStarted } from "@/app/actions/auth";
 
 // Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
@@ -60,6 +60,12 @@ function LoginForm() {
                 await triggerWelcomeEmailAction();
             } catch (err) {
                 console.error("Erreur lors de l'envoi de l'email :", err);
+            }
+
+            try {
+                await ensureTrialStarted();
+            } catch (err) {
+                console.error("Erreur lors du démarrage de l'essai :", err);
             }
 
             // Succès : Redirection vers le tableau de bord

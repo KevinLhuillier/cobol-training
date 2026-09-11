@@ -13,6 +13,7 @@ interface CourseListProps {
         id: string;
         title: string;
         is_published: boolean;
+        is_free: boolean;
         updated_at: string;
         position: number;
         chaptersCount: number;
@@ -111,15 +112,22 @@ export function CourseList({ items }: CourseListProps) {
                             </p>
                         </td>
                         <td className="p-4">
-                            <Badge
-                                className={`border-none ${
-                                    course.is_published
-                                        ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
-                                        : "bg-amber-100 text-amber-700 hover:bg-amber-100"
-                                }`}
-                            >
-                                {course.is_published ? "Published" : "Draft"}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                                {course.is_free && (
+                                    <Badge className="border-none bg-blue-100 text-blue-700 hover:bg-blue-100">
+                                        Free
+                                    </Badge>
+                                )}
+                                <Badge
+                                    className={`border-none ${
+                                        course.is_published
+                                            ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                                            : "bg-amber-100 text-amber-700 hover:bg-amber-100"
+                                    }`}
+                                >
+                                    {course.is_published ? "Published" : "Draft"}
+                                </Badge>
+                            </div>
                         </td>
                         <td className="p-4">
                             <div className="flex items-center justify-center gap-4 text-sm text-slate-600 font-medium">

@@ -10,6 +10,8 @@ export default async function DashboardLayout({
 }) {
     let isAdmin = false;
     let userName = "Student";
+    let subscriptionStatus: string | null = null;
+    let trialDaysLeft = 0;
 
     try {
         const supabase = await createClient();
@@ -18,10 +20,10 @@ export default async function DashboardLayout({
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
-            // 2. Récupération de son profil public (rôle et nom)
+            // 2. Récupération de son profil public (rôle, nom et statut d'abonnement)
             const { data: profile } = await supabase
                 .from("users")
-                .select("role, name")
+                .select("role, name, subscription_status, trial_ends_at")
                 .eq("id", user.id)
                 .single();
 
@@ -29,6 +31,11 @@ export default async function DashboardLayout({
                 isAdmin = profile.role === "ADMIN";
                 if (profile.name) {
                     userName = profile.name;
+                }
+                subscriptionStatus = profile.subscription_status;
+                if (subscriptionStatus === "TRIAL" && profile.trial_ends_at) {
+                    const diffMs = new Date(profile.trial_ends_at).getTime() - Date.now();
+                    trialDaysLeft = diffMs > 0 ? Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24))) : 0;
                 }
             }
         }
@@ -41,7 +48,13 @@ export default async function DashboardLayout({
 
     return (
         <DashboardLayoutWrapper
-            sidebar={<Sidebar isAdmin={isAdmin} />}
+            sidebar={
+                <Sidebar
+                    isAdmin={isAdmin}
+                    subscriptionStatus={subscriptionStatus}
+                    trialDaysLeft={trialDaysLeft}
+                />
+            }
             header={
                 <header className="max-w-[1600px] w-full mx-auto mb-6 flex items-center justify-between px-2">
                     <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">

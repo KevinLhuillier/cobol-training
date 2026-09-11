@@ -37,6 +37,7 @@ export default async function AdminDashboardPage() {
             id,
             title,
             is_published,
+            is_free,
             updated_at,
             position,
             chapters!left(

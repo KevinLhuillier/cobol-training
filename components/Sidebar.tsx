@@ -4,9 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Lock, Dumbbell, Settings, LayoutGrid } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
+import { SubscriptionStatus } from "@/components/subscription-status";
 
-// La prop isAdmin est désormais injectée par le Layout serveur Supabase
-export default function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
+interface SidebarProps {
+    isAdmin?: boolean;
+    subscriptionStatus?: string | null;
+    trialDaysLeft?: number;
+}
+
+// Les props sont désormais injectées par le Layout serveur Supabase
+export default function Sidebar({ isAdmin = false, subscriptionStatus = null, trialDaysLeft = 0 }: SidebarProps) {
     const pathname = usePathname();
 
     const menuItems = [
@@ -45,6 +52,10 @@ export default function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
 
                 <div className="[&>button]:w-full [&>button]:justify-start [&>button]:px-4 [&>button]:py-3 [&>button]:h-auto [&>button]:border-transparent [&>button]:shadow-none [&>button]:text-sm mt-auto pt-4 border-t border-slate-100">
                     <LogoutButton />
+                </div>
+
+                <div className="px-1">
+                    <SubscriptionStatus subscriptionStatus={subscriptionStatus} trialDaysLeft={trialDaysLeft} />
                 </div>
             </nav>
         </aside>

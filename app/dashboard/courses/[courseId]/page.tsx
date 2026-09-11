@@ -19,6 +19,7 @@ import { ExerciseForm } from "@/components/courses/exercise-form";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
+import { hasCourseAccess } from "@/utils/subscription";
 
 export default async function CoursePlayer({
                                                params,
@@ -47,6 +48,7 @@ export default async function CoursePlayer({
             id,
             title,
             is_published,
+            isFree:is_free,
             chapters (
                 id,
                 title,
@@ -80,6 +82,21 @@ export default async function CoursePlayer({
 
     if (!rawCourse) {
         return notFound();
+    }
+
+    // 2b. GARDE-FOU ABONNEMENT : les cours non-gratuits nécessitent un abonnement actif
+    // (le griséage sur /dashboard est cosmétique seul — cette vérification empêche l'accès direct par URL)
+    const { data: profile } = await supabase
+        .from("users")
+        .select("subscription_status, trial_ends_at")
+        .eq("id", user.id)
+        .single();
+
+    if (!hasCourseAccess({ isFree: rawCourse.isFree }, {
+        subscription_status: profile?.subscription_status ?? null,
+        trial_ends_at: profile?.trial_ends_at ?? null,
+    })) {
+        return redirect("/dashboard");
     }
 
 // 3. FORMATAGE DES DONNÉES

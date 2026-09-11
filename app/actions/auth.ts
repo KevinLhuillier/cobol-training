@@ -3,6 +3,29 @@
 import { createClient } from "@/utils/supabase/server";
 import { sendWelcomeEmail } from "@/utils/mail";
 
+/**
+ * Démarre l'essai de 7 jours de l'utilisateur connecté (idempotent : no-op s'il a déjà démarré).
+ */
+export async function ensureTrialStarted() {
+    try {
+        const supabase = await createClient();
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { error: "Unauthorized" };
+        }
+
+        const { error } = await supabase.rpc("start_trial");
+        if (error) {
+            return { error: error.message };
+        }
+
+        return { success: true };
+    } catch (globalError) {
+        return { error: "Internal Server Error" };
+    }
+}
+
 export async function triggerWelcomeEmailAction() {
     try {
         const supabase = await createClient();

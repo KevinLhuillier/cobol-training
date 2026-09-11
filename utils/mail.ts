@@ -82,6 +82,104 @@ export async function sendWelcomeEmail(toEmail: string, studentName: string, das
 }
 
 /**
+ * Envoie les identifiants d'accès Mainframe (TSO) lors du déblocage d'un compte
+ */
+export async function sendTsoUnlockEmail(
+    toEmail: string,
+    studentName: string,
+    username: string,
+    password: string,
+    host: string | null,
+    port: number | null
+) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "Your Mainframe (TSO) access is ready 🖥️",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
+                &gt;_
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 24px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                You've unlocked a Mainframe (TSO) account. It is valid for <strong>7 days</strong> — here are your connection details:
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding-bottom: 24px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0f172a; border-radius: 16px; padding: 24px;">
+                <tr>
+                  <td style="padding-bottom: 12px;">
+                    <p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Username</p>
+                    <p style="margin: 0; color: #34d399; font-size: 16px; font-weight: 700; font-family: 'Courier New', Courier, monospace;">${username}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-bottom: 12px;">
+                    <p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Password</p>
+                    <p style="margin: 0; color: #ffffff; font-size: 16px; font-weight: 700; font-family: 'Courier New', Courier, monospace;">${password}</p>
+                  </td>
+                </tr>
+                ${host ? `
+                <tr>
+                  <td style="padding-bottom: 12px;">
+                    <p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Host</p>
+                    <p style="margin: 0; color: #ffffff; font-size: 16px; font-weight: 700; font-family: 'Courier New', Courier, monospace;">${host}</p>
+                  </td>
+                </tr>` : ""}
+                ${port ? `
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Port</p>
+                    <p style="margin: 0; color: #ffffff; font-size: 16px; font-weight: 700; font-family: 'Courier New', Courier, monospace;">${port}</p>
+                  </td>
+                </tr>` : ""}
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left">
+              <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 22px;">
+                Remember: this access expires 7 days after your trial started. Subscribe before it ends to keep using it without interruption.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
  * Envoie une notification lorsqu'un exercice est corrigé
  */
 export async function sendExerciseReviewed(toEmail: string, studentName: string, exerciseTitle: string, isApproved: boolean) {

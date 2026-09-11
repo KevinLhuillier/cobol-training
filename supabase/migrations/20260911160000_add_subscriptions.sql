@@ -15,6 +15,20 @@ CREATE INDEX tso_users_available_idx ON tso_users (status) WHERE status = 'AVAIL
 CREATE INDEX users_subscription_idx ON users (subscription_status, trial_ends_at);
 
 -- ==========================================
+-- GRANTS : service_role
+-- Ce projet ne bénéficiait pas des privilèges par défaut habituellement
+-- pré-configurés par Supabase pour service_role (constaté : "permission denied"
+-- sur toutes les tables avec la clé secrète). service_role doit contourner RLS
+-- ET disposer des GRANT SQL de base — utilisé uniquement par le webhook Stripe
+-- et le cron d'expiration (utils/supabase/admin.ts), jamais côté client.
+-- ==========================================
+GRANT USAGE ON SCHEMA public TO service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
+
+-- ==========================================
 -- FONCTIONS SECURITY DEFINER (self-service, contournent RLS de façon contrôlée)
 -- ==========================================
 
