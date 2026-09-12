@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Code Legacy - Maîtrisez le Mainframe",
-  description: "Plateforme d'apprentissage COBOL, JCL, CICS et DB2",
+  title: "Cobol Training - Learn Cobol and Mainframe Technologies",
+  description: "Learning Platform for COBOL, JCL, CICS and DB2",
 };
 
 export default function RootLayout({
