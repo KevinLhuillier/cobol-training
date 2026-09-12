@@ -52,7 +52,7 @@ function DialogContent({
       >
         {children}
         {showClose && (
-          <DialogClose className="absolute top-4 right-4 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900">
+          <DialogClose className="absolute top-4 right-4 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900 cursor-pointer">
             <XIcon className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </DialogClose>

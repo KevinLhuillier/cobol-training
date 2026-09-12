@@ -65,7 +65,7 @@ export function CancelSubscriptionButton() {
                     {error && <p className="mt-3 text-sm text-red-500 font-medium">{error}</p>}
 
                     <DialogFooter>
-                        <DialogClose className="h-10 px-4 rounded-xl font-bold text-slate-700 hover:bg-slate-100 transition-colors">
+                        <DialogClose className="h-10 px-4 rounded-xl font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
                             Keep my subscription
                         </DialogClose>
                         <Button
