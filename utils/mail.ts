@@ -328,6 +328,136 @@ export async function sendSubscriptionActivatedEmail(toEmail: string, studentNam
 }
 
 /**
+ * Envoie une confirmation lorsque l'utilisateur programme l'annulation de son abonnement
+ * (l'accès reste actif jusqu'à la fin de la période en cours).
+ */
+export async function sendSubscriptionCancellationScheduledEmail(toEmail: string, studentName: string, periodEndDate: string | null) {
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`;
+    const formattedDate = periodEndDate
+        ? new Date(periodEndDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+        : null;
+
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "Your cancellation is scheduled",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
+                &gt;_
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 32px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                We've received your cancellation request. Your subscription will remain <strong>active until${formattedDate ? ` ${formattedDate}` : " the end of your current billing period"}</strong> — you'll keep full access to your courses and Mainframe (TSO) account until then, and you won't be charged again after that.
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                Changed your mind? You can head back to your settings anytime before then.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center">
+              <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                Go to Settings
+              </a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
+ * Envoie une notification lorsque l'annulation devient effective (webhook Stripe, fin de période).
+ */
+export async function sendSubscriptionCanceledEmail(toEmail: string, studentName: string) {
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "Your subscription has ended",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
+                &gt;_
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 32px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                Your subscription has now ended, along with access to your courses and Mainframe (TSO) account.
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                You're welcome back anytime — subscribe again to pick up right where you left off.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center">
+              <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                Subscribe again
+              </a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
  * Envoie une notification lorsque l'essai gratuit vient d'expirer (cron expire-trials)
  */
 export async function sendTrialExpiredEmail(toEmail: string, studentName: string) {

@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { stripe } from "@/utils/stripe";
+import { sendSubscriptionCancellationScheduledEmail } from "@/utils/mail";
 
 export async function createCheckoutSession() {
     const supabase = await createClient();
@@ -60,7 +61,7 @@ export async function cancelSubscription() {
 
     const { data: profile } = await supabase
         .from("users")
-        .select("stripe_subscription_id")
+        .select("email, name, stripe_subscription_id")
         .eq("id", user.id)
         .single();
 
@@ -82,6 +83,14 @@ export async function cancelSubscription() {
         .eq("id", user.id);
 
     if (error) throw new Error("Failed to update subscription status");
+
+    if (profile.email) {
+        try {
+            await sendSubscriptionCancellationScheduledEmail(profile.email, profile.name || "Student", currentPeriodEnd);
+        } catch (mailError) {
+            console.error("Cancellation scheduled email failed:", mailError);
+        }
+    }
 
     return { cancelAtPeriodEnd: true, currentPeriodEnd };
 }

@@ -92,7 +92,7 @@ export function TsoUnlockButton() {
                     <DialogHeader>
                         <DialogTitle>TSO account unlocked 🎉</DialogTitle>
                         <DialogDescription>
-                            {formatAccessMessage(access)} We&apos;ve also sent these details to your email.
+                            {formatAccessMessage(access)} &nbsp;We&apos;ve also sent these details to your email.
                         </DialogDescription>
                     </DialogHeader>
 

@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { stripe } from "@/utils/stripe";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { sendSubscriptionActivatedEmail } from "@/utils/mail";
+import { sendSubscriptionActivatedEmail, sendSubscriptionCanceledEmail } from "@/utils/mail";
 
 export const runtime = "nodejs";
 
@@ -83,10 +83,18 @@ export async function POST(request: Request) {
                 .from("users")
                 .update({ subscription_status: "CANCELED", cancel_at_period_end: false, current_period_end: null })
                 .eq("stripe_customer_id", customerId)
-                .select("id")
+                .select("id, email, name")
                 .maybeSingle();
 
             if (fetchError) console.error("Failed to cancel subscription:", fetchError);
+
+            if (owner?.email) {
+                try {
+                    await sendSubscriptionCanceledEmail(owner.email, owner.name || "Student");
+                } catch (mailError) {
+                    console.error("Subscription canceled email failed:", mailError);
+                }
+            }
 
             if (owner) {
                 const { error: blockError } = await supabase
