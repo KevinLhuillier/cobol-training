@@ -26,7 +26,17 @@ export default function NewCoursePage() {
         const imageUrl = formData.get("imageUrl") as string;
 
         try {
-            // 🟢 Insertion directe et sécurisée dans Supabase
+            // 1. Trouver la position du dernier cours pour placer le nouveau à la fin
+            const { data: lastCourse } = await supabase
+                .from("courses")
+                .select("position")
+                .order("position", { ascending: false })
+                .limit(1)
+                .single();
+
+            const newPosition = lastCourse ? lastCourse.position + 1 : 0;
+
+            // 2. 🟢 Insertion directe et sécurisée dans Supabase
             // Le RLS vérifie automatiquement si l'utilisateur est Admin
             const { error: insertError } = await supabase
                 .from("courses")
@@ -34,7 +44,8 @@ export default function NewCoursePage() {
                     title,
                     description: description || null, // Gestion des champs vides
                     image_url: imageUrl || null,      // Conversion en snake_case pour Postgres
-                    is_published: false               // Brouillon par défaut
+                    is_published: false,              // Brouillon par défaut
+                    position: newPosition
                 });
 
             if (insertError) {

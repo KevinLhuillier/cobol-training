@@ -38,6 +38,8 @@ export default async function EditTsoUserPage({
                 id,
                 username,
                 password,
+                host,
+                port,
                 status,
                 assignedToUserId:assigned_to_user_id
             `)

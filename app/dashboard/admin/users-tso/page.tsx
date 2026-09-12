@@ -38,6 +38,8 @@ export default async function AdminTsoUsersPage() {
             id,
             username,
             password,
+            host,
+            port,
             status,
             assignedToUser:users (
                 email,
@@ -164,6 +166,7 @@ export default async function AdminTsoUsersPage() {
                             <tr className="bg-slate-50/50 text-slate-500 text-xs uppercase tracking-wider">
                                 <th className="p-4 font-bold">Username</th>
                                 <th className="p-4 font-bold">Password</th>
+                                <th className="p-4 font-bold">Host</th>
                                 <th className="p-4 font-bold">Status</th>
                                 <th className="p-4 font-bold">Assigned to</th>
                                 <th className="p-4 font-bold text-right">Actions</th>
@@ -172,7 +175,7 @@ export default async function AdminTsoUsersPage() {
                             <tbody className="divide-y divide-slate-100">
                             {formattedTsoUsers.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="p-8 text-center text-slate-500">
+                                    <td colSpan={6} className="p-8 text-center text-slate-500">
                                         No TSO accounts found. Click &quot;New Account&quot; to create one.
                                     </td>
                                 </tr>
@@ -189,6 +192,15 @@ export default async function AdminTsoUsersPage() {
                                             <span className="font-mono text-sm bg-slate-100 text-slate-600 px-2 py-1 rounded">
                                                 {tso.password}
                                             </span>
+                                        </td>
+                                        <td className="p-4">
+                                            {tso.host ? (
+                                                <span className="font-mono text-sm text-slate-600">
+                                                    {tso.host}{tso.port ? `:${tso.port}` : ""}
+                                                </span>
+                                            ) : (
+                                                <span className="text-sm text-slate-400 italic">Not set</span>
+                                            )}
                                         </td>
                                         <td className="p-4">
                                             {getStatusBadge(tso.status)}

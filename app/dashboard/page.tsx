@@ -6,6 +6,10 @@ import { Terminal, Lock, Play, BookOpen, CheckCircle } from "lucide-react";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
+import { ensureTrialStarted, triggerWelcomeEmailAction } from "@/app/actions/auth";
+import { hasActiveAccess, hasCourseAccess } from "@/utils/subscription";
+import { TsoUnlockButton } from "@/components/tso-unlock-button";
+import { SubscribeButton } from "@/components/subscribe-button";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -17,12 +21,32 @@ export default async function DashboardPage() {
         return redirect("/auth/login");
     }
 
-    // 2. Récupération du compte TSO (Si inexistant, Supabase renvoie null silencieusement grâce à single())
-    const { data: tsoAccount } = await supabase
-        .from("tso_users")
-        .select("username, password")
-        .eq("assigned_to_user_id", user.id)
-        .maybeSingle();
+    // Filets de sécurité (idempotents côté DB) : démarre l'essai et envoie l'email de bienvenue
+    // s'ils n'ont pas déjà été déclenchés par la page de login (l'appel client juste après le
+    // signIn peut échouer silencieusement en cas de souci de session/réseau).
+    await ensureTrialStarted();
+    await triggerWelcomeEmailAction();
+
+    // 2. Récupération du profil (statut d'abonnement) et du compte TSO actif
+    const [{ data: profile }, { data: tsoAccount }] = await Promise.all([
+        supabase
+            .from("users")
+            .select("subscription_status, trial_ends_at")
+            .eq("id", user.id)
+            .single(),
+        supabase
+            .from("tso_users")
+            .select("username, password, host, port")
+            .eq("assigned_to_user_id", user.id)
+            .eq("status", "ASSIGNED")
+            .maybeSingle(),
+    ]);
+
+    const subscriptionInfo = {
+        subscription_status: profile?.subscription_status ?? null,
+        trial_ends_at: profile?.trial_ends_at ?? null,
+    };
+    const canUnlockTso = hasActiveAccess(subscriptionInfo);
 
     // 3. Récupération des cours AVEC la progression
     // On utilise des alias (ex: imageUrl:image_url) pour conserver le camelCase attendu par ton UI
@@ -34,6 +58,7 @@ export default async function DashboardPage() {
             description,
             imageUrl:image_url,
             isPublished:is_published,
+            isFree:is_free,
             chapters (
                 id,
                 position,
@@ -48,7 +73,7 @@ export default async function DashboardPage() {
             )
         `)
         .eq("is_published", true)
-        .order("created_at", { ascending: false });
+        .order("position", { ascending: true });
 
     // 4. Tri des chapitres et leçons par position (PostgREST ne garantit pas l'ordre des relations imbriquées sans syntaxe complexe)
     const courses = rawCourses?.map(course => {
@@ -72,7 +97,7 @@ export default async function DashboardPage() {
                     <div>
                         <h2 className="text-xl font-bold text-white">Your Mainframe Access (TSO)</h2>
                         <p className="text-slate-400 text-sm mt-1">
-                            Use these credentials to connect to the emulator.
+                            Use these credentials to connect to the mainframe.
                         </p>
                     </div>
                 </div>
@@ -80,7 +105,7 @@ export default async function DashboardPage() {
                 {tsoAccount ? (
                     <div className="flex flex-wrap items-center gap-4 bg-slate-800 p-4 rounded-xl border border-slate-700 w-full md:w-auto">
                         <div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Username</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">User ID</p>
                             <span className="font-mono text-emerald-400 font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 block">
                                 {tsoAccount.username}
                             </span>
@@ -92,16 +117,43 @@ export default async function DashboardPage() {
                                 {tsoAccount.password}
                             </span>
                         </div>
+                        {tsoAccount.host && (
+                            <>
+                                <div className="hidden sm:block h-10 w-px bg-slate-700"></div>
+                                <div>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Host</p>
+                                    <span className="font-mono text-white font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 block">
+                                        {tsoAccount.host}
+                                    </span>
+                                </div>
+                            </>
+                        )}
+                        {tsoAccount.port && (
+                            <>
+                                <div className="hidden sm:block h-10 w-px bg-slate-700"></div>
+                                <div>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Port</p>
+                                    <span className="font-mono text-white font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 block">
+                                        {tsoAccount.port}
+                                    </span>
+                                </div>
+                            </>
+                        )}
                     </div>
+                ) : canUnlockTso ? (
+                    <TsoUnlockButton />
                 ) : (
-                    <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 w-full md:w-auto flex items-center gap-3">
-                        <div className="p-2 bg-slate-900 rounded-lg">
-                            <Lock className="h-5 w-5 text-slate-400" />
+                    <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 w-full md:w-auto flex flex-col sm:flex-row items-center gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-slate-900 rounded-lg shrink-0">
+                                <Lock className="h-5 w-5 text-slate-400" />
+                            </div>
+                            <p className="text-sm text-slate-300 font-medium">
+                                Your trial has ended.<br/>
+                                <span className="text-xs text-slate-400 font-normal">Subscribe to unlock a TSO account.</span>
+                            </p>
                         </div>
-                        <p className="text-sm text-slate-300 font-medium">
-                            No access assigned.<br/>
-                            <span className="text-xs text-slate-400 font-normal">Please contact your instructor.</span>
-                        </p>
+                        <SubscribeButton />
                     </div>
                 )}
             </div>
@@ -134,7 +186,7 @@ export default async function DashboardPage() {
                             href = `/dashboard/courses/${course.id}?lessonId=${allLessons[0].id}`;
                         }
 
-                        const isLocked = false;
+                        const isLocked = !hasCourseAccess({ isFree: course.isFree }, subscriptionInfo);
                         const gradients = [
                             "from-blue-500 to-cyan-400",
                             "from-slate-700 to-slate-900",
@@ -155,7 +207,7 @@ export default async function DashboardPage() {
                                         <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" />
                                         <div className="absolute top-4 right-4">
                                             <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                                <span>{progress === 100 ? "Completed" : "Available"}</span>
+                                                <span>{isLocked ? "Subscribers only" : progress === 100 ? "Completed" : "Available"}</span>
                                             </Badge>
                                         </div>
                                     </div>
@@ -165,7 +217,7 @@ export default async function DashboardPage() {
                                             <Terminal className="h-8 w-8 text-white drop-shadow-md" />
                                         </div>
                                         <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                            <span>{progress === 100 ? "Completed" : "Available"}</span>
+                                            <span>{isLocked ? "Subscribers only" : progress === 100 ? "Completed" : "Available"}</span>
                                         </Badge>
                                     </div>
                                 )}
@@ -192,23 +244,29 @@ export default async function DashboardPage() {
                                         </div>
                                     </div>
 
-                                    <Link href={href} className="w-full">
-                                        <Button
-                                            className={`w-full rounded-xl shadow-sm text-white ${
-                                                progress === 100
-                                                    ? "bg-emerald-600 hover:bg-emerald-700"
-                                                    : "bg-slate-900 hover:bg-slate-800"
-                                            }`}
-                                        >
-                                            {progress === 100 ? (
-                                                <><CheckCircle className="mr-2 h-4 w-4" /> Completed (Review)</>
-                                            ) : progress > 0 ? (
-                                                <><Play className="mr-2 h-4 w-4 fill-current" /> Continue</>
-                                            ) : (
-                                                <><Play className="mr-2 h-4 w-4 fill-current" /> Start</>
-                                            )}
-                                        </Button>
-                                    </Link>
+                                    {isLocked ? (
+                                        <SubscribeButton className="w-full justify-center">
+                                            Reserved for subscribers
+                                        </SubscribeButton>
+                                    ) : (
+                                        <Link href={href} className="w-full">
+                                            <Button
+                                                className={`w-full rounded-xl shadow-sm text-white ${
+                                                    progress === 100
+                                                        ? "bg-emerald-600 hover:bg-emerald-700"
+                                                        : "bg-slate-900 hover:bg-slate-800"
+                                                }`}
+                                            >
+                                                {progress === 100 ? (
+                                                    <><CheckCircle className="mr-2 h-4 w-4" /> Completed (Review)</>
+                                                ) : progress > 0 ? (
+                                                    <><Play className="mr-2 h-4 w-4 fill-current" /> Continue</>
+                                                ) : (
+                                                    <><Play className="mr-2 h-4 w-4 fill-current" /> Start</>
+                                                )}
+                                            </Button>
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         );

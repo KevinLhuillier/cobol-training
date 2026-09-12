@@ -6,8 +6,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Terminal, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
-import { triggerWelcomeEmailAction } from "@/app/actions/auth";
+import { AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { LogoCtIcon } from "@/components/logo-ct-icon";
 
 // Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
@@ -56,14 +56,11 @@ function LoginForm() {
                 return;
             }
 
-            try {
-                await triggerWelcomeEmailAction();
-            } catch (err) {
-                console.error("Erreur lors de l'envoi de l'email :", err);
-            }
-
-            // Succès : Redirection vers le tableau de bord
-            router.refresh(); // Important : on rafraîchit d'abord le cache pour le router
+            // Succès : redirection vers le tableau de bord.
+            // L'envoi de l'email de bienvenue et le démarrage de l'essai sont gérés côté serveur
+            // (dashboard/layout.tsx et dashboard/page.tsx), pas ici : juste après signInWithPassword,
+            // la session peut ne pas encore être disponible pour un Server Action appelé depuis le
+            // client, ce qui faisait échouer ces deux étapes en silence.
             router.push("/dashboard");
 
         } catch (err) {
@@ -77,9 +74,7 @@ function LoginForm() {
         <div className="w-full max-w-md bg-white rounded-3xl shadow-sm p-8 flex flex-col">
             {/* HEADER / LOGO */}
             <div className="flex flex-col items-center mb-8 text-center">
-                <div className="h-12 w-12 bg-slate-900 rounded-2xl flex items-center justify-center mb-4 shadow-md">
-                    <Terminal className="h-6 w-6 text-white" />
-                </div>
+                <LogoCtIcon className="h-14 w-auto mb-4" />
                 <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
                     Cobol Training
                 </h1>
@@ -128,7 +123,7 @@ function LoginForm() {
                         <Label htmlFor="password" className="text-slate-700 font-semibold">
                             Password
                         </Label>
-                        <Link href="/auth/reset-password" className="text-sm font-medium text-slate-500 hover:text-slate-900">
+                        <Link href="/auth/forgot-password" className="text-sm font-medium text-slate-500 hover:text-slate-900">
                             Forgot?
                         </Link>
                     </div>

@@ -19,6 +19,7 @@ import { ExerciseForm } from "@/components/courses/exercise-form";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
+import { hasCourseAccess } from "@/utils/subscription";
 
 export default async function CoursePlayer({
                                                params,
@@ -47,6 +48,7 @@ export default async function CoursePlayer({
             id,
             title,
             is_published,
+            isFree:is_free,
             chapters (
                 id,
                 title,
@@ -80,6 +82,21 @@ export default async function CoursePlayer({
 
     if (!rawCourse) {
         return notFound();
+    }
+
+    // 2b. GARDE-FOU ABONNEMENT : les cours non-gratuits nécessitent un abonnement actif
+    // (le griséage sur /dashboard est cosmétique seul — cette vérification empêche l'accès direct par URL)
+    const { data: profile } = await supabase
+        .from("users")
+        .select("subscription_status, trial_ends_at")
+        .eq("id", user.id)
+        .single();
+
+    if (!hasCourseAccess({ isFree: rawCourse.isFree }, {
+        subscription_status: profile?.subscription_status ?? null,
+        trial_ends_at: profile?.trial_ends_at ?? null,
+    })) {
+        return redirect("/dashboard");
     }
 
 // 3. FORMATAGE DES DONNÉES
@@ -180,8 +197,8 @@ export default async function CoursePlayer({
                         {formattedCourse.title}
                     </h1>
                 </div>
-                <div className="text-sm text-slate-500 font-medium bg-slate-50 px-4 py-1.5 rounded-full shrink-0">
-                    Formation active
+                <div className="text-sm text-slate-500 font-medium bg-blue-50 px-4 py-1.5 rounded-full shrink-0">
+                    Training
                 </div>
             </header>
 
@@ -257,15 +274,15 @@ export default async function CoursePlayer({
                 <aside className="w-full lg:w-[400px] xl:w-[430px] bg-white rounded-3xl shadow-sm flex flex-col shrink-0 lg:h-[calc(100vh-10rem)] overflow-hidden">
 
                     <div className="p-6 bg-slate-50/50 rounded-t-3xl border-b border-slate-100">
-                        <h3 className="font-bold text-slate-900 mb-4">Contenu du cours</h3>
-                        <div className="space-y-3">
-                            <div className="flex justify-between text-sm text-slate-600">
-                                <span>{formattedCourse.chapters.length} chapitres au total</span>
-                            </div>
-                        </div>
+                        <h3 className="font-bold text-slate-900">Course Content</h3>
+                        {/*<div className="space-y-3">*/}
+                        {/*    <div className="flex justify-between text-sm text-slate-600">*/}
+                        {/*        <span>{formattedCourse.chapters.length} chapitres au total</span>*/}
+                        {/*    </div>*/}
+                        {/*</div>*/}
                     </div>
 
-                    <ScrollArea className="flex-1 p-4">
+                    <ScrollArea className="flex-1 min-h-0 p-4">
                         {/* @ts-expect-error - Contournement conflit type Radix/React 19 */}
                         <Accordion key={currentChapter?.id || "accordion"} type="multiple" defaultValue={[currentChapter?.id || ""]} className="w-full space-y-3">
                             {formattedCourse.chapters.map((chapter, index) => (
@@ -273,7 +290,7 @@ export default async function CoursePlayer({
                                     <AccordionTrigger className="hover:no-underline py-4 px-3 text-left rounded-xl transition-colors hover:bg-slate-100">
                                         <div className="flex flex-col gap-1">
                                             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                                Section {index + 1}
+                                                Chapter {index + 1}
                                             </span>
                                             <span className="text-sm font-bold text-slate-800">
                                                 {chapter.title}

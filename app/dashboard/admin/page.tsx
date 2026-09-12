@@ -1,16 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import {
     Terminal,
     Plus,
     BookOpen,
     Layers,
     PlayCircle,
-    Pencil,
-    Trash2,
     Settings
 } from "lucide-react";
+import { CourseList } from "@/components/courses/course-list";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
 
@@ -39,13 +37,15 @@ export default async function AdminDashboardPage() {
             id,
             title,
             is_published,
+            is_free,
             updated_at,
+            position,
             chapters!left(
                 id,
                 lessons!left(id)
             )
         `)
-        .order("updated_at", { ascending: false });
+        .order("position", { ascending: true });
 
     if (error) {
         console.error("Erreur lors de la récupération des cours:", error);
@@ -149,79 +149,7 @@ export default async function AdminDashboardPage() {
                         <h2 className="text-lg font-bold text-slate-900">Your Courses</h2>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                            <tr className="bg-slate-50/50 text-slate-500 text-xs uppercase tracking-wider">
-                                <th className="p-4 font-bold">Course Title</th>
-                                <th className="p-4 font-bold">Status</th>
-                                <th className="p-4 font-bold text-center">Structure</th>
-                                <th className="p-4 font-bold text-right">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                            {formattedCourses.length === 0 ? (
-                                <tr>
-                                    <td colSpan={4} className="p-8 text-center text-slate-500">
-                                        No courses found. Click &quot;New Course&quot; to create one.
-                                    </td>
-                                </tr>
-                            ) : (
-                                formattedCourses.map((course) => (
-                                    <tr key={course.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="p-4">
-                                            <p className="font-bold text-slate-900">{course.title}</p>
-                                            <p className="text-xs text-slate-500 mt-1">
-                                                Updated: {new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(course.updated_at))}
-                                            </p>
-                                        </td>
-                                        <td className="p-4">
-                                            <Badge
-                                                className={`border-none ${
-                                                    course.is_published
-                                                        ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
-                                                        : "bg-amber-100 text-amber-700 hover:bg-amber-100"
-                                                }`}
-                                            >
-                                                {course.is_published ? "Published" : "Draft"}
-                                            </Badge>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center justify-center gap-4 text-sm text-slate-600 font-medium">
-                                                <span className="flex items-center gap-1" title="Chapters">
-                                                    <Layers className="h-4 w-4 text-slate-400" />
-                                                    {course.chaptersCount}
-                                                </span>
-                                                <span className="flex items-center gap-1" title="Lessons">
-                                                    <PlayCircle className="h-4 w-4 text-slate-400" />
-                                                    {course.lessonsCount}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <Link
-                                                    href={`/dashboard/admin/courses/${course.id}`}
-                                                    className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-                                                    title="Edit course"
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Link>
-                                                {/* Le bouton supprimer nécessitera un composant client plus tard, on le garde en UI pour le moment */}
-                                                <button
-                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                            </tbody>
-                        </table>
-                    </div>
+                    <CourseList items={formattedCourses} />
                 </div>
             </main>
         </div>
