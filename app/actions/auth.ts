@@ -106,40 +106,30 @@ export async function triggerWelcomeEmailAction() {
             return { error: "Unauthorized" };
         }
 
-        const { data: profile, error: dbError } = await supabase
-            .from("users")
-            .select("name, email, welcome_email_sent")
-            .eq("id", user.id)
-            .single();
+        // Claim atomique (flip welcome_email_sent false -> true en un seul UPDATE) : cette page peut
+        // être rendue deux fois en quasi-simultané pour la même première visite (prefetch + navigation
+        // côté Next.js), donc un "check puis send puis update" en 2 requêtes séparées n'est pas
+        // suffisant pour empêcher un double envoi. Ici, une seule des deux requêtes concurrentes peut
+        // gagner l'UPDATE ; l'autre reçoit une ligne entièrement à null et ne renvoie pas l'email.
+        const { data, error: claimError } = await supabase.rpc("claim_welcome_email").single();
 
-        if (dbError) {
-            return { error: "Database Error" };
+        if (claimError) {
+            return { error: claimError.message };
         }
 
-        if (!profile) {
-            return { error: "Profile not found" };
-        }
+        const claimedUser = data as { id: string; name: string | null; email: string } | null;
 
-        if (profile.welcome_email_sent) {
+        if (!claimedUser?.id) {
             return { success: true, message: "Already sent" };
         }
 
-        const studentName = profile.name || "Student";
+        const studentName = claimedUser.name || "Student";
         const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
 
         try {
-            await sendWelcomeEmail(profile.email, studentName, dashboardUrl);
+            await sendWelcomeEmail(claimedUser.email, studentName, dashboardUrl);
         } catch (mailError) {
             return { error: "Email provider error" };
-        }
-
-        const { error: updateError } = await supabase
-            .from("users")
-            .update({ welcome_email_sent: true })
-            .eq("id", user.id);
-
-        if (updateError) {
-            return { error: "Update Error" };
         }
 
         return { success: true };

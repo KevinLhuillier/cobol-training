@@ -6,7 +6,7 @@ import { Terminal, Lock, Play, BookOpen, CheckCircle } from "lucide-react";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
-import { ensureTrialStarted } from "@/app/actions/auth";
+import { ensureTrialStarted, triggerWelcomeEmailAction } from "@/app/actions/auth";
 import { hasActiveAccess, hasCourseAccess } from "@/utils/subscription";
 import { TsoUnlockButton } from "@/components/tso-unlock-button";
 import { SubscribeButton } from "@/components/subscribe-button";
@@ -21,8 +21,11 @@ export default async function DashboardPage() {
         return redirect("/auth/login");
     }
 
-    // Filet de sécurité : démarre l'essai si ce n'est pas déjà fait (idempotent côté DB)
+    // Filets de sécurité (idempotents côté DB) : démarre l'essai et envoie l'email de bienvenue
+    // s'ils n'ont pas déjà été déclenchés par la page de login (l'appel client juste après le
+    // signIn peut échouer silencieusement en cas de souci de session/réseau).
     await ensureTrialStarted();
+    await triggerWelcomeEmailAction();
 
     // 2. Récupération du profil (statut d'abonnement) et du compte TSO actif
     const [{ data: profile }, { data: tsoAccount }] = await Promise.all([

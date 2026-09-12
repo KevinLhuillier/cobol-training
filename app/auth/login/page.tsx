@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Terminal, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
-import { triggerWelcomeEmailAction, ensureTrialStarted } from "@/app/actions/auth";
 
 // Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
@@ -56,20 +55,11 @@ function LoginForm() {
                 return;
             }
 
-            try {
-                await triggerWelcomeEmailAction();
-            } catch (err) {
-                console.error("Erreur lors de l'envoi de l'email :", err);
-            }
-
-            try {
-                await ensureTrialStarted();
-            } catch (err) {
-                console.error("Erreur lors du démarrage de l'essai :", err);
-            }
-
-            // Succès : Redirection vers le tableau de bord
-            router.refresh(); // Important : on rafraîchit d'abord le cache pour le router
+            // Succès : redirection vers le tableau de bord.
+            // L'envoi de l'email de bienvenue et le démarrage de l'essai sont gérés côté serveur
+            // (dashboard/layout.tsx et dashboard/page.tsx), pas ici : juste après signInWithPassword,
+            // la session peut ne pas encore être disponible pour un Server Action appelé depuis le
+            // client, ce qui faisait échouer ces deux étapes en silence.
             router.push("/dashboard");
 
         } catch (err) {

@@ -3,6 +3,7 @@ import { DashboardLayoutWrapper } from "@/components/dashboard-layout-wrapper";
 import { Badge } from "@/components/ui/badge";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
+import { ensureTrialStarted } from "@/app/actions/auth";
 
 export default async function DashboardLayout({
                                                   children,
@@ -21,6 +22,13 @@ export default async function DashboardLayout({
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
+            // Filet de sécurité : démarre l'essai si ce n'est pas déjà fait (idempotent côté DB).
+            // Nécessaire ici aussi (et pas seulement dans dashboard/page.tsx) car ce layout et la
+            // page qu'il englobe sont deux composants serveur fetchés en parallèle par Next.js :
+            // sans cet appel, le badge d'abonnement peut lire le statut AVANT que la page ne
+            // démarre l'essai, et afficher "Trial ended" jusqu'au prochain refresh.
+            await ensureTrialStarted();
+
             // 2. Récupération de son profil public (rôle, nom et statut d'abonnement)
             const { data: profile } = await supabase
                 .from("users")
