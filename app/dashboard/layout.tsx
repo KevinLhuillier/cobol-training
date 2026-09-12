@@ -1,5 +1,6 @@
 import Sidebar from "@/components/Sidebar";
 import { DashboardLayoutWrapper } from "@/components/dashboard-layout-wrapper";
+import { Badge } from "@/components/ui/badge";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
 
@@ -58,12 +59,18 @@ export default async function DashboardLayout({
             header={
                 <header className="max-w-[1600px] w-full mx-auto mb-6 flex items-center justify-between px-2">
                     <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">
-                        Code Legacy
+                        Cobol Training
                     </h1>
                     <div className="flex items-center gap-3">
-                        <div className="text-right hidden sm:block">
+                        <div className="text-right hidden sm:flex sm:flex-col sm:items-end gap-1">
                             <p className="text-sm font-bold text-slate-900">Welcome, {userName}</p>
-                            <p className="text-xs text-slate-500">Mainframe Developer Path</p>
+                            {subscriptionStatus === "ACTIVE" ? (
+                                <Badge className="border-none bg-emerald-100 text-emerald-700">Subscribed</Badge>
+                            ) : subscriptionStatus === "TRIAL" && trialDaysLeft > 0 ? (
+                                <Badge className="border-none bg-amber-100 text-amber-700">Trial</Badge>
+                            ) : (
+                                <Badge className="border-none bg-slate-100 text-slate-500">Trial ended</Badge>
+                            )}
                         </div>
                         <div className="h-10 w-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center font-bold text-slate-600">
                             {initial}

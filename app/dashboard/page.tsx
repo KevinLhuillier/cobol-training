@@ -94,7 +94,7 @@ export default async function DashboardPage() {
                     <div>
                         <h2 className="text-xl font-bold text-white">Your Mainframe Access (TSO)</h2>
                         <p className="text-slate-400 text-sm mt-1">
-                            Use these credentials to connect to the emulator.
+                            Use these credentials to connect to the mainframe.
                         </p>
                     </div>
                 </div>
