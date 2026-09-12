@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { stripe } from "@/utils/stripe";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { sendSubscriptionActivatedEmail } from "@/utils/mail";
 
 export const runtime = "nodejs";
 
@@ -28,16 +29,26 @@ export async function POST(request: Request) {
             const userId = session.metadata?.supabase_user_id;
 
             if (userId) {
-                const { error } = await supabase
+                const { data: updatedUser, error } = await supabase
                     .from("users")
                     .update({
                         subscription_status: "ACTIVE",
                         stripe_customer_id: session.customer as string,
                         stripe_subscription_id: session.subscription as string,
                     })
-                    .eq("id", userId);
+                    .eq("id", userId)
+                    .select("email, name")
+                    .single();
 
-                if (error) console.error("Failed to activate subscription:", error);
+                if (error) {
+                    console.error("Failed to activate subscription:", error);
+                } else if (updatedUser?.email) {
+                    try {
+                        await sendSubscriptionActivatedEmail(updatedUser.email, updatedUser.name || "Student");
+                    } catch (mailError) {
+                        console.error("Subscription activated email failed:", mailError);
+                    }
+                }
             }
             break;
         }

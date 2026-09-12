@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, CheckCircle2 } from "lucide-react";
+import { Clock, CheckCircle2, Check, Settings, Mail } from "lucide-react";
 import { SubscribeButton } from "@/components/subscribe-button";
 
 interface SubscriptionStatusProps {
@@ -33,9 +33,26 @@ export function SubscriptionStatus({ subscriptionStatus, trialDaysLeft }: Subscr
                     : "Trial ended"}
             </div>
 
-            <SubscribeButton className="w-full justify-center bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-md">
+            <SubscribeButton className="w-full justify-center bg-blue-800 hover:bg-blue-900 shadow-md">
                 Subscribe — $19/mo
             </SubscribeButton>
+
+            <div className="px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+                <p className="flex items-start gap-2 text-xs text-slate-500 leading-snug">
+                    <Check className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+                    Unlocks all courses and mainframe access for as long as your subscription stays active.
+                </p>
+                <p className="flex items-start gap-2 text-xs text-slate-500 leading-snug">
+                    <Settings className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+                    Manage your subscription anytime from the Settings menu.
+                </p>
+                <p className="flex items-start gap-2 text-xs text-slate-500 leading-snug">
+                    <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+                    <a href="mailto:kevin@cobol-training.com" className="font-semibold text-slate-600 hover:underline">
+                        kevin@cobol-training.com
+                    </a>
+                </p>
+            </div>
         </div>
     );
 }

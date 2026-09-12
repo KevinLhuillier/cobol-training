@@ -22,11 +22,27 @@ interface TsoAccount {
     port: number | null;
 }
 
+type TsoAccess = { type: "subscription" } | { type: "trial"; endsAt: string };
+
+function formatAccessMessage(access: TsoAccess | null): string {
+    if (!access) return "";
+    if (access.type === "subscription") {
+        return "This account remains active for as long as your subscription is active.";
+    }
+    const formattedDate = new Date(access.endsAt).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    });
+    return `This account is valid until your trial ends on ${formattedDate}.`;
+}
+
 export function TsoUnlockButton() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [account, setAccount] = useState<TsoAccount | null>(null);
+    const [access, setAccess] = useState<TsoAccess | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const onUnlock = async () => {
@@ -35,6 +51,7 @@ export function TsoUnlockButton() {
         try {
             const result = await unlockTsoAccount();
             setAccount(result.account);
+            setAccess(result.access);
             setIsDialogOpen(true);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -75,7 +92,7 @@ export function TsoUnlockButton() {
                     <DialogHeader>
                         <DialogTitle>TSO account unlocked 🎉</DialogTitle>
                         <DialogDescription>
-                            This account is valid for 7 days. We&apos;ve also sent these details to your email.
+                            {formatAccessMessage(access)} We&apos;ve also sent these details to your email.
                         </DialogDescription>
                     </DialogHeader>
 

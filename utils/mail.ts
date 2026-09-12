@@ -81,6 +81,22 @@ export async function sendWelcomeEmail(toEmail: string, studentName: string, das
     });
 }
 
+export type TsoAccessInfo =
+    | { type: "subscription" }
+    | { type: "trial"; endsAt: string };
+
+function formatAccessNotice(access: TsoAccessInfo): string {
+    if (access.type === "subscription") {
+        return "This access remains active for as long as your subscription is active.";
+    }
+    const formattedDate = new Date(access.endsAt).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    });
+    return `This access is valid until your trial ends on <strong>${formattedDate}</strong>.`;
+}
+
 /**
  * Envoie les identifiants d'accès Mainframe (TSO) lors du déblocage d'un compte
  */
@@ -90,8 +106,10 @@ export async function sendTsoUnlockEmail(
     username: string,
     password: string,
     host: string | null,
-    port: number | null
+    port: number | null,
+    access: TsoAccessInfo
 ) {
+    const accessNotice = formatAccessNotice(access);
     return await resend.emails.send({
         from: FROM_EMAIL,
         to: toEmail,
@@ -123,7 +141,7 @@ export async function sendTsoUnlockEmail(
                 Hello ${studentName},
               </p>
               <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
-                You've unlocked a Mainframe (TSO) account. It is valid for <strong>7 days</strong> — here are your connection details:
+                You've unlocked a Mainframe (TSO) account. ${accessNotice} Here are your connection details:
               </p>
             </td>
           </tr>
@@ -164,7 +182,9 @@ export async function sendTsoUnlockEmail(
           <tr>
             <td align="left">
               <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 22px;">
-                Remember: this access expires 7 days after your trial started. Subscribe before it ends to keep using it without interruption.
+                ${access.type === "trial"
+                    ? "Remember: subscribe before your trial ends to keep using it without interruption."
+                    : "Thanks for being a subscriber — enjoy your Mainframe access!"}
               </p>
             </td>
           </tr>
@@ -233,6 +253,129 @@ export async function sendExerciseReviewed(toEmail: string, studentName: string,
             <td align="center">
               <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
                 View Feedback
+              </a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
+ * Envoie une confirmation lorsque l'abonnement passe en statut ACTIVE (webhook Stripe)
+ */
+export async function sendSubscriptionActivatedEmail(toEmail: string, studentName: string) {
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "Your subscription is active 🎉",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
+                &gt;_
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 32px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                Thanks for subscribing! Your subscription is now <strong>active</strong>, and you have full access to all courses and your Mainframe (TSO) account for as long as it stays active.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center">
+              <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                Go to your Dashboard
+              </a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
+ * Envoie une notification lorsque l'essai gratuit vient d'expirer (cron expire-trials)
+ */
+export async function sendTrialExpiredEmail(toEmail: string, studentName: string) {
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "Your free trial has ended",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
+                &gt;_
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 32px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                Your 7-day free trial has just ended, along with access to your courses and Mainframe (TSO) account.
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                Subscribe now to pick up right where you left off.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center">
+              <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                Subscribe now
               </a>
             </td>
           </tr>

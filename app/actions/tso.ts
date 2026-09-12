@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { sendTsoUnlockEmail } from "@/utils/mail";
+import { sendTsoUnlockEmail, type TsoAccessInfo } from "@/utils/mail";
 
 const ERROR_MESSAGES: Record<string, string> = {
     already_assigned: "You already have an active TSO account.",
@@ -24,9 +24,14 @@ export async function unlockTsoAccount() {
 
     const { data: profile } = await supabase
         .from("users")
-        .select("email, name")
+        .select("email, name, subscription_status, trial_ends_at")
         .eq("id", user.id)
         .single();
+
+    const access: TsoAccessInfo =
+        profile?.subscription_status === "ACTIVE"
+            ? { type: "subscription" }
+            : { type: "trial", endsAt: profile?.trial_ends_at ?? new Date().toISOString() };
 
     if (profile?.email && account) {
         try {
@@ -36,7 +41,8 @@ export async function unlockTsoAccount() {
                 account.username,
                 account.password,
                 account.host,
-                account.port
+                account.port,
+                access
             );
         } catch (mailError) {
             console.error("TSO unlock email failed:", mailError);
@@ -46,5 +52,5 @@ export async function unlockTsoAccount() {
     // 🟢 Pas de revalidatePath ici : le client rafraîchit lui-même la page à la fermeture
     // de la popup de confirmation (sinon Next.js remonte le composant — et referme la popup —
     // dès que revalidatePath s'exécute, avant même que l'utilisateur ait pu la voir).
-    return { account };
+    return { account, access };
 }

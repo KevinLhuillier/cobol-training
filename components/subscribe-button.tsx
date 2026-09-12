@@ -32,7 +32,7 @@ export function SubscribeButton({ className, children }: SubscribeButtonProps) {
             <Button
                 onClick={onClick}
                 disabled={isLoading}
-                className={cn("bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-11 px-5", className)}
+                className={cn("bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-11 px-5 cursor-pointer disabled:cursor-not-allowed", className)}
             >
                 {isLoading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
