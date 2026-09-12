@@ -282,7 +282,7 @@ export default async function CoursePlayer({
                         {/*</div>*/}
                     </div>
 
-                    <ScrollArea className="flex-1 p-4">
+                    <ScrollArea className="flex-1 min-h-0 p-4">
                         {/* @ts-expect-error - Contournement conflit type Radix/React 19 */}
                         <Accordion key={currentChapter?.id || "accordion"} type="multiple" defaultValue={[currentChapter?.id || ""]} className="w-full space-y-3">
                             {formattedCourse.chapters.map((chapter, index) => (
