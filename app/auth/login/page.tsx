@@ -123,7 +123,7 @@ function LoginForm() {
                         <Label htmlFor="password" className="text-slate-700 font-semibold">
                             Password
                         </Label>
-                        <Link href="/auth/reset-password" className="text-sm font-medium text-slate-500 hover:text-slate-900">
+                        <Link href="/auth/forgot-password" className="text-sm font-medium text-slate-500 hover:text-slate-900">
                             Forgot?
                         </Link>
                     </div>

@@ -1,7 +1,8 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { sendWelcomeEmail } from "@/utils/mail";
+import { createAdminClient } from "@/utils/supabase/admin";
+import { sendWelcomeEmail, sendPasswordResetEmail } from "@/utils/mail";
 
 /**
  * Démarre l'essai de 7 jours de l'utilisateur connecté (idempotent : no-op s'il a déjà démarré).
@@ -89,6 +90,54 @@ export async function changePassword(currentPassword: string, newPassword: strin
         return { success: true };
     } catch (globalError) {
         return { error: "Internal Server Error" };
+    }
+}
+
+/**
+ * Envoie un email de réinitialisation de mot de passe si le compte existe.
+ * Renvoie toujours un succès générique (anti-énumération : on ne révèle jamais si l'email existe).
+ */
+export async function requestPasswordReset(email: string) {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) {
+        return { error: "Please enter your email address." };
+    }
+
+    try {
+        const admin = createAdminClient();
+
+        // Un lien généré via l'API Admin redirige avec la session dans le fragment d'URL
+        // (#access_token=...&type=recovery), pas avec un ?code= PKCE : il n'y a pas de code_verifier
+        // côté navigateur puisque ce n'est pas ce navigateur qui a initié le flow. On pointe donc
+        // directement vers reset-password (le fragment n'atteint jamais le serveur, donc passer par
+        // /auth/callback ne servirait à rien ici — ce n'est utile que pour les flows PKCE initiés
+        // côté client, comme la confirmation d'inscription).
+        const { data, error } = await admin.auth.admin.generateLink({
+            type: "recovery",
+            email: trimmedEmail,
+            options: {
+                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+            },
+        });
+
+        if (error || !data?.properties?.action_link) {
+            // Compte inexistant ou autre souci : on ne le révèle jamais à l'appelant.
+            console.error("generateLink (recovery) failed:", error);
+            return { success: true };
+        }
+
+        const studentName = (data.user?.user_metadata?.name as string | undefined) || "Student";
+
+        try {
+            await sendPasswordResetEmail(trimmedEmail, studentName, data.properties.action_link);
+        } catch (mailError) {
+            console.error("Password reset email failed:", mailError);
+        }
+
+        return { success: true };
+    } catch (globalError) {
+        console.error("requestPasswordReset failed:", globalError);
+        return { success: true };
     }
 }
 

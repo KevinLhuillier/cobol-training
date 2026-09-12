@@ -447,6 +447,75 @@ export async function sendSubscriptionCanceledEmail(toEmail: string, studentName
 }
 
 /**
+ * Envoie le lien de réinitialisation de mot de passe (généré via supabase.auth.admin.generateLink)
+ * en passant par notre propre Resend, plutôt que le mailer intégré de Supabase (rate-limité par
+ * défaut sans SMTP personnalisé — cf. l'incident de signup).
+ */
+export async function sendPasswordResetEmail(toEmail: string, studentName: string, resetLink: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "Reset your password",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 32px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                We received a request to reset your password. Click the button below to choose a new one.
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                If you didn't request this, you can safely ignore this email — your password won't change.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <a href="${resetLink}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                Reset your password
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left">
+              <p style="margin: 0; color: #94a3b8; font-size: 12px; line-height: 18px;">
+                For your security, this link will expire shortly. If it does, just request a new one from the login page.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
  * Envoie une notification lorsque l'essai gratuit vient d'expirer (cron expire-trials)
  */
 export async function sendTrialExpiredEmail(toEmail: string, studentName: string) {
