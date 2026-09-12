@@ -28,13 +28,18 @@ export async function POST(request: Request) {
             const session = event.data.object as Stripe.Checkout.Session;
             const userId = session.metadata?.supabase_user_id;
 
-            if (userId) {
+            if (userId && session.subscription) {
+                const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+                const periodEndSeconds = subscription.items.data[0]?.current_period_end;
+
                 const { data: updatedUser, error } = await supabase
                     .from("users")
                     .update({
                         subscription_status: "ACTIVE",
                         stripe_customer_id: session.customer as string,
                         stripe_subscription_id: session.subscription as string,
+                        cancel_at_period_end: false,
+                        current_period_end: periodEndSeconds ? new Date(periodEndSeconds * 1000).toISOString() : null,
                     })
                     .eq("id", userId)
                     .select("email, name")
@@ -53,13 +58,30 @@ export async function POST(request: Request) {
             break;
         }
 
+        case "customer.subscription.updated": {
+            const subscription = event.data.object as Stripe.Subscription;
+            const customerId = subscription.customer as string;
+            const periodEndSeconds = subscription.items.data[0]?.current_period_end;
+
+            const { error } = await supabase
+                .from("users")
+                .update({
+                    cancel_at_period_end: subscription.cancel_at_period_end,
+                    current_period_end: periodEndSeconds ? new Date(periodEndSeconds * 1000).toISOString() : null,
+                })
+                .eq("stripe_customer_id", customerId);
+
+            if (error) console.error("Failed to sync subscription update:", error);
+            break;
+        }
+
         case "customer.subscription.deleted": {
             const subscription = event.data.object as Stripe.Subscription;
             const customerId = subscription.customer as string;
 
             const { data: owner, error: fetchError } = await supabase
                 .from("users")
-                .update({ subscription_status: "CANCELED" })
+                .update({ subscription_status: "CANCELED", cancel_at_period_end: false, current_period_end: null })
                 .eq("stripe_customer_id", customerId)
                 .select("id")
                 .maybeSingle();

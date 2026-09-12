@@ -26,6 +26,72 @@ export async function ensureTrialStarted() {
     }
 }
 
+/**
+ * Met à jour le nom affiché de l'utilisateur connecté.
+ */
+export async function updateName(name: string) {
+    try {
+        const trimmed = name.trim();
+        if (!trimmed) {
+            return { error: "Name cannot be empty." };
+        }
+        if (trimmed.length > 100) {
+            return { error: "Name is too long." };
+        }
+
+        const supabase = await createClient();
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { error: "Unauthorized" };
+        }
+
+        const { error } = await supabase.rpc("update_own_name", { p_name: trimmed });
+        if (error) {
+            return { error: error.message };
+        }
+
+        return { success: true };
+    } catch (globalError) {
+        return { error: "Internal Server Error" };
+    }
+}
+
+/**
+ * Change le mot de passe de l'utilisateur connecté, après vérification de son mot de passe actuel.
+ */
+export async function changePassword(currentPassword: string, newPassword: string) {
+    try {
+        if (newPassword.length < 8) {
+            return { error: "New password must be at least 8 characters long." };
+        }
+
+        const supabase = await createClient();
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.email) {
+            return { error: "Unauthorized" };
+        }
+
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: user.email,
+            password: currentPassword,
+        });
+        if (signInError) {
+            return { error: "Current password is incorrect." };
+        }
+
+        const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+        if (updateError) {
+            return { error: updateError.message };
+        }
+
+        return { success: true };
+    } catch (globalError) {
+        return { error: "Internal Server Error" };
+    }
+}
+
 export async function triggerWelcomeEmailAction() {
     try {
         const supabase = await createClient();

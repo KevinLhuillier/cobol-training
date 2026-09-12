@@ -20,3 +20,12 @@ export function hasActiveAccess(user: SubscriptionInfo): boolean {
 export function hasCourseAccess(course: { isFree: boolean }, user: SubscriptionInfo): boolean {
     return course.isFree || user.subscription_status === "ACTIVE";
 }
+
+/**
+ * Nombre de jours restants avant la fin de l'essai (0 si expiré ou non applicable).
+ */
+export function getTrialDaysLeft(trialEndsAt: string | null): number {
+    if (!trialEndsAt) return 0;
+    const diffMs = new Date(trialEndsAt).getTime() - Date.now();
+    return diffMs > 0 ? Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24))) : 0;
+}
