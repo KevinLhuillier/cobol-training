@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Layers, PlayCircle, Pencil, Trash2, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
+import { Layers, PlayCircle, Pencil, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 // 🟢 Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
+import { CourseDeleteButton } from "@/components/courses/course-delete-button";
 
 interface CourseListProps {
     items: {
@@ -150,13 +151,7 @@ export function CourseList({ items }: CourseListProps) {
                                 >
                                     <Pencil className="h-4 w-4" />
                                 </Link>
-                                {/* Le bouton supprimer nécessitera un composant client plus tard, on le garde en UI pour le moment */}
-                                <button
-                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    title="Delete"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
+                                <CourseDeleteButton courseId={course.id} courseTitle={course.title} />
                             </div>
                         </td>
                     </tr>
