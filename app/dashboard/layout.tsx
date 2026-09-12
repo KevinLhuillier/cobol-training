@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
 import { ensureTrialStarted } from "@/app/actions/auth";
+import { LogoCtIcon } from "@/components/logo-ct-icon";
 
 export default async function DashboardLayout({
                                                   children,
@@ -66,7 +67,8 @@ export default async function DashboardLayout({
             }
             header={
                 <header className="max-w-[1600px] w-full mx-auto mb-6 flex items-center justify-between px-2">
-                    <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">
+                    <h1 className="flex items-center gap-2.5 text-2xl font-extrabold text-slate-800 tracking-tight">
+                        <LogoCtIcon className="h-8 w-auto shrink-0" />
                         Cobol Training
                     </h1>
                     <div className="flex items-center gap-3">

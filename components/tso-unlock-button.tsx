@@ -99,7 +99,7 @@ export function TsoUnlockButton() {
                     {account && (
                         <div className="bg-slate-900 rounded-xl p-4 space-y-3">
                             <div>
-                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Username</p>
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">User ID</p>
                                 <p className="font-mono text-emerald-400 font-bold text-sm">{account.username}</p>
                             </div>
                             <div>

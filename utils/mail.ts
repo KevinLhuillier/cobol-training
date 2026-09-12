@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { LOGO_CT_DATA_URI } from "@/utils/logo-ct";
 
 // Initialisation unique de Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -30,9 +31,7 @@ export async function sendWelcomeEmail(toEmail: string, studentName: string, das
           <!-- Logo Terminal -->
           <tr>
             <td align="center" style="padding-bottom: 24px;">
-              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
-                &gt;_
-              </div>
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
             </td>
           </tr>
           
@@ -129,9 +128,7 @@ export async function sendTsoUnlockEmail(
 
           <tr>
             <td align="center" style="padding-bottom: 24px;">
-              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
-                &gt;_
-              </div>
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
             </td>
           </tr>
 
@@ -151,7 +148,7 @@ export async function sendTsoUnlockEmail(
               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0f172a; border-radius: 16px; padding: 24px;">
                 <tr>
                   <td style="padding-bottom: 12px;">
-                    <p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Username</p>
+                    <p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">User ID</p>
                     <p style="margin: 0; color: #34d399; font-size: 16px; font-weight: 700; font-family: 'Courier New', Courier, monospace;">${username}</p>
                   </td>
                 </tr>
@@ -226,9 +223,7 @@ export async function sendExerciseReviewed(toEmail: string, studentName: string,
           
           <tr>
             <td align="center" style="padding-bottom: 24px;">
-              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
-                &gt;_
-              </div>
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
             </td>
           </tr>
           
@@ -292,9 +287,7 @@ export async function sendSubscriptionActivatedEmail(toEmail: string, studentNam
 
           <tr>
             <td align="center" style="padding-bottom: 24px;">
-              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
-                &gt;_
-              </div>
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
             </td>
           </tr>
 
@@ -356,9 +349,7 @@ export async function sendSubscriptionCancellationScheduledEmail(toEmail: string
 
           <tr>
             <td align="center" style="padding-bottom: 24px;">
-              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
-                &gt;_
-              </div>
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
             </td>
           </tr>
 
@@ -419,9 +410,7 @@ export async function sendSubscriptionCanceledEmail(toEmail: string, studentName
 
           <tr>
             <td align="center" style="padding-bottom: 24px;">
-              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
-                &gt;_
-              </div>
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
             </td>
           </tr>
 
@@ -482,9 +471,7 @@ export async function sendTrialExpiredEmail(toEmail: string, studentName: string
 
           <tr>
             <td align="center" style="padding-bottom: 24px;">
-              <div style="background-color: #0f172a; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; text-align: center; color: #34d399; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; margin: 0 auto;">
-                &gt;_
-              </div>
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
             </td>
           </tr>
 

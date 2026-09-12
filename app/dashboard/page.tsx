@@ -105,7 +105,7 @@ export default async function DashboardPage() {
                 {tsoAccount ? (
                     <div className="flex flex-wrap items-center gap-4 bg-slate-800 p-4 rounded-xl border border-slate-700 w-full md:w-auto">
                         <div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Username</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">User ID</p>
                             <span className="font-mono text-emerald-400 font-bold bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 block">
                                 {tsoAccount.username}
                             </span>
