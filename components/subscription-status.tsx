@@ -33,9 +33,7 @@ export function SubscriptionStatus({ subscriptionStatus, trialDaysLeft }: Subscr
                     : "Trial ended"}
             </div>
 
-            <SubscribeButton className="w-full justify-center bg-blue-800 hover:bg-blue-900 shadow-md">
-                Subscribe — $19/mo
-            </SubscribeButton>
+            <SubscribeButton className="w-full justify-center bg-blue-800 hover:bg-blue-900 shadow-md" />
 
             <div className="px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
                 <p className="flex items-start gap-2 text-xs text-slate-500 leading-snug">
