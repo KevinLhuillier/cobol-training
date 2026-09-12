@@ -197,8 +197,8 @@ export default async function CoursePlayer({
                         {formattedCourse.title}
                     </h1>
                 </div>
-                <div className="text-sm text-slate-500 font-medium bg-slate-50 px-4 py-1.5 rounded-full shrink-0">
-                    Formation active
+                <div className="text-sm text-slate-500 font-medium bg-blue-50 px-4 py-1.5 rounded-full shrink-0">
+                    Training
                 </div>
             </header>
 
@@ -274,12 +274,12 @@ export default async function CoursePlayer({
                 <aside className="w-full lg:w-[400px] xl:w-[430px] bg-white rounded-3xl shadow-sm flex flex-col shrink-0 lg:h-[calc(100vh-10rem)] overflow-hidden">
 
                     <div className="p-6 bg-slate-50/50 rounded-t-3xl border-b border-slate-100">
-                        <h3 className="font-bold text-slate-900 mb-4">Contenu du cours</h3>
-                        <div className="space-y-3">
-                            <div className="flex justify-between text-sm text-slate-600">
-                                <span>{formattedCourse.chapters.length} chapitres au total</span>
-                            </div>
-                        </div>
+                        <h3 className="font-bold text-slate-900">Course Content</h3>
+                        {/*<div className="space-y-3">*/}
+                        {/*    <div className="flex justify-between text-sm text-slate-600">*/}
+                        {/*        <span>{formattedCourse.chapters.length} chapitres au total</span>*/}
+                        {/*    </div>*/}
+                        {/*</div>*/}
                     </div>
 
                     <ScrollArea className="flex-1 p-4">
@@ -290,7 +290,7 @@ export default async function CoursePlayer({
                                     <AccordionTrigger className="hover:no-underline py-4 px-3 text-left rounded-xl transition-colors hover:bg-slate-100">
                                         <div className="flex flex-col gap-1">
                                             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                                Section {index + 1}
+                                                Chapter {index + 1}
                                             </span>
                                             <span className="text-sm font-bold text-slate-800">
                                                 {chapter.title}
