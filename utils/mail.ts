@@ -4,6 +4,117 @@ import { LOGO_CT_DATA_URI } from "@/utils/logo-ct";
 // Initialisation unique de Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = "Cobol Training <kevin@cobol-training.com>";
+const ADMIN_EMAIL = "kevin@cobol-training.com";
+
+/**
+ * Gabarit compact pour les notifications internes envoyées au propriétaire de l'application
+ * (inscription, abonnement, alerte de stock TSO) — plus sobre que les emails destinés aux étudiants.
+ */
+function renderAdminNotificationEmail(title: string, bodyHtml: string): string {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 480px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="42" height="48" style="display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 16px;">
+              <p style="margin: 0; color: #0f172a; font-size: 16px; font-weight: 700;">
+                ${title}
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left">
+              ${bodyHtml}
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
+}
+
+/**
+ * Notifie le propriétaire de l'application qu'une nouvelle inscription vient d'être effectuée.
+ */
+export async function sendAdminNewRegistrationEmail(studentName: string, studentEmail: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject: "New registration 👤",
+        html: renderAdminNotificationEmail(
+            "New registration",
+            `
+              <p style="margin: 0 0 4px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                A new user just signed up:
+              </p>
+              <p style="margin: 0; color: #0f172a; font-size: 15px; line-height: 22px;">
+                <strong>${studentName}</strong> — ${studentEmail}
+              </p>
+            `
+        ),
+    });
+}
+
+/**
+ * Notifie le propriétaire de l'application qu'un nouvel abonnement vient d'être souscrit.
+ */
+export async function sendAdminNewSubscriptionEmail(studentName: string, studentEmail: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject: "New subscription 💳",
+        html: renderAdminNotificationEmail(
+            "New subscription",
+            `
+              <p style="margin: 0 0 4px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                A user just subscribed:
+              </p>
+              <p style="margin: 0; color: #0f172a; font-size: 15px; line-height: 22px;">
+                <strong>${studentName}</strong> — ${studentEmail}
+              </p>
+            `
+        ),
+    });
+}
+
+/**
+ * Alerte le propriétaire de l'application lorsqu'il reste moins de 10 comptes TSO disponibles.
+ */
+export async function sendAdminLowTsoAvailabilityEmail(availableCount: number) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject: `Low TSO availability: ${availableCount} left ⚠️`,
+        html: renderAdminNotificationEmail(
+            "Low TSO availability",
+            `
+              <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                Only <strong style="color: #ef4444;">${availableCount}</strong> TSO account${availableCount === 1 ? "" : "s"} remain available. Consider adding more accounts soon.
+              </p>
+            `
+        ),
+    });
+}
 
 /**
  * Envoie l'email de bienvenue à un nouvel étudiant
