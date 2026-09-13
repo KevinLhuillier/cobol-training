@@ -78,6 +78,8 @@ export default async function DashboardLayout({
                                 <Badge className="border-none bg-emerald-100 text-emerald-700">Subscribed</Badge>
                             ) : subscriptionStatus === "TRIAL" && trialDaysLeft > 0 ? (
                                 <Badge className="border-none bg-amber-100 text-amber-700">Trial</Badge>
+                            ) : subscriptionStatus === "UNPAID" ? (
+                                <Badge className="border-none bg-red-100 text-red-700">Payment failed</Badge>
                             ) : (
                                 <Badge className="border-none bg-slate-100 text-slate-500">Trial ended</Badge>
                             )}

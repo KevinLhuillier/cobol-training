@@ -94,6 +94,16 @@ export default async function SettingsPage() {
                             <CancelSubscriptionButton />
                         </div>
                     )
+                ) : profile.subscription_status === "UNPAID" ? (
+                    <div className="space-y-4">
+                        <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-red-50 text-red-700 text-sm font-bold">
+                            Payment failed — access suspended
+                        </div>
+                        <p className="text-sm text-slate-500">
+                            Your last payment couldn&apos;t be processed. Subscribe again to restore access to your courses and Mainframe (TSO) account.
+                        </p>
+                        <SubscribeButton />
+                    </div>
                 ) : (
                     <div className="space-y-4">
                         <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">

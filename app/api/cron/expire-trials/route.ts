@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     const { data: lockedOutUsers, error: lockedOutError } = await supabase
         .from("users")
         .select("id")
-        .in("subscription_status", ["EXPIRED", "CANCELED"]);
+        .in("subscription_status", ["EXPIRED", "CANCELED", "UNPAID"]);
 
     if (lockedOutError) {
         console.error("Failed to fetch locked-out users:", lockedOutError);
