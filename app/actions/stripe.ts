@@ -39,6 +39,9 @@ export async function createCheckoutSession() {
     const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         customer: customerId,
+        customer_update: { address: "auto", name: "auto" },
+        billing_address_collection: "required",
+        automatic_tax: { enabled: true },
         line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
         success_url: `${appUrl}/dashboard?subscribed=true`,
         cancel_url: `${appUrl}/dashboard`,
