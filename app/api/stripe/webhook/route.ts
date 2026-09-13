@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { stripe } from "@/utils/stripe";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { sendSubscriptionActivatedEmail, sendSubscriptionCanceledEmail } from "@/utils/mail";
+import { sendSubscriptionActivatedEmail, sendSubscriptionCanceledEmail, sendAdminNewSubscriptionEmail } from "@/utils/mail";
 
 export const runtime = "nodejs";
 
@@ -52,6 +52,12 @@ export async function POST(request: Request) {
                         await sendSubscriptionActivatedEmail(updatedUser.email, updatedUser.name || "Student");
                     } catch (mailError) {
                         console.error("Subscription activated email failed:", mailError);
+                    }
+
+                    try {
+                        await sendAdminNewSubscriptionEmail(updatedUser.name || "Student", updatedUser.email);
+                    } catch (mailError) {
+                        console.error("Admin new subscription email failed:", mailError);
                     }
                 }
             }

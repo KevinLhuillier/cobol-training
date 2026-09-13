@@ -1,7 +1,10 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { sendTsoUnlockEmail, type TsoAccessInfo } from "@/utils/mail";
+import { createAdminClient } from "@/utils/supabase/admin";
+import { sendTsoUnlockEmail, sendAdminLowTsoAvailabilityEmail, type TsoAccessInfo } from "@/utils/mail";
+
+const LOW_TSO_AVAILABILITY_THRESHOLD = 10;
 
 const ERROR_MESSAGES: Record<string, string> = {
     already_assigned: "You already have an active TSO account.",
@@ -46,6 +49,22 @@ export async function unlockTsoAccount() {
             );
         } catch (mailError) {
             console.error("TSO unlock email failed:", mailError);
+        }
+
+        // La claim a pu faire passer le nombre de comptes AVAILABLE sous le seuil d'alerte.
+        // Comptage via le client admin : RLS ne laisse un étudiant voir que son propre compte TSO.
+        try {
+            const admin = createAdminClient();
+            const { count, error: countError } = await admin
+                .from("tso_users")
+                .select("id", { count: "exact", head: true })
+                .eq("status", "AVAILABLE");
+
+            if (!countError && count !== null && count < LOW_TSO_AVAILABILITY_THRESHOLD) {
+                await sendAdminLowTsoAvailabilityEmail(count);
+            }
+        } catch (mailError) {
+            console.error("Admin low TSO availability email failed:", mailError);
         }
     }
 

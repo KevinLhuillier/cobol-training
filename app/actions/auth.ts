@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { sendWelcomeEmail, sendPasswordResetEmail } from "@/utils/mail";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendAdminNewRegistrationEmail } from "@/utils/mail";
 
 /**
  * Démarre l'essai de 7 jours de l'utilisateur connecté (idempotent : no-op s'il a déjà démarré).
@@ -137,6 +137,32 @@ export async function requestPasswordReset(email: string) {
         return { success: true };
     } catch (globalError) {
         console.error("requestPasswordReset failed:", globalError);
+        return { success: true };
+    }
+}
+
+/**
+ * Notifie l'administrateur qu'une nouvelle inscription vient d'avoir lieu (appelé juste après un
+ * signUp réussi côté client). On relit le nom/email en base plutôt que de faire confiance aux
+ * valeurs passées par l'appelant, pour ne notifier que sur une inscription réellement créée.
+ */
+export async function notifyAdminNewRegistration(email: string) {
+    try {
+        const admin = createAdminClient();
+        const { data: newUser } = await admin
+            .from("users")
+            .select("name, email")
+            .eq("email", email.trim().toLowerCase())
+            .single();
+
+        if (!newUser) {
+            return { success: true };
+        }
+
+        await sendAdminNewRegistrationEmail(newUser.name || "Student", newUser.email);
+        return { success: true };
+    } catch (mailError) {
+        console.error("Admin new registration email failed:", mailError);
         return { success: true };
     }
 }
