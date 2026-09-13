@@ -6,7 +6,8 @@ import {
     BookOpen,
     Layers,
     PlayCircle,
-    Settings
+    Settings,
+    Users
 } from "lucide-react";
 import { CourseList } from "@/components/courses/course-list";
 // 🟢 Import du client serveur Supabase
@@ -92,6 +93,14 @@ export default async function AdminDashboardPage() {
 
                 <div className="flex items-center gap-3">
                     {/* Le bouton "Back to website" n'est plus nécessaire car on a la Sidebar */}
+
+                    <Link
+                        href="/dashboard/admin/users"
+                        className="inline-flex items-center justify-center bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-xl shadow-sm h-10 px-4 text-sm font-medium transition-colors"
+                    >
+                        <Users className="mr-2 h-4 w-4 text-slate-500" />
+                        Users
+                    </Link>
 
                     <Link
                         href="/dashboard/admin/users-tso"
