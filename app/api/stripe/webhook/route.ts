@@ -1,7 +1,14 @@
 import Stripe from "stripe";
 import { stripe } from "@/utils/stripe";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { sendSubscriptionActivatedEmail, sendSubscriptionCanceledEmail, sendAdminNewSubscriptionEmail } from "@/utils/mail";
+import {
+    sendSubscriptionActivatedEmail,
+    sendSubscriptionCanceledEmail,
+    sendAdminNewSubscriptionEmail,
+    sendAdminSubscriptionCanceledEmail,
+    sendPaymentFailedEmail,
+    sendAdminPaymentFailedEmail,
+} from "@/utils/mail";
 
 export const runtime = "nodejs";
 
@@ -68,16 +75,58 @@ export async function POST(request: Request) {
             const subscription = event.data.object as Stripe.Subscription;
             const customerId = subscription.customer as string;
             const periodEndSeconds = subscription.items.data[0]?.current_period_end;
+            const isUnpaid = subscription.status === "past_due" || subscription.status === "unpaid";
+
+            const { data: owner, error: fetchError } = await supabase
+                .from("users")
+                .select("id, email, name, subscription_status")
+                .eq("stripe_customer_id", customerId)
+                .maybeSingle();
+
+            if (fetchError || !owner) {
+                console.error("Failed to load user for subscription update:", fetchError);
+                break;
+            }
+
+            const wasUnpaid = owner.subscription_status === "UNPAID";
+            // Une fois débloqué manuellement (CANCELED/EXPIRED), on ne réactive l'accès que si le
+            // paiement était en échec (UNPAID) et vient de repasser à jour — jamais dans les autres cas.
+            const nextStatus = isUnpaid ? "UNPAID" : wasUnpaid && subscription.status === "active" ? "ACTIVE" : owner.subscription_status;
 
             const { error } = await supabase
                 .from("users")
                 .update({
+                    subscription_status: nextStatus,
                     cancel_at_period_end: subscription.cancel_at_period_end,
                     current_period_end: periodEndSeconds ? new Date(periodEndSeconds * 1000).toISOString() : null,
                 })
-                .eq("stripe_customer_id", customerId);
+                .eq("id", owner.id);
 
             if (error) console.error("Failed to sync subscription update:", error);
+
+            if (isUnpaid && !wasUnpaid) {
+                const { error: blockError } = await supabase
+                    .from("tso_users")
+                    .update({ status: "BLOCKED" })
+                    .eq("assigned_to_user_id", owner.id)
+                    .eq("status", "ASSIGNED");
+
+                if (blockError) console.error("Failed to block TSO account on payment failure:", blockError);
+
+                if (owner.email) {
+                    try {
+                        await sendPaymentFailedEmail(owner.email, owner.name || "Student");
+                    } catch (mailError) {
+                        console.error("Payment failed email failed:", mailError);
+                    }
+
+                    try {
+                        await sendAdminPaymentFailedEmail(owner.name || "Student", owner.email);
+                    } catch (mailError) {
+                        console.error("Admin payment failed email failed:", mailError);
+                    }
+                }
+            }
             break;
         }
 
@@ -99,6 +148,12 @@ export async function POST(request: Request) {
                     await sendSubscriptionCanceledEmail(owner.email, owner.name || "Student");
                 } catch (mailError) {
                     console.error("Subscription canceled email failed:", mailError);
+                }
+
+                try {
+                    await sendAdminSubscriptionCanceledEmail(owner.name || "Student", owner.email);
+                } catch (mailError) {
+                    console.error("Admin subscription canceled email failed:", mailError);
                 }
             }
 

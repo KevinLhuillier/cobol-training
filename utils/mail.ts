@@ -98,6 +98,51 @@ export async function sendAdminNewSubscriptionEmail(studentName: string, student
 }
 
 /**
+ * Notifie le propriétaire de l'application qu'un abonnement vient d'être annulé (fin de période).
+ */
+export async function sendAdminSubscriptionCanceledEmail(studentName: string, studentEmail: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject: "Subscription canceled ❌",
+        html: renderAdminNotificationEmail(
+            "Subscription canceled",
+            `
+              <p style="margin: 0 0 4px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                A subscription just ended:
+              </p>
+              <p style="margin: 0; color: #0f172a; font-size: 15px; line-height: 22px;">
+                <strong>${studentName}</strong> — ${studentEmail}
+              </p>
+            `
+        ),
+    });
+}
+
+/**
+ * Notifie le propriétaire de l'application qu'un paiement d'abonnement a échoué
+ * (accès étudiant + compte TSO bloqués automatiquement en conséquence).
+ */
+export async function sendAdminPaymentFailedEmail(studentName: string, studentEmail: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject: "Payment failed ⚠️",
+        html: renderAdminNotificationEmail(
+            "Payment failed",
+            `
+              <p style="margin: 0 0 4px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                A subscription payment failed, access has been suspended for:
+              </p>
+              <p style="margin: 0; color: #0f172a; font-size: 15px; line-height: 22px;">
+                <strong>${studentName}</strong> — ${studentEmail}
+              </p>
+            `
+        ),
+    });
+}
+
+/**
  * Alerte le propriétaire de l'application lorsqu'il reste moins de 10 comptes TSO disponibles.
  */
 export async function sendAdminLowTsoAvailabilityEmail(availableCount: number) {
@@ -543,6 +588,68 @@ export async function sendSubscriptionCanceledEmail(toEmail: string, studentName
             <td align="center">
               <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
                 Subscribe again
+              </a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
+ * Envoie une notification lorsqu'un paiement d'abonnement échoue (webhook Stripe :
+ * customer.subscription.updated avec status past_due/unpaid) — accès et compte TSO déjà bloqués.
+ */
+export async function sendPaymentFailedEmail(toEmail: string, studentName: string) {
+    const settingsUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`;
+
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "Action required: your last payment failed",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 32px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                We were unable to process your last subscription payment. Your access to courses and to your Mainframe (TSO) account has been suspended until this is resolved.
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                Please update your payment method or contact us so we can help — access will be restored as soon as the payment goes through.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center">
+              <a href="${settingsUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                Go to Settings
               </a>
             </td>
           </tr>

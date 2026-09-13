@@ -18,6 +18,32 @@ export function SubscriptionStatus({ subscriptionStatus, trialDaysLeft }: Subscr
         );
     }
 
+    if (subscriptionStatus === "UNPAID") {
+        return (
+            <div className="space-y-3">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 text-red-700 text-sm font-bold">
+                    <Clock className="h-4 w-4 shrink-0" />
+                    Payment failed
+                </div>
+
+                <SubscribeButton className="w-full justify-center bg-blue-800 hover:bg-blue-900 shadow-md" />
+
+                <div className="px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+                    <p className="flex items-start gap-2 text-xs text-slate-500 leading-snug">
+                        <Check className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+                        Your last payment failed — access to courses and mainframe is suspended until it&apos;s resolved.
+                    </p>
+                    <p className="flex items-start gap-2 text-xs text-slate-500 leading-snug">
+                        <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+                        <a href="mailto:kevin@cobol-training.com" className="font-semibold text-slate-600 hover:underline">
+                            kevin@cobol-training.com
+                        </a>
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     const isTrialActive = trialDaysLeft > 0;
 
     return (
