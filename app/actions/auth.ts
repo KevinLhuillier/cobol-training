@@ -1,8 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendAdminNewRegistrationEmail } from "@/utils/mail";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendAdminNewRegistrationEmail, sendInviteEmail } from "@/utils/mail";
+import { generateTempPassword } from "@/utils/password";
 
 /**
  * Démarre l'essai de 7 jours de l'utilisateur connecté (idempotent : no-op s'il a déjà démarré).
@@ -210,6 +212,89 @@ export async function triggerWelcomeEmailAction() {
         return { success: true };
 
     } catch (globalError) {
+        return { error: "Internal Server Error" };
+    }
+}
+
+/**
+ * Invite un nouvel étudiant depuis /dashboard/admin/users : crée son compte avec un mot
+ * de passe auto-généré et lui envoie ses identifiants par email. Le compte est marqué
+ * INVITE_PENDING (start_trial() le fera automatiquement basculer vers TRIAL, et l'email
+ * de bienvenue partira normalement, dès sa toute première connexion).
+ */
+export async function inviteUser(name: string, email: string) {
+    try {
+        const trimmedName = name.trim();
+        const trimmedEmail = email.trim().toLowerCase();
+
+        if (!trimmedName) {
+            return { error: "Please enter a name." };
+        }
+        if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+            return { error: "Please enter a valid email address." };
+        }
+
+        // Sécurité : seul un admin authentifié peut inviter un utilisateur.
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { error: "Unauthorized" };
+        }
+
+        const { data: profile } = await supabase
+            .from("users")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+
+        if (!profile || profile.role !== "ADMIN") {
+            return { error: "Forbidden" };
+        }
+
+        const admin = createAdminClient();
+        const tempPassword = generateTempPassword();
+
+        // email_confirm: true — pas de flow de confirmation pour un compte créé par un admin.
+        const { data: created, error: createError } = await admin.auth.admin.createUser({
+            email: trimmedEmail,
+            password: tempPassword,
+            email_confirm: true,
+            user_metadata: { name: trimmedName },
+        });
+
+        if (createError || !created?.user) {
+            if (createError?.message?.toLowerCase().includes("already been registered") ||
+                createError?.message?.toLowerCase().includes("already registered")) {
+                return { error: "This email address is already in use." };
+            }
+            console.error("inviteUser createUser failed:", createError);
+            return { error: createError?.message || "Unable to create the account." };
+        }
+
+        // Le trigger on_auth_user_created a déjà inséré la ligne public.users (role USER,
+        // subscription_status NULL) : on la marque explicitement comme invitation en attente.
+        const { error: statusError } = await admin
+            .from("users")
+            .update({ subscription_status: "INVITE_PENDING" })
+            .eq("id", created.user.id);
+
+        if (statusError) {
+            console.error("inviteUser status update failed:", statusError);
+        }
+
+        const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/login`;
+
+        try {
+            await sendInviteEmail(trimmedEmail, trimmedName, tempPassword, loginUrl);
+        } catch (mailError) {
+            console.error("Invite email failed:", mailError);
+            return { error: "Account created, but the invitation email failed to send." };
+        }
+
+        revalidatePath("/dashboard/admin/users");
+        return { success: true };
+    } catch (globalError) {
+        console.error("inviteUser failed:", globalError);
         return { error: "Internal Server Error" };
     }
 }

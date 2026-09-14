@@ -236,6 +236,90 @@ export async function sendWelcomeEmail(toEmail: string, studentName: string, das
     });
 }
 
+/**
+ * Envoie les identifiants de connexion à un étudiant invité par un admin depuis
+ * /dashboard/admin/users (compte créé directement, sans passage par la page d'inscription).
+ */
+export async function sendInviteEmail(toEmail: string, studentName: string, password: string, loginUrl: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "You've been invited to Cobol Training 🎓",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 24px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                You've been invited to Cobol Training, our dedicated COBOL and Mainframe learning platform. An account has been created for you — here are your login credentials:
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding-bottom: 24px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0f172a; border-radius: 16px; padding: 24px;">
+                <tr>
+                  <td style="padding-bottom: 12px;">
+                    <p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Email</p>
+                    <p style="margin: 0; color: #34d399; font-size: 16px; font-weight: 700; font-family: 'Courier New', Courier, monospace;">${toEmail}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Password</p>
+                    <p style="margin: 0; color: #ffffff; font-size: 16px; font-weight: 700; font-family: 'Courier New', Courier, monospace;">${password}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding-bottom: 16px;">
+              <a href="${loginUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                Log in to your account
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left">
+              <p style="margin: 0; color: #94a3b8; font-size: 12px; line-height: 18px;">
+                For your security, we recommend changing this password from your account settings after your first login.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
 export type TsoAccessInfo =
     | { type: "subscription" }
     | { type: "trial"; endsAt: string };
