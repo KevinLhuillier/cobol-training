@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/utils/supabase/admin";
-import { sendTrialExpiredEmail } from "@/utils/mail";
+import { sendTrialExpiredEmail, sendAdminTrialExpiredEmail } from "@/utils/mail";
 
 export const runtime = "nodejs";
 
@@ -30,6 +30,11 @@ export async function GET(request: Request) {
             await sendTrialExpiredEmail(expiredUser.email, expiredUser.name || "Student");
         } catch (mailError) {
             console.error("Trial expired email failed:", mailError);
+        }
+        try {
+            await sendAdminTrialExpiredEmail(expiredUser.name || "Student", expiredUser.email);
+        } catch (mailError) {
+            console.error("Admin trial expired email failed:", mailError);
         }
     }
 

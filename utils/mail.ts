@@ -143,6 +143,29 @@ export async function sendAdminPaymentFailedEmail(studentName: string, studentEm
 }
 
 /**
+ * Notifie le propriétaire de l'application qu'un essai gratuit vient d'expirer pour un étudiant
+ * (cron expire-trials).
+ */
+export async function sendAdminTrialExpiredEmail(studentName: string, studentEmail: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject: "Trial ended ⏳",
+        html: renderAdminNotificationEmail(
+            "Trial ended",
+            `
+              <p style="margin: 0 0 4px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                A free trial just ended for:
+              </p>
+              <p style="margin: 0; color: #0f172a; font-size: 15px; line-height: 22px;">
+                <strong>${studentName}</strong> — ${studentEmail}
+              </p>
+            `
+        ),
+    });
+}
+
+/**
  * Alerte le propriétaire de l'application lorsqu'il reste moins de 10 comptes TSO disponibles.
  */
 export async function sendAdminLowTsoAvailabilityEmail(availableCount: number) {
