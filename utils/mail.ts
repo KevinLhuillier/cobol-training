@@ -907,6 +907,64 @@ export async function sendTrialEndingSoonEmail(toEmail: string, studentName: str
 }
 
 /**
+ * Envoie un message personnel de suivi 3 jours après le démarrage de l'essai gratuit
+ * (cron expire-trials) pour vérifier que l'accès au mainframe se passe bien.
+ */
+export async function sendTrialCheckInEmail(toEmail: string, studentName: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "How's it going so far?",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                I hope you're doing well.
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                I just wanted to check in and see how the training is going for you.
+                Are you able to connect to the mainframe without any issues?
+              </p>
+              <p style="margin: 0; color: #0f172a; font-size: 15px;">
+                All the best,<br>
+                Kevin<br>
+                Cobol Training
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
  * Envoie une notification lorsque l'essai gratuit vient d'expirer (cron expire-trials)
  */
 export async function sendTrialExpiredEmail(toEmail: string, studentName: string) {
