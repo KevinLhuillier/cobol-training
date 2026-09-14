@@ -841,6 +841,72 @@ export async function sendPasswordResetEmail(toEmail: string, studentName: strin
 }
 
 /**
+ * Envoie un rappel la veille de la fin de l'essai gratuit (cron expire-trials)
+ */
+export async function sendTrialEndingSoonEmail(toEmail: string, studentName: string, trialEndsAt: string) {
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+    const formattedDate = new Date(trialEndsAt).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    });
+
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "Your free trial ends tomorrow ⏳",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 32px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                As a reminder, your free trial ends on <strong>${formattedDate}</strong>. After that, you'll lose access to your courses and your Mainframe (TSO) account.
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                Subscribe now to keep access without interruption.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center">
+              <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                Subscribe now
+              </a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
  * Envoie une notification lorsque l'essai gratuit vient d'expirer (cron expire-trials)
  */
 export async function sendTrialExpiredEmail(toEmail: string, studentName: string) {
