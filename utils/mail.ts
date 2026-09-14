@@ -168,7 +168,7 @@ export async function sendWelcomeEmail(toEmail: string, studentName: string, das
     return await resend.emails.send({
         from: FROM_EMAIL,
         to: toEmail,
-        subject: "Welcome to your student workspace! 🚀",
+        subject: "Welcome to your workspace! 🚀",
         html: `
 <!DOCTYPE html>
 <html lang="en">
@@ -205,7 +205,7 @@ export async function sendWelcomeEmail(toEmail: string, studentName: string, das
                 Welcome aboard, ${studentName}!
               </p>
               <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
-                Welcome to our dedicated COBOL and Mainframe learning platform. Here, you will find comprehensive courses and hands-on exercises, giving you the unique opportunity to practice directly on a live TSO environment.
+                Welcome to our dedicated Cobol and Mainframe learning platform. Here, you will find comprehensive courses and hands-on exercises, giving you the unique opportunity to practice directly on a live TSO environment.
               </p>
               <p style="margin: 0 0 24px 0; color: #64748b; font-size: 15px; line-height: 24px;">
                 Feel free to reach out if you have any questions along the way. I'm here to help!
@@ -270,7 +270,7 @@ export async function sendInviteEmail(toEmail: string, studentName: string, pass
                 Hello ${studentName},
               </p>
               <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
-                You've been invited to Cobol Training, our dedicated COBOL and Mainframe learning platform. An account has been created for you — here are your login credentials:
+                You've been invited to Cobol Training, our dedicated Cobol and Mainframe learning platform. An account has been created for you — here are your login credentials:
               </p>
             </td>
           </tr>
