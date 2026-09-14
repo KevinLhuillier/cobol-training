@@ -15,6 +15,8 @@ export default async function DashboardLayout({
     let userName = "Student";
     let subscriptionStatus: string | null = null;
     let trialDaysLeft = 0;
+    let unreadMessagesCount = 0;
+    let userId: string | null = null;
 
     try {
         const supabase = await createClient();
@@ -23,6 +25,8 @@ export default async function DashboardLayout({
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
+            userId = user.id;
+
             // Filet de sécurité : démarre l'essai si ce n'est pas déjà fait (idempotent côté DB).
             // Nécessaire ici aussi (et pas seulement dans dashboard/page.tsx) car ce layout et la
             // page qu'il englobe sont deux composants serveur fetchés en parallèle par Next.js :
@@ -48,6 +52,13 @@ export default async function DashboardLayout({
                     trialDaysLeft = diffMs > 0 ? Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24))) : 0;
                 }
             }
+
+            // 3. Nombre de messages non lus (badge sidebar) — fonction SECURITY DEFINER
+            // qui s'adapte déjà au rôle de l'appelant (cf. unread_messages_count()).
+            const { data: unreadCount } = await supabase.rpc("unread_messages_count");
+            if (typeof unreadCount === "number") {
+                unreadMessagesCount = unreadCount;
+            }
         }
     } catch (error) {
         console.error("Erreur de récupération du rôle dans le layout:", error);
@@ -60,9 +71,11 @@ export default async function DashboardLayout({
         <DashboardLayoutWrapper
             sidebar={
                 <Sidebar
+                    userId={userId}
                     isAdmin={isAdmin}
                     subscriptionStatus={subscriptionStatus}
                     trialDaysLeft={trialDaysLeft}
+                    unreadMessagesCount={unreadMessagesCount}
                 />
             }
             header={
