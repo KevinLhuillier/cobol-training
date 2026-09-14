@@ -4,9 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Users, UserCheck, Clock, AlertTriangle } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { cn } from "@/lib/utils";
+import { InviteUserDialog } from "@/components/admin/invite-user-dialog";
 
 const STATUS_FILTERS = [
     { value: "ALL", label: "All" },
+    { value: "INVITE_PENDING", label: "Invite pending" },
     { value: "TRIAL", label: "Trial" },
     { value: "ACTIVE", label: "Active" },
     { value: "UNPAID", label: "Unpaid" },
@@ -26,6 +28,8 @@ function getStatusBadge(status: string | null) {
             return <Badge className="border-none bg-slate-200 text-slate-600 hover:bg-slate-200">Canceled</Badge>;
         case "EXPIRED":
             return <Badge className="border-none bg-slate-100 text-slate-500 hover:bg-slate-100">Expired</Badge>;
+        case "INVITE_PENDING":
+            return <Badge className="border-none bg-blue-100 text-blue-700 hover:bg-blue-100">Invite pending</Badge>;
         default:
             return <Badge className="border-none bg-slate-100 text-slate-400 hover:bg-slate-100">No subscription</Badge>;
     }
@@ -94,12 +98,15 @@ export default async function AdminUsersPage({
                     </div>
                 </div>
 
-                <Link
-                    href="/dashboard/admin"
-                    className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors px-4 py-2"
-                >
-                    Back to admin
-                </Link>
+                <div className="flex items-center gap-2">
+                    <InviteUserDialog />
+                    <Link
+                        href="/dashboard/admin"
+                        className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors px-4 py-2"
+                    >
+                        Back to admin
+                    </Link>
+                </div>
             </header>
 
             <main className="w-full mx-auto">

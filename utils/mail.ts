@@ -143,6 +143,29 @@ export async function sendAdminPaymentFailedEmail(studentName: string, studentEm
 }
 
 /**
+ * Notifie le propriétaire de l'application qu'un essai gratuit vient d'expirer pour un étudiant
+ * (cron expire-trials).
+ */
+export async function sendAdminTrialExpiredEmail(studentName: string, studentEmail: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject: "Trial ended ⏳",
+        html: renderAdminNotificationEmail(
+            "Trial ended",
+            `
+              <p style="margin: 0 0 4px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                A free trial just ended for:
+              </p>
+              <p style="margin: 0; color: #0f172a; font-size: 15px; line-height: 22px;">
+                <strong>${studentName}</strong> — ${studentEmail}
+              </p>
+            `
+        ),
+    });
+}
+
+/**
  * Alerte le propriétaire de l'application lorsqu'il reste moins de 10 comptes TSO disponibles.
  */
 export async function sendAdminLowTsoAvailabilityEmail(availableCount: number) {
@@ -168,7 +191,7 @@ export async function sendWelcomeEmail(toEmail: string, studentName: string, das
     return await resend.emails.send({
         from: FROM_EMAIL,
         to: toEmail,
-        subject: "Welcome to your student workspace! 🚀",
+        subject: "Welcome to your workspace! 🚀",
         html: `
 <!DOCTYPE html>
 <html lang="en">
@@ -205,7 +228,7 @@ export async function sendWelcomeEmail(toEmail: string, studentName: string, das
                 Welcome aboard, ${studentName}!
               </p>
               <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
-                Welcome to our dedicated COBOL and Mainframe learning platform. Here, you will find comprehensive courses and hands-on exercises, giving you the unique opportunity to practice directly on a live TSO environment.
+                Welcome to our dedicated Cobol and Mainframe learning platform. Here, you will find comprehensive courses and hands-on exercises, giving you the unique opportunity to practice directly on a live TSO environment.
               </p>
               <p style="margin: 0 0 24px 0; color: #64748b; font-size: 15px; line-height: 24px;">
                 Feel free to reach out if you have any questions along the way. I'm here to help!
@@ -223,6 +246,90 @@ export async function sendWelcomeEmail(toEmail: string, studentName: string, das
               <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
                 Go to your Dashboard
               </a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
+ * Envoie les identifiants de connexion à un étudiant invité par un admin depuis
+ * /dashboard/admin/users (compte créé directement, sans passage par la page d'inscription).
+ */
+export async function sendInviteEmail(toEmail: string, studentName: string, password: string, loginUrl: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "You've been invited to Cobol Training 🎓",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 24px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                You've been invited to Cobol Training, our dedicated Cobol and Mainframe learning platform. An account has been created for you — here are your login credentials:
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding-bottom: 24px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0f172a; border-radius: 16px; padding: 24px;">
+                <tr>
+                  <td style="padding-bottom: 12px;">
+                    <p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Email</p>
+                    <p style="margin: 0; color: #34d399; font-size: 16px; font-weight: 700; font-family: 'Courier New', Courier, monospace;">${toEmail}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Password</p>
+                    <p style="margin: 0; color: #ffffff; font-size: 16px; font-weight: 700; font-family: 'Courier New', Courier, monospace;">${password}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding-bottom: 16px;">
+              <a href="${loginUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                Log in to your account
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left">
+              <p style="margin: 0; color: #94a3b8; font-size: 12px; line-height: 18px;">
+                For your security, we recommend changing this password from your account settings after your first login.
+              </p>
             </td>
           </tr>
 
@@ -719,6 +826,130 @@ export async function sendPasswordResetEmail(toEmail: string, studentName: strin
             <td align="left">
               <p style="margin: 0; color: #94a3b8; font-size: 12px; line-height: 18px;">
                 For your security, this link will expire shortly. If it does, just request a new one from the login page.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
+ * Envoie un rappel la veille de la fin de l'essai gratuit (cron expire-trials)
+ */
+export async function sendTrialEndingSoonEmail(toEmail: string, studentName: string, trialEndsAt: string) {
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+    const formattedDate = new Date(trialEndsAt).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    });
+
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "Your free trial ends tomorrow ⏳",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 32px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                As a reminder, your free trial ends on <strong>${formattedDate}</strong>. After that, you'll lose access to your courses and your Mainframe (TSO) account.
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                Subscribe now to keep access without interruption.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center">
+              <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                Subscribe now
+              </a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `
+    });
+}
+
+/**
+ * Envoie un message personnel de suivi 3 jours après le démarrage de l'essai gratuit
+ * (cron expire-trials) pour vérifier que l'accès au mainframe se passe bien.
+ */
+export async function sendTrialCheckInEmail(toEmail: string, studentName: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "How's it going so far?",
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                I hope you're doing well.
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
+                I just wanted to check in and see how the training is going for you.
+                Are you able to connect to the mainframe without any issues?
+              </p>
+              <p style="margin: 0; color: #0f172a; font-size: 15px;">
+                All the best,<br>
+                Kevin<br>
+                Cobol Training
               </p>
             </td>
           </tr>

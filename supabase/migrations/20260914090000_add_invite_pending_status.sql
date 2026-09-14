@@ -1,0 +1,12 @@
+-- ==========================================
+-- INVITATION ADMIN : STATUT "INVITE_PENDING"
+-- Différencie un compte créé par un admin (email d'invitation envoyé, identifiants
+-- auto-générés) d'un compte qui vient de s'inscrire lui-même : les deux ont
+-- subscription_status/trial_ends_at à NULL jusqu'à leur toute première connexion,
+-- mais seul le premier doit rester visible comme "en attente" dans /dashboard/admin/users
+-- tant que la personne invitée ne s'est pas encore connectée.
+-- start_trial() (add_subscriptions.sql) bascule déjà n'importe quel statut vers TRIAL
+-- au premier login puisqu'il ne teste que "trial_ends_at IS NULL", donc aucune
+-- modification n'est nécessaire côté fonction : INVITE_PENDING -> TRIAL est automatique.
+-- ==========================================
+ALTER TYPE subscription_status ADD VALUE 'INVITE_PENDING';

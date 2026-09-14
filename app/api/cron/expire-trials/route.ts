@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/utils/supabase/admin";
-import { sendTrialExpiredEmail } from "@/utils/mail";
+import { sendTrialExpiredEmail, sendAdminTrialExpiredEmail, sendTrialEndingSoonEmail, sendTrialCheckInEmail } from "@/utils/mail";
 
 export const runtime = "nodejs";
 
@@ -31,9 +31,70 @@ export async function GET(request: Request) {
         } catch (mailError) {
             console.error("Trial expired email failed:", mailError);
         }
+        try {
+            await sendAdminTrialExpiredEmail(expiredUser.name || "Student", expiredUser.email);
+        } catch (mailError) {
+            console.error("Admin trial expired email failed:", mailError);
+        }
     }
 
-    // 2. Bloque les comptes TSO des utilisateurs qui n'ont plus d'accès actif.
+    // 2. Prévient les utilisateurs dont l'essai se termine demain (fenêtre de 24h à 48h,
+    // trial_reminder_sent_at évite un second envoi si un run ultérieur retombe dans la fenêtre).
+    const { data: endingSoonUsers, error: endingSoonError } = await supabase
+        .from("users")
+        .select("id, email, name, trial_ends_at")
+        .eq("subscription_status", "TRIAL")
+        .is("trial_reminder_sent_at", null)
+        .gt("trial_ends_at", new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString())
+        .lte("trial_ends_at", new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString());
+
+    if (endingSoonError) {
+        console.error("Failed to fetch users with trial ending soon:", endingSoonError);
+        return new Response("Failed to fetch users with trial ending soon", { status: 500 });
+    }
+
+    for (const endingSoonUser of endingSoonUsers || []) {
+        if (!endingSoonUser.email || !endingSoonUser.trial_ends_at) continue;
+        try {
+            await sendTrialEndingSoonEmail(endingSoonUser.email, endingSoonUser.name || "Student", endingSoonUser.trial_ends_at);
+            await supabase
+                .from("users")
+                .update({ trial_reminder_sent_at: new Date().toISOString() })
+                .eq("id", endingSoonUser.id);
+        } catch (mailError) {
+            console.error("Trial ending soon email failed:", mailError);
+        }
+    }
+
+    // 3. Envoie un message personnel de suivi aux utilisateurs dont l'essai a démarré il y a 3 jours
+    // (fenêtre de J+3 à J+4, trial_checkin_sent_at évite un second envoi).
+    const { data: checkInUsers, error: checkInError } = await supabase
+        .from("users")
+        .select("id, email, name")
+        .eq("subscription_status", "TRIAL")
+        .is("trial_checkin_sent_at", null)
+        .gt("trial_ends_at", new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString())
+        .lte("trial_ends_at", new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString());
+
+    if (checkInError) {
+        console.error("Failed to fetch users for trial check-in:", checkInError);
+        return new Response("Failed to fetch users for trial check-in", { status: 500 });
+    }
+
+    for (const checkInUser of checkInUsers || []) {
+        if (!checkInUser.email) continue;
+        try {
+            await sendTrialCheckInEmail(checkInUser.email, checkInUser.name || "Student");
+            await supabase
+                .from("users")
+                .update({ trial_checkin_sent_at: new Date().toISOString() })
+                .eq("id", checkInUser.id);
+        } catch (mailError) {
+            console.error("Trial check-in email failed:", mailError);
+        }
+    }
+
+    // 4. Bloque les comptes TSO des utilisateurs qui n'ont plus d'accès actif.
     const { data: lockedOutUsers, error: lockedOutError } = await supabase
         .from("users")
         .select("id")
