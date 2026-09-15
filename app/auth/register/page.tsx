@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { LogoCtIcon } from "@/components/logo-ct-icon";
-import { notifyAdminNewRegistration } from "@/app/actions/auth";
+import { notifyAdminNewRegistration, checkRegistrationAllowed } from "@/app/actions/auth";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -43,7 +43,22 @@ export default function RegisterPage() {
             return;
         }
 
-// 2. Supabase Auth call
+// 2. Anti-abus : refuse l'inscription si cette IP a déjà servi à se connecter à un
+        // autre compte (évite qu'une même personne cumule plusieurs essais gratuits).
+        try {
+            const { allowed } = await checkRegistrationAllowed(name, email);
+            if (!allowed) {
+                setError("Registration failed. Please try again later.");
+                setIsLoading(false);
+                return;
+            }
+        } catch (checkError) {
+            console.error("checkRegistrationAllowed error:", checkError);
+            // En cas d'échec de la vérification, on laisse l'inscription se poursuivre
+            // plutôt que de bloquer un utilisateur légitime.
+        }
+
+        // 3. Supabase Auth call
         try {
             const { data, error: supabaseError } = await supabase.auth.signUp({
                 email,
@@ -79,12 +94,12 @@ export default function RegisterPage() {
                 return;
             }
 
-            // 3. Notify the app owner of the new registration (best-effort, non-blocking)
+            // 4. Notify the app owner of the new registration (best-effort, non-blocking)
             notifyAdminNewRegistration(email).catch((notifyError) => {
                 console.error("Admin registration notification failed:", notifyError);
             });
 
-            // 4. Success: Redirect
+            // 5. Success: Redirect
             router.push("/auth/login?registered=true");
 
         } catch (err) {

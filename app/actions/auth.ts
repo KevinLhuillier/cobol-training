@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendAdminNewRegistrationEmail, sendInviteEmail } from "@/utils/mail";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendAdminNewRegistrationEmail, sendAdminRegistrationBlockedEmail, sendInviteEmail } from "@/utils/mail";
 import { generateTempPassword } from "@/utils/password";
+import { getClientIpAndCountry } from "@/utils/request-info";
 
 /**
  * Démarre l'essai de 7 jours de l'utilisateur connecté (idempotent : no-op s'il a déjà démarré).
@@ -26,6 +27,88 @@ export async function ensureTrialStarted() {
         return { success: true };
     } catch (globalError) {
         return { error: "Internal Server Error" };
+    }
+}
+
+/**
+ * Enregistre la connexion de l'utilisateur (IP, pays, horodatage) dans la table de
+ * traçabilité (idempotent : dédupliqué sur signed_in_at = auth.users.last_sign_in_at,
+ * donc sans effet si ce composant serveur est rendu plusieurs fois pour la même session
+ * — cf. le commentaire sur ensureTrialStarted).
+ */
+export async function recordLoginEvent() {
+    try {
+        const supabase = await createClient();
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.last_sign_in_at) {
+            return { error: "Unauthorized" };
+        }
+
+        const { ip, country } = await getClientIpAndCountry();
+        if (!ip) {
+            return { error: "Unable to determine IP address." };
+        }
+
+        const { error } = await supabase.from("login_events").insert({
+            user_id: user.id,
+            ip_address: ip,
+            country,
+            signed_in_at: user.last_sign_in_at,
+        });
+
+        // 23505 = violation de contrainte unique : déjà enregistrée pour cette connexion.
+        if (error && error.code !== "23505") {
+            return { error: error.message };
+        }
+
+        return { success: true };
+    } catch (globalError) {
+        return { error: "Internal Server Error" };
+    }
+}
+
+/**
+ * Vérifie, avant inscription, que l'IP du visiteur n'a jamais servi à se connecter à un
+ * compte existant (anti multi-comptes / multi-essais gratuits avec des emails différents).
+ * En cas de doute (IP indéterminable, erreur base) on laisse passer plutôt que de bloquer
+ * une inscription légitime. En cas de blocage, prévient l'admin par email (best-effort, sans
+ * jamais inclure le mot de passe saisi) pour qu'il soit informé de la tentative.
+ */
+export async function checkRegistrationAllowed(name: string, email: string) {
+    try {
+        const { ip, country } = await getClientIpAndCountry();
+        if (!ip) {
+            return { allowed: true };
+        }
+
+        const admin = createAdminClient();
+        const { data, error } = await admin
+            .from("login_events")
+            .select("id")
+            .eq("ip_address", ip)
+            .limit(1)
+            .maybeSingle();
+
+        if (error) {
+            console.error("checkRegistrationAllowed failed:", error);
+            return { allowed: true };
+        }
+
+        const allowed = !data;
+
+        if (!allowed) {
+            try {
+                await sendAdminRegistrationBlockedEmail(name.trim(), email.trim().toLowerCase(), ip, country);
+            } catch (mailError) {
+                console.error("Admin registration-blocked email failed:", mailError);
+            }
+        }
+
+        return { allowed };
+    } catch (globalError) {
+        console.error("checkRegistrationAllowed failed:", globalError);
+        return { allowed: true };
     }
 }
 

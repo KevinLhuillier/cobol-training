@@ -53,8 +53,8 @@ export default function NewCoursePage() {
                 throw new Error(insertError.message || "Failed to create course");
             }
 
-            // Redirection vers le dashboard admin après succès
-            router.push("/dashboard/admin");
+            // Redirection vers la liste des cours après succès
+            router.push("/dashboard/admin/courses");
             router.refresh(); // Force le rafraîchissement des données
 
         } catch (err) {
@@ -74,7 +74,7 @@ export default function NewCoursePage() {
                 {/* Header */}
                 <div className="mb-8 flex items-center gap-4">
                     <Link
-                        href="/dashboard/admin"
+                        href="/dashboard/admin/courses"
                         className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
                     >
                         <ArrowLeft className="h-5 w-5" />
@@ -147,7 +147,7 @@ export default function NewCoursePage() {
                         {/* SUBMIT BUTTON */}
                         <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
                             <Link
-                                href="/dashboard/admin"
+                                href="/dashboard/admin/courses"
                                 className="px-6 h-12 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-colors flex items-center justify-center"
                             >
                                 Cancel

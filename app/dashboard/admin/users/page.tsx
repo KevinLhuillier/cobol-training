@@ -68,6 +68,21 @@ export default async function AdminUsersPage({
 
     const users = allUsers || [];
 
+    // 2bis. Dernière connexion de chaque utilisateur (pour la colonne "Last login") : on lit tout
+    // l'historique trié du plus récent au plus ancien et on ne garde que la première occurrence
+    // (= la plus récente) par utilisateur.
+    const { data: recentLogins } = await supabase
+        .from("login_events")
+        .select("user_id, signed_in_at")
+        .order("signed_in_at", { ascending: false });
+
+    const lastLoginByUserId = new Map<string, string>();
+    for (const event of recentLogins || []) {
+        if (!lastLoginByUserId.has(event.user_id)) {
+            lastLoginByUserId.set(event.user_id, event.signed_in_at);
+        }
+    }
+
     // 3. Statistiques (calculées sur l'ensemble des utilisateurs, indépendamment du filtre actif)
     const totalUsers = users.length;
     const activeUsers = users.filter(u => u.subscription_status === "ACTIVE").length;
@@ -182,7 +197,7 @@ export default async function AdminUsersPage({
                                 <th className="p-4 font-bold">Name</th>
                                 <th className="p-4 font-bold">Email</th>
                                 <th className="p-4 font-bold">Status</th>
-                                <th className="p-4 font-bold">Registered on</th>
+                                <th className="p-4 font-bold">Last login</th>
                             </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -193,28 +208,41 @@ export default async function AdminUsersPage({
                                     </td>
                                 </tr>
                             ) : (
-                                filteredUsers.map((u) => (
-                                    <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="p-4">
-                                            <p className="font-bold text-slate-900">{u.name || "—"}</p>
-                                        </td>
-                                        <td className="p-4">
-                                            <p className="text-sm text-slate-600">{u.email}</p>
-                                        </td>
-                                        <td className="p-4">
-                                            {getStatusBadge(u.subscription_status)}
-                                        </td>
-                                        <td className="p-4">
-                                            <span className="text-sm text-slate-600">
-                                                {new Date(u.created_at).toLocaleDateString("en-US", {
-                                                    year: "numeric",
-                                                    month: "short",
-                                                    day: "numeric",
-                                                })}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))
+                                filteredUsers.map((u) => {
+                                    const lastLogin = lastLoginByUserId.get(u.id);
+                                    return (
+                                        <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="p-0">
+                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block p-4">
+                                                    <p className="font-bold text-slate-900">{u.name || "—"}</p>
+                                                </Link>
+                                            </td>
+                                            <td className="p-0">
+                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block p-4">
+                                                    <p className="text-sm text-slate-600">{u.email}</p>
+                                                </Link>
+                                            </td>
+                                            <td className="p-0">
+                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block p-4">
+                                                    {getStatusBadge(u.subscription_status)}
+                                                </Link>
+                                            </td>
+                                            <td className="p-0">
+                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block p-4">
+                                                    <span className="text-sm text-slate-600">
+                                                        {lastLogin
+                                                            ? new Date(lastLogin).toLocaleDateString("en-US", {
+                                                                year: "numeric",
+                                                                month: "short",
+                                                                day: "numeric",
+                                                            })
+                                                            : "Never"}
+                                                    </span>
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                             </tbody>
                         </table>

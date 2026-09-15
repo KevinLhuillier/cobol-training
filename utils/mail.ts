@@ -76,6 +76,33 @@ export async function sendAdminNewRegistrationEmail(studentName: string, student
 }
 
 /**
+ * Notifie le propriétaire de l'application qu'une inscription a été refusée parce que l'IP
+ * du visiteur avait déjà servi à se connecter à un autre compte (cf. checkRegistrationAllowed).
+ * N'inclut jamais le mot de passe saisi.
+ */
+export async function sendAdminRegistrationBlockedEmail(name: string, email: string, ip: string, country: string | null) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject: "Registration blocked (duplicate IP) 🚫",
+        html: renderAdminNotificationEmail(
+            "Registration blocked",
+            `
+              <p style="margin: 0 0 4px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                A registration attempt was blocked because this IP address was already linked to an existing account:
+              </p>
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 15px; line-height: 22px;">
+                <strong>${name}</strong> — ${email}
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                IP: <strong style="color: #0f172a;">${ip}</strong>${country ? ` — Country: <strong style="color: #0f172a;">${country}</strong>` : ""}
+              </p>
+            `
+        ),
+    });
+}
+
+/**
  * Notifie le propriétaire de l'application qu'un nouvel abonnement vient d'être souscrit.
  */
 export async function sendAdminNewSubscriptionEmail(studentName: string, studentEmail: string) {
