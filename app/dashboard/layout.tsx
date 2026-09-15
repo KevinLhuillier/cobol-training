@@ -3,7 +3,7 @@ import { DashboardLayoutWrapper } from "@/components/dashboard-layout-wrapper";
 import { Badge } from "@/components/ui/badge";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
-import { ensureTrialStarted } from "@/app/actions/auth";
+import { ensureTrialStarted, recordLoginEvent } from "@/app/actions/auth";
 import { LogoCtIcon } from "@/components/logo-ct-icon";
 
 export default async function DashboardLayout({
@@ -33,6 +33,10 @@ export default async function DashboardLayout({
             // sans cet appel, le badge d'abonnement peut lire le statut AVANT que la page ne
             // démarre l'essai, et afficher "Trial ended" jusqu'au prochain refresh.
             await ensureTrialStarted();
+
+            // Traçabilité : enregistre IP/pays/horodatage de cette connexion (idempotent,
+            // même raison que ci-dessus pour l'appeler ici plutôt que juste après le login).
+            await recordLoginEvent();
 
             // 2. Récupération de son profil public (rôle, nom et statut d'abonnement)
             const { data: profile } = await supabase
