@@ -4,13 +4,17 @@ import { ArrowLeft, CheckCircle2, Sparkles } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { CheckoutButton } from "@/components/checkout-button";
 
-const FEATURES = [
-    "Access to all modules",
-    "Quizzes, exercises, and a final project",
-    "Mainframe Access",
-    "Personalized feedback on exercises",
-    "Support on Teams with the instructor",
-];
+const DEFAULT_OFFER = {
+    title: "Cobol Training subscription",
+    priceCents: 1500,
+    features: [
+        "Access to all modules",
+        "Quizzes, exercises, and a final project",
+        "Mainframe Access",
+        "Personalized feedback on exercises",
+        "Support on Teams with the instructor",
+    ],
+};
 
 export default async function SubscribePage() {
     const supabase = await createClient();
@@ -18,13 +22,16 @@ export default async function SubscribePage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return redirect("/auth/login");
 
-    const { data: profile } = await supabase
-        .from("users")
-        .select("subscription_status")
-        .eq("id", user.id)
-        .single();
+    const [{ data: profile }, { data: offer }] = await Promise.all([
+        supabase.from("users").select("subscription_status").eq("id", user.id).single(),
+        supabase.from("offer_settings").select("title, price_cents, features").eq("id", 1).single(),
+    ]);
 
     const isActive = profile?.subscription_status === "ACTIVE";
+    const title = offer?.title || DEFAULT_OFFER.title;
+    const priceCents = offer?.price_cents ?? DEFAULT_OFFER.priceCents;
+    const features = offer?.features?.length ? offer.features : DEFAULT_OFFER.features;
+    const price = (priceCents / 100).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
     return (
         <div className="max-w-xl mx-auto font-sans">
@@ -41,16 +48,16 @@ export default async function SubscribePage() {
                     <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-4">
                         <Sparkles className="h-6 w-6 text-emerald-400" />
                     </div>
-                    <h1 className="text-xl font-extrabold text-white">Cobol Training subscription</h1>
+                    <h1 className="text-xl font-extrabold text-white">{title}</h1>
                     <div className="mt-4 flex items-end justify-center gap-1">
-                        <span className="text-4xl font-extrabold text-white">€15</span>
-                        <span className="text-sm font-semibold text-slate-400 mb-1">HT / month</span>
+                        <span className="text-4xl font-extrabold text-white">€{price}</span>
+                        <span className="text-sm font-semibold text-slate-400 mb-1">excl. VAT / month</span>
                     </div>
                 </div>
 
                 <div className="p-8">
                     <ul className="space-y-4 mb-8">
-                        {FEATURES.map((feature) => (
+                        {features.map((feature: string) => (
                             <li key={feature} className="flex items-start gap-3">
                                 <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
                                 <span className="text-sm font-medium text-slate-700">{feature}</span>

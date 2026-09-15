@@ -65,7 +65,7 @@ export default async function CourseDetailsPage({ params }: { params: Promise<an
                     <div className="flex items-center gap-4">
                         {/* 🟢 Lien mis à jour vers le nouveau chemin */}
                         <Link
-                            href="/dashboard/admin"
+                            href="/dashboard/admin/courses"
                             className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
                         >
                             <ArrowLeft className="h-5 w-5" />
