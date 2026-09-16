@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export default async function proxy(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+
     // 1. On initialise la réponse que le proxy va renvoyer
     let supabaseResponse = NextResponse.next({
         request: {
@@ -35,8 +37,14 @@ export default async function proxy(request: NextRequest) {
     // 3. Supabase vérifie la validité du token dans ses propres cookies
     const { data: { user } } = await supabase.auth.getUser();
 
-    const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard');
-    const isLoginRoute = request.nextUrl.pathname.startsWith('/auth/login');
+    const isDashboardRoute = pathname.startsWith('/dashboard');
+    const isLoginRoute = pathname.startsWith('/auth/login');
+
+    // Chemins qui doivent rester joignables même en mode maintenance : la page de maintenance
+    // elle-même (sinon boucle de redirection), tout /auth (sinon un admin déconnecté ne pourrait
+    // plus jamais se reconnecter pour désactiver le mode) et les endpoints API appelés par des
+    // services externes (webhook Stripe, cron) qui doivent continuer à fonctionner.
+    const isMaintenanceExempt = pathname === '/maintenance' || pathname.startsWith('/auth') || pathname.startsWith('/api');
 
     // On ne redirige QUE si l'utilisateur essaie de charger la page visuellement (GET)
     // On laisse passer toutes les autres méthodes (POST, PUT, DELETE) utilisées par les Server Actions et API
@@ -51,16 +59,43 @@ export default async function proxy(request: NextRequest) {
         if (isLoginRoute && user) {
             return NextResponse.redirect(new URL('/dashboard', request.url));
         }
+
+        // Mode maintenance (cf. /dashboard/admin, bouton géré par app/actions/maintenance.ts) :
+        // redirige tout le monde vers /maintenance, sauf les admins déjà connectés — qui doivent
+        // pouvoir continuer à naviguer normalement pour repasser le bouton en OFF.
+        if (!isMaintenanceExempt) {
+            const { data: settings } = await supabase
+                .from('app_settings')
+                .select('maintenance_mode')
+                .eq('id', 1)
+                .single();
+
+            if (settings?.maintenance_mode) {
+                let isAdmin = false;
+                if (user) {
+                    const { data: profile } = await supabase
+                        .from('users')
+                        .select('role')
+                        .eq('id', user.id)
+                        .single();
+                    isAdmin = profile?.role === 'ADMIN';
+                }
+
+                if (!isAdmin) {
+                    return NextResponse.redirect(new URL('/maintenance', request.url));
+                }
+            }
+        }
     }
 
     // 6. Tout est en ordre, on laisse passer
     return supabaseResponse;
 }
 
-// On cible le dashboard ET la page de login pour gérer les deux sens de redirection
+// Le mode maintenance doit pouvoir s'appliquer à toutes les pages (pas seulement au dashboard) :
+// le matcher couvre donc tout, sauf les assets statiques Next.js.
 export const config = {
     matcher: [
-        '/dashboard/:path*',
-        '/auth/login'
+        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 };

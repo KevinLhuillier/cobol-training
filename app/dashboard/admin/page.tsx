@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BookOpen, Users, Terminal, Tag, Settings, ChevronRight } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
+import { getMaintenanceMode } from "@/app/actions/maintenance";
+import { MaintenanceModeToggle } from "@/components/admin/maintenance-mode-toggle";
 
 const TILES = [
     {
@@ -51,6 +53,8 @@ export default async function AdminHomePage() {
         return redirect("/dashboard"); // Renvoie les étudiants normaux vers leur dashboard
     }
 
+    const maintenanceMode = await getMaintenanceMode();
+
     return (
         <div className="font-sans">
             {/* HEADER */}
@@ -65,6 +69,8 @@ export default async function AdminHomePage() {
                     <p className="text-sm text-slate-500">Choose a section to manage</p>
                 </div>
             </header>
+
+            <MaintenanceModeToggle initialEnabled={maintenanceMode} />
 
             {/* TILES */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

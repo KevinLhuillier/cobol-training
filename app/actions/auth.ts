@@ -259,11 +259,11 @@ export async function triggerWelcomeEmailAction() {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
 
         if (authError) {
-            return { error: "Auth Error" };
+            return { error: "Auth Error", isFirstVisit: false };
         }
 
         if (!user) {
-            return { error: "Unauthorized" };
+            return { error: "Unauthorized", isFirstVisit: false };
         }
 
         // Claim atomique (flip welcome_email_sent false -> true en un seul UPDATE) : cette page peut
@@ -271,31 +271,35 @@ export async function triggerWelcomeEmailAction() {
         // côté Next.js), donc un "check puis send puis update" en 2 requêtes séparées n'est pas
         // suffisant pour empêcher un double envoi. Ici, une seule des deux requêtes concurrentes peut
         // gagner l'UPDATE ; l'autre reçoit une ligne entièrement à null et ne renvoie pas l'email.
+        // Ce même claim sert aussi de signal "première visite du dashboard" pour déclencher le
+        // parcours d'onboarding (isFirstVisit) : les deux événements coïncident par construction.
         const { data, error: claimError } = await supabase.rpc("claim_welcome_email").single();
 
         if (claimError) {
-            return { error: claimError.message };
+            return { error: claimError.message, isFirstVisit: false };
         }
 
         const claimedUser = data as { id: string; name: string | null; email: string } | null;
+        const isFirstVisit = Boolean(claimedUser?.id);
 
-        if (!claimedUser?.id) {
-            return { success: true, message: "Already sent" };
+        if (!isFirstVisit) {
+            return { success: true, message: "Already sent", isFirstVisit: false };
         }
 
-        const studentName = claimedUser.name || "Student";
+        const studentName = claimedUser!.name || "Student";
         const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
 
         try {
-            await sendWelcomeEmail(claimedUser.email, studentName, dashboardUrl);
+            await sendWelcomeEmail(claimedUser!.email, studentName, dashboardUrl);
         } catch (mailError) {
-            return { error: "Email provider error" };
+            // Le claim a déjà eu lieu : c'est bien la première visite même si l'envoi échoue.
+            return { error: "Email provider error", isFirstVisit: true };
         }
 
-        return { success: true };
+        return { success: true, isFirstVisit: true };
 
     } catch (globalError) {
-        return { error: "Internal Server Error" };
+        return { error: "Internal Server Error", isFirstVisit: false };
     }
 }
 
