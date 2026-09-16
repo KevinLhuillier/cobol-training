@@ -64,7 +64,9 @@ ON CONFLICT (username) DO NOTHING;
 -- Idempotent via SELECT ... WHERE NOT EXISTS (pas de contrainte UNIQUE sur title,
 -- donc pas d'ON CONFLICT possible) : rejouer ce seed ne duplique rien.
 -- Cours non-gratuits (is_free = false, valeur par défaut) et publiés directement ;
--- toutes les leçons sont de type VIDEO. Positions 1-based (cours, chapitres, leçons).
+-- toutes les leçons sont de type VIDEO, l'URL Vimeo étant stockée comme unique bloc
+-- "video" dans content_blocks (format lu par le LessonBuilder). Positions 1-based
+-- (cours, chapitres, leçons).
 -- Un bloc DO par module : la boucle sur unnest(titres[], urls[]) WITH ORDINALITY
 -- évite de répéter un IF NOT EXISTS par leçon (jusqu'à 25 par module).
 -- ==========================================
@@ -97,8 +99,18 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, vimeo_url, position, type, chapter_id)
-            VALUES (v_lesson.title, v_lesson.url, v_lesson.pos, 'VIDEO', v_chapter_id);
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            VALUES (
+                v_lesson.title,
+                jsonb_build_array(jsonb_build_object(
+                    'id', gen_random_uuid()::text,
+                    'type', 'video',
+                    'data', jsonb_build_object('url', v_lesson.url)
+                )),
+                v_lesson.pos,
+                'VIDEO',
+                v_chapter_id
+            );
         END IF;
     END LOOP;
 END $$;
@@ -131,8 +143,18 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, vimeo_url, position, type, chapter_id)
-            VALUES (v_lesson.title, v_lesson.url, v_lesson.pos, 'VIDEO', v_chapter_id);
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            VALUES (
+                v_lesson.title,
+                jsonb_build_array(jsonb_build_object(
+                    'id', gen_random_uuid()::text,
+                    'type', 'video',
+                    'data', jsonb_build_object('url', v_lesson.url)
+                )),
+                v_lesson.pos,
+                'VIDEO',
+                v_chapter_id
+            );
         END IF;
     END LOOP;
 END $$;
@@ -165,8 +187,18 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, vimeo_url, position, type, chapter_id)
-            VALUES (v_lesson.title, v_lesson.url, v_lesson.pos, 'VIDEO', v_chapter_id);
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            VALUES (
+                v_lesson.title,
+                jsonb_build_array(jsonb_build_object(
+                    'id', gen_random_uuid()::text,
+                    'type', 'video',
+                    'data', jsonb_build_object('url', v_lesson.url)
+                )),
+                v_lesson.pos,
+                'VIDEO',
+                v_chapter_id
+            );
         END IF;
     END LOOP;
 END $$;
@@ -199,8 +231,18 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, vimeo_url, position, type, chapter_id)
-            VALUES (v_lesson.title, v_lesson.url, v_lesson.pos, 'VIDEO', v_chapter_id);
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            VALUES (
+                v_lesson.title,
+                jsonb_build_array(jsonb_build_object(
+                    'id', gen_random_uuid()::text,
+                    'type', 'video',
+                    'data', jsonb_build_object('url', v_lesson.url)
+                )),
+                v_lesson.pos,
+                'VIDEO',
+                v_chapter_id
+            );
         END IF;
     END LOOP;
 END $$;
@@ -233,8 +275,18 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, vimeo_url, position, type, chapter_id)
-            VALUES (v_lesson.title, v_lesson.url, v_lesson.pos, 'VIDEO', v_chapter_id);
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            VALUES (
+                v_lesson.title,
+                jsonb_build_array(jsonb_build_object(
+                    'id', gen_random_uuid()::text,
+                    'type', 'video',
+                    'data', jsonb_build_object('url', v_lesson.url)
+                )),
+                v_lesson.pos,
+                'VIDEO',
+                v_chapter_id
+            );
         END IF;
     END LOOP;
 END $$;
@@ -267,8 +319,18 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, vimeo_url, position, type, chapter_id)
-            VALUES (v_lesson.title, v_lesson.url, v_lesson.pos, 'VIDEO', v_chapter_id);
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            VALUES (
+                v_lesson.title,
+                jsonb_build_array(jsonb_build_object(
+                    'id', gen_random_uuid()::text,
+                    'type', 'video',
+                    'data', jsonb_build_object('url', v_lesson.url)
+                )),
+                v_lesson.pos,
+                'VIDEO',
+                v_chapter_id
+            );
         END IF;
     END LOOP;
 END $$;
@@ -301,8 +363,18 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, vimeo_url, position, type, chapter_id)
-            VALUES (v_lesson.title, v_lesson.url, v_lesson.pos, 'VIDEO', v_chapter_id);
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            VALUES (
+                v_lesson.title,
+                jsonb_build_array(jsonb_build_object(
+                    'id', gen_random_uuid()::text,
+                    'type', 'video',
+                    'data', jsonb_build_object('url', v_lesson.url)
+                )),
+                v_lesson.pos,
+                'VIDEO',
+                v_chapter_id
+            );
         END IF;
     END LOOP;
 END $$;
@@ -335,8 +407,18 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, vimeo_url, position, type, chapter_id)
-            VALUES (v_lesson.title, v_lesson.url, v_lesson.pos, 'VIDEO', v_chapter_id);
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            VALUES (
+                v_lesson.title,
+                jsonb_build_array(jsonb_build_object(
+                    'id', gen_random_uuid()::text,
+                    'type', 'video',
+                    'data', jsonb_build_object('url', v_lesson.url)
+                )),
+                v_lesson.pos,
+                'VIDEO',
+                v_chapter_id
+            );
         END IF;
     END LOOP;
 END $$;
@@ -369,8 +451,18 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, vimeo_url, position, type, chapter_id)
-            VALUES (v_lesson.title, v_lesson.url, v_lesson.pos, 'VIDEO', v_chapter_id);
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            VALUES (
+                v_lesson.title,
+                jsonb_build_array(jsonb_build_object(
+                    'id', gen_random_uuid()::text,
+                    'type', 'video',
+                    'data', jsonb_build_object('url', v_lesson.url)
+                )),
+                v_lesson.pos,
+                'VIDEO',
+                v_chapter_id
+            );
         END IF;
     END LOOP;
 END $$;
@@ -403,8 +495,18 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, vimeo_url, position, type, chapter_id)
-            VALUES (v_lesson.title, v_lesson.url, v_lesson.pos, 'VIDEO', v_chapter_id);
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            VALUES (
+                v_lesson.title,
+                jsonb_build_array(jsonb_build_object(
+                    'id', gen_random_uuid()::text,
+                    'type', 'video',
+                    'data', jsonb_build_object('url', v_lesson.url)
+                )),
+                v_lesson.pos,
+                'VIDEO',
+                v_chapter_id
+            );
         END IF;
     END LOOP;
 END $$;

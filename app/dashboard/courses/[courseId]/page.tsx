@@ -13,7 +13,6 @@ import {
     CheckCircle2,
     ChevronLeft
 } from "lucide-react";
-import { Preview } from "@/components/preview";
 import { LessonBlocksView } from "@/components/courses/lesson-blocks/lesson-blocks-view";
 import type { LessonBlock } from "@/components/courses/lesson-blocks/types";
 import { CourseProgressButton } from "@/components/courses/course-progress-button";
@@ -59,10 +58,8 @@ export default async function CoursePlayer({
                     id,
                     title,
                     position,
-                    content,
                     contentBlocks:content_blocks,
                     type,
-                    videoUrl:vimeo_url,
                     lessonProgress:lesson_progress (
                         isCompleted:is_completed,
                         exerciseAnswer:exercise_answer,
@@ -117,10 +114,8 @@ export default async function CoursePlayer({
         id: string;
         title: string;
         position: number;
-        content: string | null;
         contentBlocks: LessonBlock[] | null;
         type: string;
-        videoUrl: string | null;
         lessonProgress: RawProgress[] | null;
     };
 
@@ -176,16 +171,6 @@ export default async function CoursePlayer({
     // La progression est validée si le tableau lessonProgress n'est pas vide et que isCompleted est true
     const isCurrentLessonCompleted = !!currentLesson?.lessonProgress?.[0]?.isCompleted;
 
-    const getVimeoEmbedUrl = (url: string | null) => {
-        if (!url) return null;
-        const match = url.match(/(?:vimeo\.com\/|video\/|channels\/.+\/|groups\/.+\/videos\/|album\/.+\/video\/)(\d+)/);
-        const videoId = match ? match[1] : url.split("/").pop();
-        if (!videoId || isNaN(Number(videoId))) return null;
-        return `https://player.vimeo.com/video/${videoId}`;
-    };
-
-    const vimeoEmbedUrl = getVimeoEmbedUrl(currentLesson.videoUrl);
-
     return (
         <div className="min-h-screen bg-slate-100 p-4 md:p-6 lg:p-8 flex flex-col gap-6 font-sans">
 
@@ -220,34 +205,13 @@ export default async function CoursePlayer({
                             <h2 className="text-2xl font-bold text-slate-900">{currentLesson.title}</h2>
                         </div>
 
-                        {/* CONTENU : blocs (vidéo/texte/image/code, dans l'ordre choisi par l'admin) si la
-                            leçon a déjà été reconstruite avec le nouvel éditeur, sinon rendu de
-                            l'ancien format (vidéo Vimeo séparée + un unique bloc de texte). */}
+                        {/* CONTENU : blocs (vidéo/texte/image/code, dans l'ordre choisi par l'admin). */}
                         {currentLesson.contentBlocks && currentLesson.contentBlocks.length > 0 ? (
                             <LessonBlocksView blocks={currentLesson.contentBlocks} />
                         ) : (
-                            <>
-                                {vimeoEmbedUrl && (
-                                    <div className="w-full aspect-video bg-slate-900 rounded-2xl shadow-md flex flex-col items-center justify-center relative overflow-hidden border-4 border-slate-50">
-                                        <iframe
-                                            src={vimeoEmbedUrl}
-                                            className="absolute top-0 left-0 w-full h-full border-0"
-                                            allow="autoplay; fullscreen; picture-in-picture"
-                                            allowFullScreen
-                                        />
-                                    </div>
-                                )}
-
-                                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                                    {currentLesson.content ? (
-                                        <div className="text-slate-800">
-                                            <Preview value={currentLesson.content} />
-                                        </div>
-                                    ) : (
-                                        <p className="italic text-slate-500">No instructions or content provided.</p>
-                                    )}
-                                </div>
-                            </>
+                            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                                <p className="italic text-slate-500">No instructions or content provided.</p>
+                            </div>
                         )}
 
                         {/* 3. ACTIONS DE VALIDATION */}

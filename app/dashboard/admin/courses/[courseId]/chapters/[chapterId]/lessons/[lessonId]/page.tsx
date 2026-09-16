@@ -43,10 +43,8 @@ export default async function LessonDetailsPage({
         .select(`
             id,
             title,
-            content,
             contentBlocks:content_blocks,
             position,
-            videoUrl:vimeo_url,
             type,
             chapterId:chapter_id
         `)
@@ -122,8 +120,6 @@ export default async function LessonDetailsPage({
                                 <p className="text-sm font-bold text-slate-500 mb-3">Lesson Content</p>
                                 <LessonBuilder
                                     initialBlocks={(lesson.contentBlocks as LessonBlock[] | null) ?? []}
-                                    legacyContent={lesson.content}
-                                    legacyVideoUrl={lesson.videoUrl}
                                     chapterId={chapterId}
                                     lessonId={lessonId}
                                 />

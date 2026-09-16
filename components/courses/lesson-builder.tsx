@@ -35,11 +35,6 @@ function collectImageUrls(blocks: LessonBlock[]): Set<string> {
 
 interface LessonBuilderProps {
     initialBlocks: LessonBlock[];
-    // Champs de l'ancien éditeur (avant ce chantier) : repris comme premiers blocs (vidéo puis
-    // texte, dans cet ordre — même agencement que l'ancienne page) tant qu'aucun bloc n'a encore
-    // été enregistré, pour ne rien perdre à l'ouverture du builder.
-    legacyContent: string | null;
-    legacyVideoUrl: string | null;
     chapterId: string;
     lessonId: string;
 }
@@ -50,25 +45,18 @@ function createBlockId() {
         : Math.random().toString(36).slice(2);
 }
 
-export function LessonBuilder({ initialBlocks, legacyContent, legacyVideoUrl, chapterId, lessonId }: LessonBuilderProps) {
+export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuilderProps) {
     const router = useRouter();
     const supabase = createClient();
 
-    const [blocks, setBlocks] = useState<LessonBlock[]>(() => {
-        if (initialBlocks.length > 0) return initialBlocks;
-        const seeded: LessonBlock[] = [];
-        if (legacyVideoUrl) seeded.push({ id: createBlockId(), type: "video", data: { url: legacyVideoUrl } });
-        if (legacyContent) seeded.push({ id: createBlockId(), type: "text", data: { html: legacyContent } });
-        return seeded;
-    });
+    const [blocks, setBlocks] = useState<LessonBlock[]>(initialBlocks);
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     // Images de la dernière version effectivement enregistrée en base — sert à détecter, à
     // la prochaine sauvegarde, quelles images ne sont plus référencées (bloc supprimé, ou image
-    // remplacée) et doivent être nettoyées du bucket. Volontairement basé sur initialBlocks
-    // (l'état persisté) et pas sur legacyContent (jamais encore sauvegardé).
+    // remplacée) et doivent être nettoyées du bucket.
     const lastSavedImageUrlsRef = useRef(collectImageUrls(initialBlocks));
 
     const addBlock = (type: LessonBlockType) => {
