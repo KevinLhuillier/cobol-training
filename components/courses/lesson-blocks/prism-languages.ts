@@ -1,6 +1,7 @@
 import Prism from "prismjs";
 import "prismjs/components/prism-cobol";
 import "prismjs/components/prism-sql";
+import "prismjs/components/prism-json";
 import type { CodeBlockLanguage } from "./types";
 
 // Prism n'a pas de grammaire JCL intégrée : définition minimale maison, suffisante pour
@@ -28,4 +29,5 @@ export const CODE_BLOCK_LANGUAGES: { value: CodeBlockLanguage; label: string }[]
     { value: "cobol", label: "COBOL" },
     { value: "jcl", label: "JCL" },
     { value: "sql", label: "SQL" },
+    { value: "json", label: "JSON" },
 ];

@@ -24,7 +24,7 @@ export interface ImageBlock {
     data: ImageBlockData;
 }
 
-export type CodeBlockLanguage = "cobol" | "jcl" | "sql";
+export type CodeBlockLanguage = "cobol" | "jcl" | "sql" | "json";
 
 export interface CodeBlockData {
     code: string;
