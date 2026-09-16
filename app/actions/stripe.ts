@@ -19,6 +19,14 @@ export async function createCheckoutSession() {
 
     if (!profile) throw new Error("Profile not found");
 
+    const { data: offer } = await supabase
+        .from("offer_settings")
+        .select("stripe_price_id")
+        .eq("id", 1)
+        .single();
+
+    if (!offer?.stripe_price_id) throw new Error("No offer configured");
+
     let customerId = profile.stripe_customer_id;
 
     if (!customerId) {
@@ -42,7 +50,7 @@ export async function createCheckoutSession() {
         customer_update: { address: "auto", name: "auto" },
         billing_address_collection: "required",
         automatic_tax: { enabled: true },
-        line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
+        line_items: [{ price: offer.stripe_price_id, quantity: 1 }],
         success_url: `${appUrl}/dashboard?subscribed=true`,
         cancel_url: `${appUrl}/dashboard`,
         metadata: { supabase_user_id: user.id },

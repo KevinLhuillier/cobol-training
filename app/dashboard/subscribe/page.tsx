@@ -51,7 +51,7 @@ export default async function SubscribePage() {
                     <h1 className="text-xl font-extrabold text-white">{title}</h1>
                     <div className="mt-4 flex items-end justify-center gap-1">
                         <span className="text-4xl font-extrabold text-white">€{price}</span>
-                        <span className="text-sm font-semibold text-slate-400 mb-1">excl. VAT / month</span>
+                        <span className="text-sm font-semibold text-slate-400 mb-1"> / month</span>
                     </div>
                 </div>
 
