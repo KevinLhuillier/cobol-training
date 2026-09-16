@@ -14,6 +14,8 @@ import {
     ChevronLeft
 } from "lucide-react";
 import { Preview } from "@/components/preview";
+import { LessonBlocksView } from "@/components/courses/lesson-blocks/lesson-blocks-view";
+import type { LessonBlock } from "@/components/courses/lesson-blocks/types";
 import { CourseProgressButton } from "@/components/courses/course-progress-button";
 import { ExerciseForm } from "@/components/courses/exercise-form";
 
@@ -58,6 +60,7 @@ export default async function CoursePlayer({
                     title,
                     position,
                     content,
+                    contentBlocks:content_blocks,
                     type,
                     videoUrl:vimeo_url,
                     lessonProgress:lesson_progress (
@@ -115,6 +118,7 @@ export default async function CoursePlayer({
         title: string;
         position: number;
         content: string | null;
+        contentBlocks: LessonBlock[] | null;
         type: string;
         videoUrl: string | null;
         lessonProgress: RawProgress[] | null;
@@ -216,28 +220,35 @@ export default async function CoursePlayer({
                             <h2 className="text-2xl font-bold text-slate-900">{currentLesson.title}</h2>
                         </div>
 
-                        {/* 1. LECTEUR VIDÉO */}
-                        {vimeoEmbedUrl && (
-                            <div className="w-full aspect-video bg-slate-900 rounded-2xl shadow-md flex flex-col items-center justify-center relative overflow-hidden border-4 border-slate-50">
-                                <iframe
-                                    src={vimeoEmbedUrl}
-                                    className="absolute top-0 left-0 w-full h-full border-0"
-                                    allow="autoplay; fullscreen; picture-in-picture"
-                                    allowFullScreen
-                                />
-                            </div>
-                        )}
+                        {/* CONTENU : blocs (vidéo/texte/image/code, dans l'ordre choisi par l'admin) si la
+                            leçon a déjà été reconstruite avec le nouvel éditeur, sinon rendu de
+                            l'ancien format (vidéo Vimeo séparée + un unique bloc de texte). */}
+                        {currentLesson.contentBlocks && currentLesson.contentBlocks.length > 0 ? (
+                            <LessonBlocksView blocks={currentLesson.contentBlocks} />
+                        ) : (
+                            <>
+                                {vimeoEmbedUrl && (
+                                    <div className="w-full aspect-video bg-slate-900 rounded-2xl shadow-md flex flex-col items-center justify-center relative overflow-hidden border-4 border-slate-50">
+                                        <iframe
+                                            src={vimeoEmbedUrl}
+                                            className="absolute top-0 left-0 w-full h-full border-0"
+                                            allow="autoplay; fullscreen; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    </div>
+                                )}
 
-                        {/* 2. CONTENU TEXTUEL */}
-                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                            {currentLesson.content ? (
-                                <div className="text-slate-800">
-                                    <Preview value={currentLesson.content} />
+                                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                                    {currentLesson.content ? (
+                                        <div className="text-slate-800">
+                                            <Preview value={currentLesson.content} />
+                                        </div>
+                                    ) : (
+                                        <p className="italic text-slate-500">No instructions or content provided.</p>
+                                    )}
                                 </div>
-                            ) : (
-                                <p className="italic text-slate-500">No instructions or content provided.</p>
-                            )}
-                        </div>
+                            </>
+                        )}
 
                         {/* 3. ACTIONS DE VALIDATION */}
                         <div className="pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
