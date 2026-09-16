@@ -17,6 +17,7 @@ export const Editor = ({ onChange, value }: EditorProps) => {
         toolbar: [
             [{ header: [1, 2, 3, 4, 5, 6, false] }],
             ["bold", "italic", "underline", "strike"],
+            [{ align: [] }],
             [{ list: "ordered" }, { list: "bullet" }],
             // 🟢 Ajout de l'image et du bloc de code ici
             ["link", "image", "code-block"],

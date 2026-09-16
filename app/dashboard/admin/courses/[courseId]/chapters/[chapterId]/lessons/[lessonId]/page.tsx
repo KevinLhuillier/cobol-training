@@ -3,11 +3,10 @@ import Link from "next/link";
 import {
     ArrowLeft,
     LayoutDashboard,
-    PlaySquare
 } from "lucide-react";
 import { LessonTitleForm } from "@/components/courses/lesson-title-form";
-import { LessonVideoForm } from "@/components/courses/lesson-video-form";
-import { LessonContentForm } from "@/components/courses/lesson-content-form";
+import { LessonBuilder } from "@/components/courses/lesson-builder";
+import type { LessonBlock } from "@/components/courses/lesson-blocks/types";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
@@ -44,9 +43,8 @@ export default async function LessonDetailsPage({
         .select(`
             id,
             title,
-            content,
+            contentBlocks:content_blocks,
             position,
-            videoUrl:vimeo_url,
             type,
             chapterId:chapter_id
         `)
@@ -119,31 +117,14 @@ export default async function LessonDetailsPage({
                             </div>
 
                             <div className="w-full">
-                                <LessonContentForm
-                                    initialData={lesson}
-                                    courseId={courseId}
+                                <p className="text-sm font-bold text-slate-500 mb-3">Lesson Content</p>
+                                <LessonBuilder
+                                    initialBlocks={(lesson.contentBlocks as LessonBlock[] | null) ?? []}
                                     chapterId={chapterId}
                                     lessonId={lessonId}
                                 />
                             </div>
                         </div>
-                    </div>
-
-                    {/* BLOC BAS : Vidéo */}
-                    <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6 lg:p-8">
-                        <div className="flex items-center gap-2 text-slate-900 font-bold text-lg mb-2">
-                            <div className="h-8 w-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-                                <PlaySquare className="h-4 w-4" />
-                            </div>
-                            Lesson Media
-                        </div>
-
-                        <LessonVideoForm
-                            initialData={lesson}
-                            courseId={courseId}
-                            chapterId={chapterId}
-                            lessonId={lessonId}
-                        />
                     </div>
 
                 </div>

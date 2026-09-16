@@ -11,10 +11,16 @@ interface PreviewProps {
 
 export const Preview = ({ value }: PreviewProps) => {
     return (
-        <ReactQuill
-            theme="bubble"
-            value={value}
-            readOnly
-        />
+        // Sans cette couleur par défaut, le texte non explicitement coloré (ou coloré en noir,
+        // que Quill traite comme "pas de couleur") hérite de la couleur de texte ambiante de la
+        // page — proche du blanc ici car <html> force le thème sombre (cf. app/layout.tsx) — et
+        // devient invisible sur les fonds clairs où cet aperçu est affiché côté élève.
+        <div className="[&_.ql-editor]:text-slate-800">
+            <ReactQuill
+                theme="bubble"
+                value={value}
+                readOnly
+            />
+        </div>
     );
 };

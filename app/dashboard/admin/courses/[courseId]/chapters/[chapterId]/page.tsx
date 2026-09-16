@@ -54,8 +54,6 @@ export default async function ChapterDetailsPage({
                 id,
                 title,
                 position,
-                content,
-                vimeoUrl:vimeo_url,
                 type,
                 chapterId:chapter_id
             )
