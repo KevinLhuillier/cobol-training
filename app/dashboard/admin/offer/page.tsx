@@ -24,7 +24,7 @@ export default async function AdminOfferPage() {
     // 2. FETCH : Paramètres actuels de l'offre (ligne unique, id = 1)
     const { data: offer } = await supabase
         .from("offer_settings")
-        .select("title, price_cents, features")
+        .select("title, price_cents, features, stripe_price_id")
         .eq("id", 1)
         .single();
 
@@ -68,6 +68,7 @@ export default async function AdminOfferPage() {
                         title: offer?.title ?? "Cobol Training subscription",
                         priceCents: offer?.price_cents ?? 1500,
                         features: offer?.features ?? [],
+                        stripePriceId: offer?.stripe_price_id ?? "",
                     }}
                 />
             </main>

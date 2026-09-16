@@ -3,23 +3,24 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, X, AlertTriangle, Save } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
+import { updateOfferSettings } from "@/app/actions/offer";
 
 interface OfferFormProps {
     initialData: {
         title: string;
         priceCents: number;
         features: string[];
+        stripePriceId: string;
     };
 }
 
 export function OfferForm({ initialData }: OfferFormProps) {
     const router = useRouter();
-    const supabase = createClient();
 
     const [title, setTitle] = useState(initialData.title);
     const [price, setPrice] = useState((initialData.priceCents / 100).toFixed(2));
     const [features, setFeatures] = useState(initialData.features.length > 0 ? initialData.features : [""]);
+    const [stripePriceId, setStripePriceId] = useState(initialData.stripePriceId);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
@@ -57,19 +58,20 @@ export function OfferForm({ initialData }: OfferFormProps) {
             setError("Please add at least one feature.");
             return;
         }
+        const trimmedPriceId = stripePriceId.trim();
+        if (!trimmedPriceId) {
+            setError("Please enter a Stripe Price ID.");
+            return;
+        }
 
         setIsLoading(true);
         try {
-            const { error: updateError } = await supabase
-                .from("offer_settings")
-                .update({
-                    title: trimmedTitle,
-                    price_cents: Math.round(parsedPrice * 100),
-                    features: cleanedFeatures,
-                })
-                .eq("id", 1);
-
-            if (updateError) throw updateError;
+            await updateOfferSettings({
+                title: trimmedTitle,
+                priceCents: Math.round(parsedPrice * 100),
+                features: cleanedFeatures,
+                stripePriceId: trimmedPriceId,
+            });
 
             setFeatures(cleanedFeatures);
             setSuccess(true);
@@ -130,7 +132,27 @@ export function OfferForm({ initialData }: OfferFormProps) {
                 </div>
                 <p className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl p-3 mt-2">
                     <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-                    This only updates what students see on the offer page. You must also update the price on the Stripe Dashboard yourself — it is not synced automatically.
+                    This is only what students see on the offer page. It must match the amount configured on the Stripe Price below — Stripe is what actually gets charged at checkout.
+                </p>
+            </div>
+
+            {/* STRIPE PRICE ID */}
+            <div className="space-y-2">
+                <label htmlFor="offer-stripe-price-id" className="text-sm font-bold text-slate-900">
+                    Stripe Price ID
+                </label>
+                <input
+                    id="offer-stripe-price-id"
+                    type="text"
+                    value={stripePriceId}
+                    onChange={(e) => setStripePriceId(e.target.value)}
+                    disabled={isLoading}
+                    placeholder="price_..."
+                    spellCheck={false}
+                    className="text-slate-900 w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all outline-none font-mono text-sm"
+                />
+                <p className="text-xs text-slate-500">
+                    The Price ID from the Stripe Dashboard used at checkout. Create the new price in Stripe first, then paste its ID here — it is verified against Stripe when you save.
                 </p>
             </div>
 
