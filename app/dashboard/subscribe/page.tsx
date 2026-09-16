@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Sparkles, Tag } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { CheckoutButton } from "@/components/checkout-button";
 
@@ -16,14 +16,19 @@ const DEFAULT_OFFER = {
     ],
 };
 
-export default async function SubscribePage() {
+export default async function SubscribePage({
+    searchParams,
+}: {
+    searchParams: Promise<{ promo?: string }>;
+}) {
     const supabase = await createClient();
+    const { promo: promoCode } = await searchParams;
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return redirect("/auth/login");
 
     const [{ data: profile }, { data: offer }] = await Promise.all([
-        supabase.from("users").select("subscription_status").eq("id", user.id).single(),
+        supabase.from("users").select("subscription_status, trial_discount_code, trial_discount_expires_at").eq("id", user.id).single(),
         supabase.from("offer_settings").select("title, price_cents, features").eq("id", 1).single(),
     ]);
 
@@ -32,6 +37,16 @@ export default async function SubscribePage() {
     const priceCents = offer?.price_cents ?? DEFAULT_OFFER.priceCents;
     const features = offer?.features?.length ? offer.features : DEFAULT_OFFER.features;
     const price = (priceCents / 100).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+    // On ne fait confiance au code de l'URL que s'il correspond au code -20%/48h qu'on a nous-même
+    // généré pour cet utilisateur et qu'il n'est pas expiré — Stripe revalidera de toute façon au
+    // checkout, mais ça évite d'afficher un bandeau "remise appliquée" trompeur sur un vieux lien.
+    const isPromoValid = !!(
+        promoCode &&
+        profile?.trial_discount_code === promoCode &&
+        profile.trial_discount_expires_at &&
+        new Date(profile.trial_discount_expires_at) > new Date()
+    );
 
     return (
         <div className="max-w-xl mx-auto font-sans">
@@ -65,13 +80,20 @@ export default async function SubscribePage() {
                         ))}
                     </ul>
 
+                    {isPromoValid && !isActive && (
+                        <div className="flex items-center gap-2 px-4 py-3 mb-4 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-bold justify-center">
+                            <Tag className="h-4 w-4 shrink-0" />
+                            20% discount applied at checkout
+                        </div>
+                    )}
+
                     {isActive ? (
                         <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-bold justify-center">
                             <CheckCircle2 className="h-4 w-4 shrink-0" />
                             You&apos;re already subscribed
                         </div>
                     ) : (
-                        <CheckoutButton className="w-full justify-center h-12 text-base" />
+                        <CheckoutButton className="w-full justify-center h-12 text-base" promoCode={isPromoValid ? promoCode : undefined} />
                     )}
                 </div>
             </div>

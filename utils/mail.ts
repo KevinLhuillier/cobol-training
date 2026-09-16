@@ -991,16 +991,44 @@ export async function sendTrialCheckInEmail(toEmail: string, studentName: string
     });
 }
 
+export interface TrialDiscount {
+    code: string;
+    expiresAt: string;
+}
+
 /**
- * Envoie une notification lorsque l'essai gratuit vient d'expirer (cron expire-trials)
+ * Envoie une notification lorsque l'essai gratuit vient d'expirer (cron expire-trials).
+ * `discount` est le Promotion Code -20%/48h généré pour l'occasion (cf.
+ * utils/stripe-trial-discount.ts) ; null si sa génération a échoué côté Stripe, auquel cas
+ * on retombe sur un CTA générique plutôt que de bloquer l'envoi du mail.
  */
-export async function sendTrialExpiredEmail(toEmail: string, studentName: string) {
-    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+export async function sendTrialExpiredEmail(toEmail: string, studentName: string, discount: TrialDiscount | null) {
+    const subscribeUrl = discount
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscribe?promo=${encodeURIComponent(discount.code)}`
+        : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscribe`;
+
+    const discountBlock = discount ? `
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0f172a; border-radius: 16px; padding: 24px; margin: 0 0 24px 0;">
+                <tr>
+                  <td align="center">
+                    <p style="margin: 0 0 8px 0; color: #34d399; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                      -20% off, for as long as you stay subscribed
+                    </p>
+                    <p style="margin: 0 0 8px 0; color: #ffffff; font-size: 22px; font-weight: 700; font-family: 'Courier New', Courier, monospace; letter-spacing: 0.05em;">
+                      ${discount.code}
+                    </p>
+                    <p style="margin: 0; color: #94a3b8; font-size: 13px;">
+                      Valid for the next 48 hours only
+                    </p>
+                  </td>
+                </tr>
+              </table>
+    ` : "";
 
     return await resend.emails.send({
         from: FROM_EMAIL,
         to: toEmail,
-        subject: "Your free trial has ended",
+        subject: discount ? "Your free trial has ended — here's 20% off" : "Your free trial has ended",
         html: `
 <!DOCTYPE html>
 <html lang="en">
@@ -1035,8 +1063,14 @@ export async function sendTrialExpiredEmail(toEmail: string, studentName: string
           </tr>
 
           <tr>
+            <td style="padding-bottom: 8px;">
+              ${discountBlock}
+            </td>
+          </tr>
+
+          <tr>
             <td align="center">
-              <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+              <a href="${subscribeUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
                 Subscribe now
               </a>
             </td>

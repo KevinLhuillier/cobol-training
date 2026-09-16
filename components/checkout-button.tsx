@@ -9,13 +9,14 @@ import { createCheckoutSession } from "@/app/actions/stripe";
 interface CheckoutButtonProps {
     className?: string;
     children?: React.ReactNode;
+    promoCode?: string;
 }
 
 /**
  * Déclenche réellement la session de paiement Stripe (contrairement à SubscribeButton,
  * qui se contente de rediriger vers la page de présentation de l'offre /dashboard/subscribe).
  */
-export function CheckoutButton({ className, children }: CheckoutButtonProps) {
+export function CheckoutButton({ className, children, promoCode }: CheckoutButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +24,7 @@ export function CheckoutButton({ className, children }: CheckoutButtonProps) {
         setIsLoading(true);
         setError(null);
         try {
-            const { url } = await createCheckoutSession();
+            const { url } = await createCheckoutSession(promoCode);
             window.location.href = url;
         } catch (err) {
             setError(err instanceof Error ? err.message : "Something went wrong.");
