@@ -1,11 +1,13 @@
 "use server";
 
+import type Stripe from "stripe";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { stripe } from "@/utils/stripe";
 import { sendSubscriptionCancellationScheduledEmail } from "@/utils/mail";
+import { findActiveTrialDiscountPromotionCode } from "@/utils/stripe-trial-discount";
 
-export async function createCheckoutSession() {
+export async function createCheckoutSession(promoCode?: string) {
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -44,7 +46,7 @@ export async function createCheckoutSession() {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
         mode: "subscription",
         customer: customerId,
         customer_update: { address: "auto", name: "auto" },
@@ -54,7 +56,19 @@ export async function createCheckoutSession() {
         success_url: `${appUrl}/dashboard?subscribed=true`,
         cancel_url: `${appUrl}/dashboard`,
         metadata: { supabase_user_id: user.id },
-    });
+    };
+
+    // Stripe interdit de combiner discounts et allow_promotion_codes sur une même session :
+    // si on a un code valide à pré-appliquer, pas de champ de saisie manuelle ; sinon on
+    // laisse ce champ disponible pour qu'un code puisse être entré à la main au checkout.
+    const promotionCode = promoCode ? await findActiveTrialDiscountPromotionCode(promoCode, customerId) : null;
+    if (promotionCode) {
+        sessionParams.discounts = [{ promotion_code: promotionCode.id }];
+    } else {
+        sessionParams.allow_promotion_codes = true;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     if (!session.url) throw new Error("Failed to create checkout session");
 

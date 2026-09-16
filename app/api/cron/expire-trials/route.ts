@@ -1,5 +1,7 @@
 import { createAdminClient } from "@/utils/supabase/admin";
-import { sendTrialExpiredEmail, sendAdminTrialExpiredEmail, sendTrialEndingSoonEmail, sendTrialCheckInEmail } from "@/utils/mail";
+import { sendTrialExpiredEmail, sendAdminTrialExpiredEmail, sendTrialEndingSoonEmail, sendTrialCheckInEmail, type TrialDiscount } from "@/utils/mail";
+import { stripe } from "@/utils/stripe";
+import { createTrialDiscountPromotionCode } from "@/utils/stripe-trial-discount";
 
 export const runtime = "nodejs";
 
@@ -17,7 +19,7 @@ export async function GET(request: Request) {
         .update({ subscription_status: "EXPIRED" })
         .eq("subscription_status", "TRIAL")
         .lt("trial_ends_at", new Date().toISOString())
-        .select("email, name");
+        .select("id, email, name, stripe_customer_id");
 
     if (expireError) {
         console.error("Failed to expire trials:", expireError);
@@ -26,8 +28,33 @@ export async function GET(request: Request) {
 
     for (const expiredUser of expiredUsers || []) {
         if (!expiredUser.email) continue;
+
+        // Génère un code -20%/48h pour relancer l'utilisateur (cf. utils/stripe-trial-discount.ts).
+        // Ne doit jamais empêcher l'envoi du mail : en cas d'échec Stripe, on retombe sur un CTA
+        // générique dans sendTrialExpiredEmail plutôt que de sauter cet utilisateur.
+        let discount: TrialDiscount | null = null;
         try {
-            await sendTrialExpiredEmail(expiredUser.email, expiredUser.name || "Student");
+            let customerId = expiredUser.stripe_customer_id;
+            if (!customerId) {
+                const customer = await stripe.customers.create({
+                    email: expiredUser.email,
+                    metadata: { supabase_user_id: expiredUser.id },
+                });
+                customerId = customer.id;
+                await supabase.from("users").update({ stripe_customer_id: customerId }).eq("id", expiredUser.id);
+            }
+
+            discount = await createTrialDiscountPromotionCode(customerId);
+            await supabase
+                .from("users")
+                .update({ trial_discount_code: discount.code, trial_discount_expires_at: discount.expiresAt })
+                .eq("id", expiredUser.id);
+        } catch (couponError) {
+            console.error("Failed to generate trial discount coupon:", couponError);
+        }
+
+        try {
+            await sendTrialExpiredEmail(expiredUser.email, expiredUser.name || "Student", discount);
         } catch (mailError) {
             console.error("Trial expired email failed:", mailError);
         }
