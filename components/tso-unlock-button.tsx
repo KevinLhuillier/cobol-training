@@ -37,7 +37,11 @@ function formatAccessMessage(access: TsoAccess | null): string {
     return `This account is valid until your trial ends on ${formattedDate}.`;
 }
 
-export function TsoUnlockButton() {
+interface TsoUnlockButtonProps {
+    id?: string;
+}
+
+export function TsoUnlockButton({ id }: TsoUnlockButtonProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -71,7 +75,7 @@ export function TsoUnlockButton() {
 
     return (
         <>
-            <div className="flex flex-col items-end gap-2">
+            <div id={id} className="flex flex-col items-end gap-2">
                 <Button
                     onClick={onUnlock}
                     disabled={isLoading}

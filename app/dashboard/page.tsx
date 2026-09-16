@@ -10,6 +10,7 @@ import { ensureTrialStarted, triggerWelcomeEmailAction } from "@/app/actions/aut
 import { hasActiveAccess, hasCourseAccess } from "@/utils/subscription";
 import { TsoUnlockButton } from "@/components/tso-unlock-button";
 import { SubscribeButton } from "@/components/subscribe-button";
+import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -25,13 +26,16 @@ export default async function DashboardPage() {
     // s'ils n'ont pas déjà été déclenchés par la page de login (l'appel client juste après le
     // signIn peut échouer silencieusement en cas de souci de session/réseau).
     await ensureTrialStarted();
-    await triggerWelcomeEmailAction();
+    // isFirstVisit ne peut être vrai que pour l'un des deux rendus concurrents (prefetch +
+    // navigation) grâce au claim atomique interne — cf. le commentaire dans triggerWelcomeEmailAction.
+    // C'est ce même signal qui déclenche le parcours d'onboarding ci-dessous.
+    const { isFirstVisit } = await triggerWelcomeEmailAction();
 
     // 2. Récupération du profil (statut d'abonnement) et du compte TSO actif
     const [{ data: profile }, { data: tsoAccount }] = await Promise.all([
         supabase
             .from("users")
-            .select("subscription_status, trial_ends_at")
+            .select("name, subscription_status, trial_ends_at")
             .eq("id", user.id)
             .single(),
         supabase
@@ -47,6 +51,7 @@ export default async function DashboardPage() {
         trial_ends_at: profile?.trial_ends_at ?? null,
     };
     const canUnlockTso = hasActiveAccess(subscriptionInfo);
+    const hasTsoStep = canUnlockTso && !tsoAccount;
 
     // 3. Récupération des cours AVEC la progression
     // On utilise des alias (ex: imageUrl:image_url) pour conserver le camelCase attendu par ton UI
@@ -86,8 +91,19 @@ export default async function DashboardPage() {
         return { ...course, chapters: sortedChapters };
     }) || [];
 
+    // Étape "course" du parcours d'onboarding : uniquement pertinente si un premier module est
+    // affiché et accessible (sinon son bouton "Start" n'existe pas — cf. rendu ci-dessous).
+    const hasCourseStep = courses.length > 0 && hasCourseAccess({ isFree: courses[0].isFree }, subscriptionInfo);
+
     return (
         <>
+            <OnboardingTour
+                active={isFirstVisit}
+                studentName={profile?.name || "Student"}
+                hasTsoStep={hasTsoStep}
+                hasCourseStep={hasCourseStep}
+            />
+
             {/* TSO ACCESS CARD */}
             <div className="mb-10 bg-slate-900 rounded-[2rem] p-6 md:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-slate-800">
                 <div className="flex items-center gap-4">
@@ -141,7 +157,7 @@ export default async function DashboardPage() {
                         )}
                     </div>
                 ) : canUnlockTso ? (
-                    <TsoUnlockButton />
+                    <TsoUnlockButton id="onboarding-tso-anchor" />
                 ) : (
                     <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 w-full md:w-auto flex flex-col sm:flex-row items-center gap-4">
                         <div className="flex items-center gap-3">
@@ -249,7 +265,7 @@ export default async function DashboardPage() {
                                             Reserved for subscribers
                                         </SubscribeButton>
                                     ) : (
-                                        <Link href={href} className="w-full">
+                                        <Link href={href} className="w-full" id={index === 0 ? "onboarding-course-anchor" : undefined}>
                                             <Button
                                                 className={`w-full rounded-xl shadow-sm text-white ${
                                                     progress === 100

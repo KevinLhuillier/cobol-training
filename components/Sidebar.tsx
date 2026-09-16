@@ -52,13 +52,17 @@ export default function Sidebar({ userId = null, isAdmin = false, subscriptionSt
         };
     }, [userId, isAdmin]);
 
-    const menuItems = [
+    const menuItems: { icon: typeof LayoutGrid; label: string; href: string; badge: number; id?: string }[] = [
         { icon: LayoutGrid, label: "Dashboard", href: "/dashboard", badge: 0 },
         {
             icon: MessageCircle,
             label: "Messages",
             href: isAdmin ? "/dashboard/admin/messages" : "/dashboard/messages",
             badge: unreadCount,
+            // Ancre du parcours d'onboarding (cf. components/onboarding/onboarding-tour.tsx),
+            // ciblée par id car cette Sidebar et le tour ne vivent pas dans le même arbre React
+            // (layout vs. page).
+            id: "onboarding-messages-anchor",
         },
         ...(isAdmin ? [{ icon: Dumbbell, label: "Exercises", href: "/dashboard/review", badge: 0 }] : []),
         ...(isAdmin ? [{ icon: Lock, label: "Admin", href: "/dashboard/admin", badge: 0 }] : []),
@@ -86,8 +90,14 @@ export default function Sidebar({ userId = null, isAdmin = false, subscriptionSt
                                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                             }`}
                         >
-                            <MenuIcon className={`h-5 w-5 ${isActive ? "text-slate-900" : "text-slate-400"}`} />
-                            {item.label}
+                            {/* id posé sur l'icône + le libellé seulement (pas tout le Link, qui
+                                s'étire sur toute la largeur de la sidebar) : sinon l'ancre du
+                                parcours d'onboarding pointe vers le bord droit de la sidebar au
+                                lieu du mot "Messages". */}
+                            <span id={item.id} className="flex items-center gap-3">
+                                <MenuIcon className={`h-5 w-5 ${isActive ? "text-slate-900" : "text-slate-400"}`} />
+                                {item.label}
+                            </span>
                             {item.badge > 0 && (
                                 <span className="ml-auto h-5 min-w-5 px-1 rounded-full bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center">
                                     {item.badge}
