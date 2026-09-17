@@ -6,7 +6,9 @@ import {
 } from "lucide-react";
 import { LessonTitleForm } from "@/components/courses/lesson-title-form";
 import { LessonBuilder } from "@/components/courses/lesson-builder";
+import { QuizBuilder } from "@/components/courses/quiz/quiz-builder";
 import type { LessonBlock } from "@/components/courses/lesson-blocks/types";
+import type { QuizQuestion } from "@/components/courses/quiz/types";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
@@ -44,6 +46,8 @@ export default async function LessonDetailsPage({
             id,
             title,
             contentBlocks:content_blocks,
+            quizQuestions:quiz_questions,
+            quizPassRate:quiz_pass_rate,
             position,
             type,
             chapterId:chapter_id
@@ -117,12 +121,23 @@ export default async function LessonDetailsPage({
                             </div>
 
                             <div className="w-full">
-                                <p className="text-sm font-bold text-slate-500 mb-3">Lesson Content</p>
-                                <LessonBuilder
-                                    initialBlocks={(lesson.contentBlocks as LessonBlock[] | null) ?? []}
-                                    chapterId={chapterId}
-                                    lessonId={lessonId}
-                                />
+                                <p className="text-sm font-bold text-slate-500 mb-3">
+                                    {lesson.type === "QUIZ" ? "Quiz Questions" : "Lesson Content"}
+                                </p>
+                                {lesson.type === "QUIZ" ? (
+                                    <QuizBuilder
+                                        initialQuestions={(lesson.quizQuestions as QuizQuestion[] | null) ?? []}
+                                        initialPassRate={lesson.quizPassRate ?? 70}
+                                        chapterId={chapterId}
+                                        lessonId={lessonId}
+                                    />
+                                ) : (
+                                    <LessonBuilder
+                                        initialBlocks={(lesson.contentBlocks as LessonBlock[] | null) ?? []}
+                                        chapterId={chapterId}
+                                        lessonId={lessonId}
+                                    />
+                                )}
                             </div>
                         </div>
                     </div>

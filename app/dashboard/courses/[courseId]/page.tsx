@@ -17,6 +17,8 @@ import { LessonBlocksView } from "@/components/courses/lesson-blocks/lesson-bloc
 import type { LessonBlock } from "@/components/courses/lesson-blocks/types";
 import { CourseProgressButton } from "@/components/courses/course-progress-button";
 import { ExerciseForm } from "@/components/courses/exercise-form";
+import { QuizPlayer } from "@/components/courses/quiz/quiz-player";
+import type { QuizQuestion } from "@/components/courses/quiz/types";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
@@ -59,12 +61,22 @@ export default async function CoursePlayer({
                     title,
                     position,
                     contentBlocks:content_blocks,
+                    quizQuestions:quiz_questions,
+                    quizPassRate:quiz_pass_rate,
                     type,
                     lessonProgress:lesson_progress (
                         isCompleted:is_completed,
                         exerciseAnswer:exercise_answer,
                         exerciseStatus:exercise_status,
                         reviewFeedback:review_feedback,
+                        user_id
+                    ),
+                    quizAttempts:quiz_attempts (
+                        id,
+                        score,
+                        total,
+                        passed,
+                        createdAt:created_at,
                         user_id
                     )
                 )
@@ -74,6 +86,7 @@ export default async function CoursePlayer({
         .eq("is_published", true)
         .order("position", { referencedTable: "chapters", ascending: true })
         .order("position", { referencedTable: "chapters.lessons", ascending: true })
+        .order("created_at", { referencedTable: "chapters.lessons.quiz_attempts", ascending: false })
         .maybeSingle();
 
     if (error) {
@@ -110,13 +123,25 @@ export default async function CoursePlayer({
         reviewFeedback: string | null;
     };
 
+    type RawQuizAttempt = {
+        id: string;
+        score: number;
+        total: number;
+        passed: boolean;
+        createdAt: string;
+        user_id: string;
+    };
+
     type RawLesson = {
         id: string;
         title: string;
         position: number;
         contentBlocks: LessonBlock[] | null;
+        quizQuestions: QuizQuestion[] | null;
+        quizPassRate: number | null;
         type: string;
         lessonProgress: RawProgress[] | null;
+        quizAttempts: RawQuizAttempt[] | null;
     };
 
     type RawChapter = {
@@ -137,10 +162,14 @@ export default async function CoursePlayer({
                 const userProgress = (lesson.lessonProgress || []).filter(
                     (p: RawProgress) => p.user_id === user.id
                 );
+                const userQuizAttempts = (lesson.quizAttempts || []).filter(
+                    (a: RawQuizAttempt) => a.user_id === user.id
+                );
 
                 return {
                     ...lesson,
-                    lessonProgress: userProgress
+                    lessonProgress: userProgress,
+                    quizAttempts: userQuizAttempts
                 };
             })
         }))
@@ -205,42 +234,58 @@ export default async function CoursePlayer({
                             <h2 className="text-2xl font-bold text-slate-900">{currentLesson.title}</h2>
                         </div>
 
-                        {/* CONTENU : blocs (vidéo/texte/image/code, dans l'ordre choisi par l'admin). */}
-                        {currentLesson.contentBlocks && currentLesson.contentBlocks.length > 0 ? (
-                            <LessonBlocksView blocks={currentLesson.contentBlocks} />
+                        {/* CONTENU : une leçon QUIZ n'a pas de blocs de contenu, le quiz remplace toute la zone. */}
+                        {currentLesson.type === "QUIZ" ? (
+                            <QuizPlayer
+                                courseId={courseId}
+                                chapterId={currentChapter!.id}
+                                lessonId={currentLesson.id}
+                                questions={currentLesson.quizQuestions ?? []}
+                                passRate={currentLesson.quizPassRate ?? 70}
+                                attempts={currentLesson.quizAttempts ?? []}
+                                isCompleted={isCurrentLessonCompleted}
+                                nextLessonId={nextLesson?.id}
+                            />
                         ) : (
-                            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                                <p className="italic text-slate-500">No instructions or content provided.</p>
-                            </div>
-                        )}
+                            <>
+                                {/* blocs (vidéo/texte/image/code, dans l'ordre choisi par l'admin). */}
+                                {currentLesson.contentBlocks && currentLesson.contentBlocks.length > 0 ? (
+                                    <LessonBlocksView blocks={currentLesson.contentBlocks} />
+                                ) : (
+                                    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                                        <p className="italic text-slate-500">No instructions or content provided.</p>
+                                    </div>
+                                )}
 
-                        {/* 3. ACTIONS DE VALIDATION */}
-                        <div className="pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
-                            {currentLesson.type === "EXERCISE" ? (
-                                <div className="w-full">
-                                    {/* 🟢 Le composant ExerciseForm devra également être migré vers Supabase */}
-                                    <ExerciseForm
-                                        courseId={courseId}
-                                        chapterId={currentChapter!.id}
-                                        lessonId={currentLesson.id}
-                                        initialAnswer={currentLesson.lessonProgress?.[0]?.exerciseAnswer}
-                                        isCompleted={isCurrentLessonCompleted}
-                                        exerciseStatus={currentLesson.lessonProgress?.[0]?.exerciseStatus}
-                                        reviewFeedback={currentLesson.lessonProgress?.[0]?.reviewFeedback}
-                                        nextLessonId={nextLesson?.id}
-                                    />
+                                {/* 3. ACTIONS DE VALIDATION */}
+                                <div className="pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
+                                    {currentLesson.type === "EXERCISE" ? (
+                                        <div className="w-full">
+                                            {/* 🟢 Le composant ExerciseForm devra également être migré vers Supabase */}
+                                            <ExerciseForm
+                                                courseId={courseId}
+                                                chapterId={currentChapter!.id}
+                                                lessonId={currentLesson.id}
+                                                initialAnswer={currentLesson.lessonProgress?.[0]?.exerciseAnswer}
+                                                isCompleted={isCurrentLessonCompleted}
+                                                exerciseStatus={currentLesson.lessonProgress?.[0]?.exerciseStatus}
+                                                reviewFeedback={currentLesson.lessonProgress?.[0]?.reviewFeedback}
+                                                nextLessonId={nextLesson?.id}
+                                            />
+                                        </div>
+                                    ) : (
+                                        /* 🟢 Le composant CourseProgressButton devra également être migré vers Supabase */
+                                        <CourseProgressButton
+                                            courseId={courseId}
+                                            chapterId={currentChapter!.id}
+                                            lessonId={currentLesson.id}
+                                            isCompleted={isCurrentLessonCompleted}
+                                            nextLessonId={nextLesson?.id}
+                                        />
+                                    )}
                                 </div>
-                            ) : (
-                                /* 🟢 Le composant CourseProgressButton devra également être migré vers Supabase */
-                                <CourseProgressButton
-                                    courseId={courseId}
-                                    chapterId={currentChapter!.id}
-                                    lessonId={currentLesson.id}
-                                    isCompleted={isCurrentLessonCompleted}
-                                    nextLessonId={nextLesson?.id}
-                                />
-                            )}
-                        </div>
+                            </>
+                        )}
 
                     </div>
                 </section>
