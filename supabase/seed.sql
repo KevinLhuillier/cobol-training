@@ -159,6 +159,142 @@ BEGIN
     END LOOP;
 END $$;
 
+-- ===== Module 2 - TSO & ISPF : Quiz (dernière leçon) =====
+DO $$
+DECLARE
+    v_course_id UUID;
+    v_chapter_id UUID;
+    v_position INTEGER;
+BEGIN
+    SELECT id INTO v_course_id FROM courses WHERE title = 'Module 2 - TSO & ISPF';
+    SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - TSO & ISPF';
+
+    IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = 'Quiz') THEN
+        SELECT COALESCE(MAX(position), 0) + 1 INTO v_position FROM lessons WHERE chapter_id = v_chapter_id;
+
+        INSERT INTO lessons (title, type, position, chapter_id, quiz_questions, quiz_pass_rate)
+        VALUES (
+            'Quiz',
+            'QUIZ',
+            v_position,
+            v_chapter_id,
+            '[
+                {
+                    "id": "m2-q1",
+                    "type": "SINGLE_CHOICE",
+                    "text": "What does TSO stand for?",
+                    "answers": [
+                        {"id": "m2-q1-a1", "text": "Terminal System Operator", "isCorrect": false},
+                        {"id": "m2-q1-a2", "text": "Time Sharing Option", "isCorrect": true, "explanation": "TSO (Time Sharing Option) is the IBM facility that allows users to interact with z/OS."},
+                        {"id": "m2-q1-a3", "text": "Task Sequential Operation", "isCorrect": false},
+                        {"id": "m2-q1-a4", "text": "Transaction Session Output", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m2-q2",
+                    "type": "SINGLE_CHOICE",
+                    "text": "A PS (Physical Sequential) dataset is:",
+                    "answers": [
+                        {"id": "m2-q2-a1", "text": "A dataset containing a single stream of records", "isCorrect": true, "explanation": "PS datasets store records in a simple sequential order, like a flat file."},
+                        {"id": "m2-q2-a2", "text": "A library containing multiple members", "isCorrect": false},
+                        {"id": "m2-q2-a3", "text": "A dataset reserved for JCL", "isCorrect": false},
+                        {"id": "m2-q2-a4", "text": "A binary-only dataset", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m2-q3",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Which statement is correct about a PDS (Partitioned Data Set)?",
+                    "answers": [
+                        {"id": "m2-q3-a1", "text": "It can only contain one member", "isCorrect": false},
+                        {"id": "m2-q3-a2", "text": "It is reserved for executables only", "isCorrect": false},
+                        {"id": "m2-q3-a3", "text": "It is a collection of sequential datasets called members", "isCorrect": true, "explanation": "A PDS works like a library, with each \"member\" acting like a separate file inside it."},
+                        {"id": "m2-q3-a4", "text": "It cannot be edited in ISPF", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m2-q4",
+                    "type": "MULTIPLE_CHOICE",
+                    "text": "In ISPF, which options let you edit a dataset?",
+                    "answers": [
+                        {"id": "m2-q4-a1", "text": "Option 2 (Edit)", "isCorrect": true, "explanation": "Option 2 opens the editor directly."},
+                        {"id": "m2-q4-a2", "text": "Option 3.4 (Data Set List Utility)", "isCorrect": true, "explanation": "Option 3.4 lists datasets and lets you enter E to edit."},
+                        {"id": "m2-q4-a3", "text": "Option 0 (Settings)", "isCorrect": false},
+                        {"id": "m2-q4-a4", "text": "Option 1 (View)", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m2-q5",
+                    "type": "SINGLE_CHOICE",
+                    "text": "The 3.4 option in the ISPF menu is used to:",
+                    "answers": [
+                        {"id": "m2-q5-a1", "text": "Submit a batch job", "isCorrect": false},
+                        {"id": "m2-q5-a2", "text": "List and navigate datasets", "isCorrect": true, "explanation": "Option 3.4 is the Dataset List Utility, where you can search, browse, and edit datasets."},
+                        {"id": "m2-q5-a3", "text": "Change user settings", "isCorrect": false},
+                        {"id": "m2-q5-a4", "text": "Manage spool output", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m2-q6",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Inside a PDS, what are the individual elements called?",
+                    "answers": [
+                        {"id": "m2-q6-a1", "text": "Members", "isCorrect": true, "explanation": "A PDS is made up of \"members\", which are like individual files stored inside the dataset."},
+                        {"id": "m2-q6-a2", "text": "Tracks", "isCorrect": false},
+                        {"id": "m2-q6-a3", "text": "Volumes", "isCorrect": false},
+                        {"id": "m2-q6-a4", "text": "Sequences", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m2-q7",
+                    "type": "SINGLE_CHOICE",
+                    "text": "When editing a file, which line command inserts a blank line below the current line?",
+                    "answers": [
+                        {"id": "m2-q7-a1", "text": "B", "isCorrect": false},
+                        {"id": "m2-q7-a2", "text": "I", "isCorrect": true, "explanation": "The I command inserts a blank line below."},
+                        {"id": "m2-q7-a3", "text": "D", "isCorrect": false},
+                        {"id": "m2-q7-a4", "text": "A", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m2-q8",
+                    "type": "SINGLE_CHOICE",
+                    "text": "What does the RR line command do?",
+                    "answers": [
+                        {"id": "m2-q8-a1", "text": "Replaces a word", "isCorrect": false},
+                        {"id": "m2-q8-a2", "text": "Rolls lines up", "isCorrect": false},
+                        {"id": "m2-q8-a3", "text": "Removes trailing spaces", "isCorrect": false},
+                        {"id": "m2-q8-a4", "text": "Repeats a block of lines", "isCorrect": true, "explanation": "RR (paired) replicates the lines between the two RR commands."}
+                    ]
+                },
+                {
+                    "id": "m2-q9",
+                    "type": "SINGLE_CHOICE",
+                    "text": "What is the effect of the D command entered as D2?",
+                    "answers": [
+                        {"id": "m2-q9-a1", "text": "Deletes 2 lines", "isCorrect": true},
+                        {"id": "m2-q9-a2", "text": "Duplicates 2 lines", "isCorrect": false},
+                        {"id": "m2-q9-a3", "text": "Copies 2 lines", "isCorrect": false},
+                        {"id": "m2-q9-a4", "text": "Inserts 2 members", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m2-q10",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Which line command duplicates a line directly below it?",
+                    "answers": [
+                        {"id": "m2-q10-a1", "text": "R", "isCorrect": true},
+                        {"id": "m2-q10-a2", "text": "C", "isCorrect": false},
+                        {"id": "m2-q10-a3", "text": "M", "isCorrect": false},
+                        {"id": "m2-q10-a4", "text": "D", "isCorrect": false}
+                    ]
+                }
+            ]'::jsonb,
+            70
+        );
+    END IF;
+END $$;
+
 -- ===== Module 3 - Hello World - Your First Cobol Program =====
 DO $$
 DECLARE
@@ -203,6 +339,109 @@ BEGIN
     END LOOP;
 END $$;
 
+-- ===== Module 3 - Hello World : Quiz (dernière leçon) =====
+DO $$
+DECLARE
+    v_course_id UUID;
+    v_chapter_id UUID;
+    v_position INTEGER;
+BEGIN
+    SELECT id INTO v_course_id FROM courses WHERE title = 'Module 3 - Hello World - Your First Cobol Program';
+    SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - Hello World';
+
+    IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = 'Quiz') THEN
+        SELECT COALESCE(MAX(position), 0) + 1 INTO v_position FROM lessons WHERE chapter_id = v_chapter_id;
+
+        INSERT INTO lessons (title, type, position, chapter_id, quiz_questions, quiz_pass_rate)
+        VALUES (
+            'Quiz',
+            'QUIZ',
+            v_position,
+            v_chapter_id,
+            '[
+                {
+                    "id": "m3-q1",
+                    "type": "SINGLE_CHOICE",
+                    "text": "In a COBOL program that displays ''Hello World'', in which division should the DISPLAY statement be located?",
+                    "answers": [
+                        {"id": "m3-q1-a1", "text": "IDENTIFICATION DIVISION", "isCorrect": false},
+                        {"id": "m3-q1-a2", "text": "ENVIRONMENT DIVISION", "isCorrect": false},
+                        {"id": "m3-q1-a3", "text": "DATA DIVISION", "isCorrect": false},
+                        {"id": "m3-q1-a4", "text": "PROCEDURE DIVISION", "isCorrect": true, "explanation": "The PROCEDURE DIVISION contains all the logic and executable instructions."}
+                    ]
+                },
+                {
+                    "id": "m3-q2",
+                    "type": "SINGLE_CHOICE",
+                    "text": "What is the primary role of the compilation stage for a program?",
+                    "answers": [
+                        {"id": "m3-q2-a1", "text": "Execute the program to see the result.", "isCorrect": false},
+                        {"id": "m3-q2-a2", "text": "Translate the source code into binary code.", "isCorrect": true, "explanation": "The compiler checks the syntax and converts the code into machine language."},
+                        {"id": "m3-q2-a3", "text": "Display the job report in SDSF.", "isCorrect": false},
+                        {"id": "m3-q2-a4", "text": "Save the source code in a PDS.", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m3-q3",
+                    "type": "SINGLE_CHOICE",
+                    "text": "In which area (columns) are the instructions written?",
+                    "answers": [
+                        {"id": "m3-q3-a1", "text": "Margin A (columns 8 to 11)", "isCorrect": false},
+                        {"id": "m3-q3-a2", "text": "Margin B (columns 12 to 72).", "isCorrect": true, "explanation": "It is the area dedicated to writing instructions."},
+                        {"id": "m3-q3-a3", "text": "Sequence area (columns 1 to 6).", "isCorrect": false},
+                        {"id": "m3-q3-a4", "text": "Indicator area (column 7).", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m3-q4",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Which return code (MAXCC) generally indicates that the compilation was successful without any errors or warnings?",
+                    "answers": [
+                        {"id": "m3-q4-a1", "text": "0000", "isCorrect": true},
+                        {"id": "m3-q4-a2", "text": "0004", "isCorrect": false},
+                        {"id": "m3-q4-a3", "text": "0008", "isCorrect": false},
+                        {"id": "m3-q4-a4", "text": "0012", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m3-q5",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Under which system file name can the output of the DISPLAY statement be found in SDSF?",
+                    "answers": [
+                        {"id": "m3-q5-a1", "text": "JESMSGLG", "isCorrect": false},
+                        {"id": "m3-q5-a2", "text": "SYSPRINT", "isCorrect": false},
+                        {"id": "m3-q5-a3", "text": "SYSOUT", "isCorrect": true, "explanation": "By convention, the DISPLAY is directed to the SYSOUT DDname."},
+                        {"id": "m3-q5-a4", "text": "SYSIN", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m3-q6",
+                    "type": "SINGLE_CHOICE",
+                    "text": "To cleanly terminate a program and return control to the system, which instruction is used?",
+                    "answers": [
+                        {"id": "m3-q6-a1", "text": "END PROGRAM", "isCorrect": false},
+                        {"id": "m3-q6-a2", "text": "EXIT", "isCorrect": false},
+                        {"id": "m3-q6-a3", "text": "STOP RUN", "isCorrect": true},
+                        {"id": "m3-q6-a4", "text": "FINISH", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m3-q7",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Which division is mandatory and must be the very first one in a COBOL program?",
+                    "answers": [
+                        {"id": "m3-q7-a1", "text": "PROCEDURE DIVISION", "isCorrect": false},
+                        {"id": "m3-q7-a2", "text": "DATA DIVISION", "isCorrect": false},
+                        {"id": "m3-q7-a3", "text": "IDENTIFICATION DIVISION", "isCorrect": true},
+                        {"id": "m3-q7-a4", "text": "ENVIRONMENT DIVISION", "isCorrect": false}
+                    ]
+                }
+            ]'::jsonb,
+            70
+        );
+    END IF;
+END $$;
+
 -- ===== Module 4 - Cobol Basics =====
 DO $$
 DECLARE
@@ -245,6 +484,197 @@ BEGIN
             );
         END IF;
     END LOOP;
+END $$;
+
+-- ===== Module 4 - Cobol Basics : Quiz (dernière leçon) =====
+DO $$
+DECLARE
+    v_course_id UUID;
+    v_chapter_id UUID;
+    v_position INTEGER;
+BEGIN
+    SELECT id INTO v_course_id FROM courses WHERE title = 'Module 4 - Cobol Basics';
+    SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - Cobol Basics';
+
+    IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = 'Quiz') THEN
+        SELECT COALESCE(MAX(position), 0) + 1 INTO v_position FROM lessons WHERE chapter_id = v_chapter_id;
+
+        INSERT INTO lessons (title, type, position, chapter_id, quiz_questions, quiz_pass_rate)
+        VALUES (
+            'Quiz',
+            'QUIZ',
+            v_position,
+            v_chapter_id,
+            '[
+                {
+                    "id": "m4-q1",
+                    "type": "SINGLE_CHOICE",
+                    "text": "In the structure of a COBOL code line, what is the specific function of column 7?",
+                    "answers": [
+                        {"id": "m4-q1-a1", "text": "It is used to indicate a comment (with an asterisk *).", "isCorrect": true, "explanation": "Column 7 is the indicator area used to define comment lines or line continuations."},
+                        {"id": "m4-q1-a2", "text": "It is used to number the lines of the program.", "isCorrect": false},
+                        {"id": "m4-q1-a3", "text": "It must always remain empty for compilation reasons.", "isCorrect": false},
+                        {"id": "m4-q1-a4", "text": "It marks the beginning of Area A.", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q2",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Which division contains the links to external files?",
+                    "answers": [
+                        {"id": "m4-q2-a1", "text": "PROCEDURE DIVISION", "isCorrect": false},
+                        {"id": "m4-q2-a2", "text": "DATA DIVISION", "isCorrect": false},
+                        {"id": "m4-q2-a3", "text": "ENVIRONMENT DIVISION", "isCorrect": true, "explanation": "It serves as a bridge between the program and the computer/files via the CONFIGURATION and INPUT-OUTPUT sections."},
+                        {"id": "m4-q2-a4", "text": "IDENTIFICATION DIVISION", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q3",
+                    "type": "SINGLE_CHOICE",
+                    "text": "How would you define a variable named ''WS-PRICE'' capable of storing exactly 5 digits without decimals?",
+                    "answers": [
+                        {"id": "m4-q3-a1", "text": "01 WS-PRICE PICTURE IS 999.", "isCorrect": false},
+                        {"id": "m4-q3-a2", "text": "01 WS-PRICE PIC 9V9999.", "isCorrect": false},
+                        {"id": "m4-q3-a3", "text": "01 WS-PRICE PIC X(5).", "isCorrect": false},
+                        {"id": "m4-q3-a4", "text": "01 WS-PRICE PIC 9(5).", "isCorrect": true, "explanation": "The symbol 9 indicates a numeric value and (5) indicates the length."}
+                    ]
+                },
+                {
+                    "id": "m4-q4",
+                    "type": "SINGLE_CHOICE",
+                    "text": "What is the purpose of the FILLER keyword in the DATA DIVISION?",
+                    "answers": [
+                        {"id": "m4-q4-a1", "text": "To force the variable to be of a numeric type.", "isCorrect": false},
+                        {"id": "m4-q4-a2", "text": "To automatically fill a variable with zeros.", "isCorrect": false},
+                        {"id": "m4-q4-a3", "text": "To give a generic name to a field that will not be used directly by its name.", "isCorrect": true, "explanation": "FILLER allows for reserving space (such as blank spaces) in a structure without having to name the variable."},
+                        {"id": "m4-q4-a4", "text": "To finish the record declaration.", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q5",
+                    "type": "SINGLE_CHOICE",
+                    "text": "The instruction ''MOVE A TO B'' has been executed. Which statement is correct?",
+                    "answers": [
+                        {"id": "m4-q5-a1", "text": "B now contains the value of A.", "isCorrect": true},
+                        {"id": "m4-q5-a2", "text": "A is now empty.", "isCorrect": false},
+                        {"id": "m4-q5-a3", "text": "A and B have exchanged their respective contents.", "isCorrect": false},
+                        {"id": "m4-q5-a4", "text": "B now contains the memory address of A.", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q6",
+                    "type": "SINGLE_CHOICE",
+                    "text": "What is the primary use of the INITIALIZE instruction on a group variable?",
+                    "answers": [
+                        {"id": "m4-q6-a1", "text": "To ask the user to enter default values.", "isCorrect": false},
+                        {"id": "m4-q6-a2", "text": "Set all numeric fields to 0 and alphanumeric fields to SPACES.", "isCorrect": true, "explanation": "INITIALIZE resets sub-fields according to their default type."},
+                        {"id": "m4-q6-a3", "text": "Set all fields to the value ''NULL''.", "isCorrect": false},
+                        {"id": "m4-q6-a4", "text": "Erase the variable from the RAM.", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q7",
+                    "type": "SINGLE_CHOICE",
+                    "text": "To add 5 to the variable ''NB-LINES'', which Cobol instruction is syntactically correct?",
+                    "answers": [
+                        {"id": "m4-q7-a1", "text": "COMPUTE NB-LINES + 5", "isCorrect": false},
+                        {"id": "m4-q7-a2", "text": "SET NB-LINES TO NB-LINES + 5", "isCorrect": false},
+                        {"id": "m4-q7-a3", "text": "ADD 5 TO NB-LINES", "isCorrect": true, "explanation": "It is the classic imperative syntax for simple addition."},
+                        {"id": "m4-q7-a4", "text": "MOVE 5 TO NB-LINES", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q8",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Which instruction should be used to read a value passed in SYSIN?",
+                    "answers": [
+                        {"id": "m4-q8-a1", "text": "GET", "isCorrect": false},
+                        {"id": "m4-q8-a2", "text": "READ", "isCorrect": false},
+                        {"id": "m4-q8-a3", "text": "DISPLAY", "isCorrect": false},
+                        {"id": "m4-q8-a4", "text": "ACCEPT", "isCorrect": true}
+                    ]
+                },
+                {
+                    "id": "m4-q9",
+                    "type": "SINGLE_CHOICE",
+                    "text": "In a COBOL program, what is a section in the PROCEDURE DIVISION?",
+                    "answers": [
+                        {"id": "m4-q9-a1", "text": "An alternative division.", "isCorrect": false},
+                        {"id": "m4-q9-a2", "text": "A specific comment line.", "isCorrect": false},
+                        {"id": "m4-q9-a3", "text": "A logical grouping of several paragraphs.", "isCorrect": true, "explanation": "A section starts with a name followed by the word SECTION and contains one or more paragraphs."},
+                        {"id": "m4-q9-a4", "text": "A global variable.", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q10",
+                    "type": "SINGLE_CHOICE",
+                    "text": "What is a level-88 variable called?",
+                    "answers": [
+                        {"id": "m4-q10-a1", "text": "A condition name.", "isCorrect": true},
+                        {"id": "m4-q10-a2", "text": "A file pointer.", "isCorrect": false},
+                        {"id": "m4-q10-a3", "text": "A group constant.", "isCorrect": false},
+                        {"id": "m4-q10-a4", "text": "An index variable.", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q11",
+                    "type": "SINGLE_CHOICE",
+                    "text": "What structure is recommended to replace multiple nested IFs testing the same variable?",
+                    "answers": [
+                        {"id": "m4-q11-a1", "text": "GO TO", "isCorrect": false},
+                        {"id": "m4-q11-a2", "text": "SEARCH", "isCorrect": false},
+                        {"id": "m4-q11-a3", "text": "EVALUATE", "isCorrect": true, "explanation": "EVALUATE is the equivalent of ''Select Case'' or ''Switch'', offering better readability."},
+                        {"id": "m4-q11-a4", "text": "PERFORM UNTIL", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q12",
+                    "type": "SINGLE_CHOICE",
+                    "text": "If you have ''01 WS-NOTE PIC 99''. What happens if you do ''MOVE 105 TO WS-NOTE''?",
+                    "answers": [
+                        {"id": "m4-q12-a1", "text": "The program stops immediately with a fatal error.", "isCorrect": false},
+                        {"id": "m4-q12-a2", "text": "The value is truncated, WS-NOTE will contain 05.", "isCorrect": true},
+                        {"id": "m4-q12-a3", "text": "The value 105 is stored normally.", "isCorrect": false},
+                        {"id": "m4-q12-a4", "text": "The variable automatically expands to store 105.", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q13",
+                    "type": "SINGLE_CHOICE",
+                    "text": "In which area must a paragraph name begin?",
+                    "answers": [
+                        {"id": "m4-q13-a1", "text": "Area B (columns 12 to 72).", "isCorrect": false},
+                        {"id": "m4-q13-a2", "text": "Anywhere after column 7.", "isCorrect": false},
+                        {"id": "m4-q13-a3", "text": "Area A (columns 8 to 11).", "isCorrect": true, "explanation": "Division, section, and paragraph names must start in Area A."},
+                        {"id": "m4-q13-a4", "text": "Sequence area (columns 1 to 6).", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q14",
+                    "type": "SINGLE_CHOICE",
+                    "text": "What does the ''IF WS-PRICE NOT < 0'' instruction mean?",
+                    "answers": [
+                        {"id": "m4-q14-a1", "text": "It checks if the price is greater than or equal to zero.", "isCorrect": true, "explanation": "To say that it is not less than zero is the same as saying that it is positive or zero."},
+                        {"id": "m4-q14-a2", "text": "It checks if the price is exactly equal to zero.", "isCorrect": false},
+                        {"id": "m4-q14-a3", "text": "It is syntactically incorrect.", "isCorrect": false},
+                        {"id": "m4-q14-a4", "text": "It checks if the price is strictly negative.", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m4-q15",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Which of these elements must mandatory end each division and each paragraph?",
+                    "answers": [
+                        {"id": "m4-q15-a1", "text": "A line break.", "isCorrect": false},
+                        {"id": "m4-q15-a2", "text": "A period.", "isCorrect": true, "explanation": "The period is the structure terminator in COBOL."},
+                        {"id": "m4-q15-a3", "text": "The keyword END.", "isCorrect": false},
+                        {"id": "m4-q15-a4", "text": "A semicolon.", "isCorrect": false}
+                    ]
+                }
+            ]'::jsonb,
+            70
+        );
+    END IF;
 END $$;
 
 -- ===== Module 5 - JCL Basics =====
