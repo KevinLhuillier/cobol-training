@@ -43,7 +43,8 @@ export function ChapterForm({ courseId }: { courseId: string }) {
                 .insert({
                     title: title.trim(),
                     course_id: courseId,
-                    position: newPosition
+                    position: newPosition,
+                    is_published: false // Brouillon par défaut
                 });
 
             if (insertError) {

@@ -108,6 +108,9 @@ export default async function DashboardPage() {
             )
         `)
         .eq("is_published", true)
+        // Seuls les chapitres et leçons publiés comptent dans la progression (le cours est conservé même sans contenu)
+        .eq("chapters.is_published", true)
+        .eq("chapters.lessons.is_published", true)
         .order("position", { ascending: true });
 
     // 4. Tri des chapitres et leçons par position (PostgREST ne garantit pas l'ordre des relations imbriquées sans syntaxe complexe)

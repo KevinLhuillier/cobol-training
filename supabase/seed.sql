@@ -63,7 +63,7 @@ ON CONFLICT (username) DO NOTHING;
 -- SEED : CATALOGUE DE COURS COMPLET (10 modules)
 -- Idempotent via SELECT ... WHERE NOT EXISTS (pas de contrainte UNIQUE sur title,
 -- donc pas d'ON CONFLICT possible) : rejouer ce seed ne duplique rien.
--- Cours non-gratuits (is_free = false, valeur par défaut) et publiés directement ;
+-- Cours non-gratuits (is_free = false, valeur par défaut), chapitres et leçons publiés directement (is_published = true, le défaut de ces colonnes étant false) ;
 -- toutes les leçons sont de type VIDEO, l'URL Vimeo étant stockée comme unique bloc
 -- "video" dans content_blocks (format lu par le LessonBuilder). Positions 1-based
 -- (cours, chapitres, leçons).
@@ -87,8 +87,8 @@ BEGIN
 
     SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - Onboarding';
     IF v_chapter_id IS NULL THEN
-        INSERT INTO chapters (title, position, course_id)
-        VALUES ('Chapter 1 - Onboarding', 1, v_course_id)
+        INSERT INTO chapters (title, position, course_id, is_published)
+        VALUES ('Chapter 1 - Onboarding', 1, v_course_id, true)
         RETURNING id INTO v_chapter_id;
     END IF;
 
@@ -99,7 +99,7 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id, is_published)
             VALUES (
                 v_lesson.title,
                 jsonb_build_array(jsonb_build_object(
@@ -109,7 +109,8 @@ BEGIN
                 )),
                 v_lesson.pos,
                 'VIDEO',
-                v_chapter_id
+                v_chapter_id,
+                true
             );
         END IF;
     END LOOP;
@@ -131,8 +132,8 @@ BEGIN
 
     SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - TSO & ISPF';
     IF v_chapter_id IS NULL THEN
-        INSERT INTO chapters (title, position, course_id)
-        VALUES ('Chapter 1 - TSO & ISPF', 1, v_course_id)
+        INSERT INTO chapters (title, position, course_id, is_published)
+        VALUES ('Chapter 1 - TSO & ISPF', 1, v_course_id, true)
         RETURNING id INTO v_chapter_id;
     END IF;
 
@@ -143,7 +144,7 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id, is_published)
             VALUES (
                 v_lesson.title,
                 jsonb_build_array(jsonb_build_object(
@@ -153,7 +154,8 @@ BEGIN
                 )),
                 v_lesson.pos,
                 'VIDEO',
-                v_chapter_id
+                v_chapter_id,
+                true
             );
         END IF;
     END LOOP;
@@ -172,7 +174,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = 'Quiz') THEN
         SELECT COALESCE(MAX(position), 0) + 1 INTO v_position FROM lessons WHERE chapter_id = v_chapter_id;
 
-        INSERT INTO lessons (title, type, position, chapter_id, quiz_questions, quiz_pass_rate)
+        INSERT INTO lessons (title, type, position, chapter_id, quiz_questions, quiz_pass_rate, is_published)
         VALUES (
             'Quiz',
             'QUIZ',
@@ -290,7 +292,8 @@ BEGIN
                     ]
                 }
             ]'::jsonb,
-            70
+            70,
+            true
         );
     END IF;
 END $$;
@@ -311,8 +314,8 @@ BEGIN
 
     SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - Hello World';
     IF v_chapter_id IS NULL THEN
-        INSERT INTO chapters (title, position, course_id)
-        VALUES ('Chapter 1 - Hello World', 1, v_course_id)
+        INSERT INTO chapters (title, position, course_id, is_published)
+        VALUES ('Chapter 1 - Hello World', 1, v_course_id, true)
         RETURNING id INTO v_chapter_id;
     END IF;
 
@@ -323,7 +326,7 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id, is_published)
             VALUES (
                 v_lesson.title,
                 jsonb_build_array(jsonb_build_object(
@@ -333,7 +336,8 @@ BEGIN
                 )),
                 v_lesson.pos,
                 'VIDEO',
-                v_chapter_id
+                v_chapter_id,
+                true
             );
         END IF;
     END LOOP;
@@ -352,7 +356,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = 'Quiz') THEN
         SELECT COALESCE(MAX(position), 0) + 1 INTO v_position FROM lessons WHERE chapter_id = v_chapter_id;
 
-        INSERT INTO lessons (title, type, position, chapter_id, quiz_questions, quiz_pass_rate)
+        INSERT INTO lessons (title, type, position, chapter_id, quiz_questions, quiz_pass_rate, is_published)
         VALUES (
             'Quiz',
             'QUIZ',
@@ -437,7 +441,8 @@ BEGIN
                     ]
                 }
             ]'::jsonb,
-            70
+            70,
+            true
         );
     END IF;
 END $$;
@@ -458,8 +463,8 @@ BEGIN
 
     SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - Cobol Basics';
     IF v_chapter_id IS NULL THEN
-        INSERT INTO chapters (title, position, course_id)
-        VALUES ('Chapter 1 - Cobol Basics', 1, v_course_id)
+        INSERT INTO chapters (title, position, course_id, is_published)
+        VALUES ('Chapter 1 - Cobol Basics', 1, v_course_id, true)
         RETURNING id INTO v_chapter_id;
     END IF;
 
@@ -470,7 +475,7 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id, is_published)
             VALUES (
                 v_lesson.title,
                 jsonb_build_array(jsonb_build_object(
@@ -480,7 +485,8 @@ BEGIN
                 )),
                 v_lesson.pos,
                 'VIDEO',
-                v_chapter_id
+                v_chapter_id,
+                true
             );
         END IF;
     END LOOP;
@@ -499,7 +505,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = 'Quiz') THEN
         SELECT COALESCE(MAX(position), 0) + 1 INTO v_position FROM lessons WHERE chapter_id = v_chapter_id;
 
-        INSERT INTO lessons (title, type, position, chapter_id, quiz_questions, quiz_pass_rate)
+        INSERT INTO lessons (title, type, position, chapter_id, quiz_questions, quiz_pass_rate, is_published)
         VALUES (
             'Quiz',
             'QUIZ',
@@ -672,7 +678,8 @@ BEGIN
                     ]
                 }
             ]'::jsonb,
-            70
+            70,
+            true
         );
     END IF;
 END $$;
@@ -693,8 +700,8 @@ BEGIN
 
     SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - JCL Basics';
     IF v_chapter_id IS NULL THEN
-        INSERT INTO chapters (title, position, course_id)
-        VALUES ('Chapter 1 - JCL Basics', 1, v_course_id)
+        INSERT INTO chapters (title, position, course_id, is_published)
+        VALUES ('Chapter 1 - JCL Basics', 1, v_course_id, true)
         RETURNING id INTO v_chapter_id;
     END IF;
 
@@ -705,7 +712,7 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id, is_published)
             VALUES (
                 v_lesson.title,
                 jsonb_build_array(jsonb_build_object(
@@ -715,7 +722,8 @@ BEGIN
                 )),
                 v_lesson.pos,
                 'VIDEO',
-                v_chapter_id
+                v_chapter_id,
+                true
             );
         END IF;
     END LOOP;
@@ -737,8 +745,8 @@ BEGIN
 
     SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - Files and Libraries';
     IF v_chapter_id IS NULL THEN
-        INSERT INTO chapters (title, position, course_id)
-        VALUES ('Chapter 1 - Files and Libraries', 1, v_course_id)
+        INSERT INTO chapters (title, position, course_id, is_published)
+        VALUES ('Chapter 1 - Files and Libraries', 1, v_course_id, true)
         RETURNING id INTO v_chapter_id;
     END IF;
 
@@ -749,7 +757,7 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id, is_published)
             VALUES (
                 v_lesson.title,
                 jsonb_build_array(jsonb_build_object(
@@ -759,7 +767,8 @@ BEGIN
                 )),
                 v_lesson.pos,
                 'VIDEO',
-                v_chapter_id
+                v_chapter_id,
+                true
             );
         END IF;
     END LOOP;
@@ -781,8 +790,8 @@ BEGIN
 
     SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - Cobol – Advanced Concepts';
     IF v_chapter_id IS NULL THEN
-        INSERT INTO chapters (title, position, course_id)
-        VALUES ('Chapter 1 - Cobol – Advanced Concepts', 1, v_course_id)
+        INSERT INTO chapters (title, position, course_id, is_published)
+        VALUES ('Chapter 1 - Cobol – Advanced Concepts', 1, v_course_id, true)
         RETURNING id INTO v_chapter_id;
     END IF;
 
@@ -793,7 +802,7 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id, is_published)
             VALUES (
                 v_lesson.title,
                 jsonb_build_array(jsonb_build_object(
@@ -803,7 +812,8 @@ BEGIN
                 )),
                 v_lesson.pos,
                 'VIDEO',
-                v_chapter_id
+                v_chapter_id,
+                true
             );
         END IF;
     END LOOP;
@@ -825,8 +835,8 @@ BEGIN
 
     SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - DB2 with Cobol';
     IF v_chapter_id IS NULL THEN
-        INSERT INTO chapters (title, position, course_id)
-        VALUES ('Chapter 1 - DB2 with Cobol', 1, v_course_id)
+        INSERT INTO chapters (title, position, course_id, is_published)
+        VALUES ('Chapter 1 - DB2 with Cobol', 1, v_course_id, true)
         RETURNING id INTO v_chapter_id;
     END IF;
 
@@ -837,7 +847,7 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id, is_published)
             VALUES (
                 v_lesson.title,
                 jsonb_build_array(jsonb_build_object(
@@ -847,7 +857,8 @@ BEGIN
                 )),
                 v_lesson.pos,
                 'VIDEO',
-                v_chapter_id
+                v_chapter_id,
+                true
             );
         END IF;
     END LOOP;
@@ -869,8 +880,8 @@ BEGIN
 
     SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - JCL – Advanced Concepts';
     IF v_chapter_id IS NULL THEN
-        INSERT INTO chapters (title, position, course_id)
-        VALUES ('Chapter 1 - JCL – Advanced Concepts', 1, v_course_id)
+        INSERT INTO chapters (title, position, course_id, is_published)
+        VALUES ('Chapter 1 - JCL – Advanced Concepts', 1, v_course_id, true)
         RETURNING id INTO v_chapter_id;
     END IF;
 
@@ -881,7 +892,7 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id, is_published)
             VALUES (
                 v_lesson.title,
                 jsonb_build_array(jsonb_build_object(
@@ -891,7 +902,8 @@ BEGIN
                 )),
                 v_lesson.pos,
                 'VIDEO',
-                v_chapter_id
+                v_chapter_id,
+                true
             );
         END IF;
     END LOOP;
@@ -913,8 +925,8 @@ BEGIN
 
     SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - CICS Programming';
     IF v_chapter_id IS NULL THEN
-        INSERT INTO chapters (title, position, course_id)
-        VALUES ('Chapter 1 - CICS Programming', 1, v_course_id)
+        INSERT INTO chapters (title, position, course_id, is_published)
+        VALUES ('Chapter 1 - CICS Programming', 1, v_course_id, true)
         RETURNING id INTO v_chapter_id;
     END IF;
 
@@ -925,7 +937,7 @@ BEGIN
         ) WITH ORDINALITY AS t(title, url, pos)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = v_lesson.title) THEN
-            INSERT INTO lessons (title, content_blocks, position, type, chapter_id)
+            INSERT INTO lessons (title, content_blocks, position, type, chapter_id, is_published)
             VALUES (
                 v_lesson.title,
                 jsonb_build_array(jsonb_build_object(
@@ -935,7 +947,8 @@ BEGIN
                 )),
                 v_lesson.pos,
                 'VIDEO',
-                v_chapter_id
+                v_chapter_id,
+                true
             );
         END IF;
     END LOOP;

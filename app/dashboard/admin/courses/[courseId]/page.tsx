@@ -47,6 +47,7 @@ export default async function CourseDetailsPage({ params }: { params: Promise<an
                 id,
                 title,
                 position,
+                isPublished:is_published,
                 courseId:course_id
             )
         `)

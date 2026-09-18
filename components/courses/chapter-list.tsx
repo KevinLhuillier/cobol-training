@@ -15,6 +15,7 @@ interface ChapterListProps {
         id: string;
         title: string;
         position: number;
+        isPublished: boolean;
         isFreePreview?: boolean;
     }[];
 }
@@ -96,7 +97,17 @@ export function ChapterList({ courseId, items }: ChapterListProps) {
                         <span className="font-bold text-slate-900 text-sm">{chapter.title}</span>
                     </div>
 
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-3">
+                        <Badge
+                            className={`border-none ${
+                                chapter.isPublished
+                                    ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                                    : "bg-amber-100 text-amber-700 hover:bg-amber-100"
+                            }`}
+                        >
+                            {chapter.isPublished ? "Published" : "Draft"}
+                        </Badge>
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         {/* 🟢 Le lien pointe maintenant vers /dashboard/admin/... */}
                         <Link
                             href={`/dashboard/admin/courses/${courseId}/chapters/${chapter.id}`}
@@ -111,6 +122,7 @@ export function ChapterList({ courseId, items }: ChapterListProps) {
                             chapterId={chapter.id}
                             chapterTitle={chapter.title}
                         />
+                        </div>
                     </div>
                 </div>
             ))}

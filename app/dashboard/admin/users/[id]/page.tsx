@@ -46,6 +46,8 @@ export default async function AdminUserDetailPage({
                 chapters ( id, position, lessons ( id, position ) )
             `)
             .eq("is_published", true)
+            .eq("chapters.is_published", true)
+            .eq("chapters.lessons.is_published", true)
             .order("position", { ascending: true }),
         supabase
             .from("lesson_progress")
