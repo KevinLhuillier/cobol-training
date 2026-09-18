@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, Users, Terminal, Tag, Settings, ChevronRight } from "lucide-react";
+import { BookOpen, Users, Terminal, Tag, Target, Settings, ChevronRight } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { getMaintenanceMode } from "@/app/actions/maintenance";
 import { MaintenanceModeToggle } from "@/components/admin/maintenance-mode-toggle";
@@ -33,6 +33,13 @@ const TILES = [
         label: "Offer",
         description: "Title, price and features of the subscription",
         color: "bg-amber-50 text-amber-600",
+    },
+    {
+        href: "/dashboard/admin/challenges",
+        icon: Target,
+        label: "Challenges",
+        description: "Weekly coding challenges and submissions",
+        color: "bg-rose-50 text-rose-600",
     },
 ];
 
