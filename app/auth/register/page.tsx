@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { LogoCtIcon } from "@/components/logo-ct-icon";
-import { notifyAdminNewRegistration, checkRegistrationAllowed } from "@/app/actions/auth";
+import { notifyAdminNewRegistration, checkRegistrationAllowed, addStudentToResendAudience } from "@/app/actions/auth";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -97,6 +97,11 @@ export default function RegisterPage() {
             // 4. Notify the app owner of the new registration (best-effort, non-blocking)
             notifyAdminNewRegistration(email).catch((notifyError) => {
                 console.error("Admin registration notification failed:", notifyError);
+            });
+
+            // 4bis. Add the new student to the Resend audience (best-effort, non-blocking)
+            addStudentToResendAudience(email).catch((audienceError) => {
+                console.error("Resend audience notification failed:", audienceError);
             });
 
             // 5. Success: Redirect

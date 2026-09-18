@@ -7,6 +7,19 @@ const FROM_EMAIL = "Cobol Training <kevin@cobol-training.com>";
 const ADMIN_EMAIL = "kevin@cobol-training.com";
 
 /**
+ * Ajoute un étudiant aux contacts Resend (utilisés pour les campagnes/newsletters), lors de
+ * son inscription. Depuis la bascule de Resend vers le modèle "Global Contacts", un contact
+ * n'a plus besoin d'être rattaché à une audience/segment pour être créé. Best-effort côté
+ * appelant : ne doit jamais faire échouer l'inscription si Resend est indisponible.
+ */
+export async function addResendContact(email: string, name: string) {
+    return await resend.contacts.create({
+        email,
+        firstName: name,
+    });
+}
+
+/**
  * Gabarit compact pour les notifications internes envoyées au propriétaire de l'application
  * (inscription, abonnement, alerte de stock TSO) — plus sobre que les emails destinés aux étudiants.
  */

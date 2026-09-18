@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendAdminNewRegistrationEmail, sendAdminRegistrationBlockedEmail, sendInviteEmail } from "@/utils/mail";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendAdminNewRegistrationEmail, sendAdminRegistrationBlockedEmail, sendInviteEmail, addResendContact } from "@/utils/mail";
 import { generateTempPassword } from "@/utils/password";
 import { getClientIpAndCountry } from "@/utils/request-info";
 
@@ -248,6 +248,33 @@ export async function notifyAdminNewRegistration(email: string) {
         return { success: true };
     } catch (mailError) {
         console.error("Admin new registration email failed:", mailError);
+        return { success: true };
+    }
+}
+
+/**
+ * Ajoute un nouvel étudiant à l'audience Resend (appelé juste après un signUp réussi côté
+ * client, comme notifyAdminNewRegistration). On relit le nom/email en base plutôt que de faire
+ * confiance aux valeurs passées par l'appelant, pour ne notifier que sur une inscription
+ * réellement créée. Best-effort : ne doit jamais faire échouer l'inscription.
+ */
+export async function addStudentToResendAudience(email: string) {
+    try {
+        const admin = createAdminClient();
+        const { data: newUser } = await admin
+            .from("users")
+            .select("name, email")
+            .eq("email", email.trim().toLowerCase())
+            .single();
+
+        if (!newUser) {
+            return { success: true };
+        }
+
+        await addResendContact(newUser.email, newUser.name || "Student");
+        return { success: true };
+    } catch (contactError) {
+        console.error("Resend audience contact creation failed:", contactError);
         return { success: true };
     }
 }
