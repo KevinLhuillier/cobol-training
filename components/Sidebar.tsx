@@ -53,7 +53,7 @@ export default function Sidebar({ userId = null, isAdmin = false, subscriptionSt
     }, [userId, isAdmin]);
 
     const menuItems: { icon: typeof LayoutGrid; label: string; href: string; badge: number; id?: string }[] = [
-        { icon: LayoutGrid, label: "Dashboard", href: "/dashboard", badge: 0 },
+        { icon: LayoutGrid, label: "Courses", href: "/dashboard", badge: 0 },
         {
             icon: MessageCircle,
             label: "Messages",
