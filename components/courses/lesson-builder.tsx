@@ -11,7 +11,9 @@ import { TextBlockEditor } from "@/components/courses/lesson-blocks/text-block-e
 import { ImageBlockEditor } from "@/components/courses/lesson-blocks/image-block-editor";
 import { CodeBlockEditor } from "@/components/courses/lesson-blocks/code-block-editor";
 import { VideoBlockEditor } from "@/components/courses/lesson-blocks/video-block-editor";
+import { CalloutBlockEditor } from "@/components/courses/lesson-blocks/callout-block-editor";
 import type {
+    CalloutBlockData,
     CodeBlockData,
     ImageBlock,
     ImageBlockData,
@@ -72,6 +74,12 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
         } else if (type === "video") {
             setBlocks((prev) => [...prev, { id: createBlockId(), type: "video", data: { url: "" } }]);
             setIsDirty(true);
+        } else if (type === "callout") {
+            setBlocks((prev) => [
+                ...prev,
+                { id: createBlockId(), type: "callout", data: { variant: "info", title: "", content: "" } },
+            ]);
+            setIsDirty(true);
         }
     };
 
@@ -99,6 +107,13 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
     const updateVideoBlock = (id: string, patch: Partial<VideoBlockData>) => {
         setBlocks((prev) =>
             prev.map((block) => (block.id === id && block.type === "video" ? { ...block, data: { ...block.data, ...patch } } : block))
+        );
+        setIsDirty(true);
+    };
+
+    const updateCalloutBlock = (id: string, patch: Partial<CalloutBlockData>) => {
+        setBlocks((prev) =>
+            prev.map((block) => (block.id === id && block.type === "callout" ? { ...block, data: { ...block.data, ...patch } } : block))
         );
         setIsDirty(true);
     };
@@ -202,6 +217,17 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
                                     key={block.id}
                                     block={block}
                                     onChange={(patch) => updateVideoBlock(block.id, patch)}
+                                    {...sharedProps}
+                                />
+                            );
+                        }
+
+                        if (block.type === "callout") {
+                            return (
+                                <CalloutBlockEditor
+                                    key={block.id}
+                                    block={block}
+                                    onChange={(patch) => updateCalloutBlock(block.id, patch)}
                                     {...sharedProps}
                                 />
                             );

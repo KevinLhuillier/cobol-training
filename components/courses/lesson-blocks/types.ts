@@ -47,6 +47,25 @@ export interface VideoBlock {
     data: VideoBlockData;
 }
 
-export type LessonBlock = TextBlock | ImageBlock | CodeBlock | VideoBlock;
+export type CalloutVariant = "info" | "warning" | "error" | "success";
+
+export type CalloutAlign = "left" | "center";
+
+export interface CalloutBlockData {
+    variant: CalloutVariant;
+    title: string;
+    content: string;
+    // Absent sur les blocs créés avant l'ajout de ce réglage : à traiter comme "left"
+    // partout où ce champ est lu (cf. calloutAlignClassName dans callout-style.ts).
+    align?: CalloutAlign;
+}
+
+export interface CalloutBlock {
+    id: string;
+    type: "callout";
+    data: CalloutBlockData;
+}
+
+export type LessonBlock = TextBlock | ImageBlock | CodeBlock | VideoBlock | CalloutBlock;
 
 export type LessonBlockType = LessonBlock["type"];

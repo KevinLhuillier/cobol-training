@@ -2,6 +2,7 @@ import { Preview } from "@/components/preview";
 import { imageSizeClassName } from "./image-size";
 import { CodeBlockView } from "./code-block-view";
 import { VideoBlockView } from "./video-block-view";
+import { CalloutBlockView } from "./callout-block-view";
 import type { LessonBlock } from "./types";
 
 interface LessonBlocksViewProps {
@@ -32,6 +33,9 @@ export function LessonBlocksView({ blocks }: LessonBlocksViewProps) {
                     case "video":
                         if (!block.data.url) return null;
                         return <VideoBlockView key={block.id} url={block.data.url} />;
+                    case "callout":
+                        if (!block.data.title && !block.data.content) return null;
+                        return <CalloutBlockView key={block.id} data={block.data} />;
                     default:
                         return null;
                 }
