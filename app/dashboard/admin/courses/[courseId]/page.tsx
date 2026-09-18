@@ -8,6 +8,7 @@ import { CoursePublishButton } from "@/components/courses/course-publish-button"
 import { CourseFreeToggleButton } from "@/components/courses/course-free-toggle-button";
 import { CourseDetailsForm } from "@/components/courses/course-details-form";
 import { CourseImageForm } from "@/components/courses/course-image-form";
+import { CourseBadgeForm } from "@/components/courses/course-badge-form";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
@@ -36,6 +37,12 @@ export default async function CourseDetailsPage({ params }: { params: Promise<an
             isPublished:is_published,
             isFree:is_free,
             imageUrl:image_url,
+            badges (
+                id,
+                name,
+                description,
+                icon
+            ),
             chapters (
                 id,
                 title,
@@ -51,8 +58,12 @@ export default async function CourseDetailsPage({ params }: { params: Promise<an
     }
 
     // 4. Tri des chapitres par position (Côté JS pour garantir l'ordre exact)
+    // badges : relation 1-1 (course_id est UNIQUE) mais PostgREST peut tout de même la renvoyer
+    // sous forme de tableau selon le sens d'embedding, d'où cette normalisation défensive.
+    const rawBadge = Array.isArray(rawCourse.badges) ? rawCourse.badges[0] : rawCourse.badges;
     const course = {
         ...rawCourse,
+        badge: rawBadge || null,
         chapters: rawCourse.chapters ? [...rawCourse.chapters].sort((a, b) => a.position - b.position) : []
     };
 
@@ -119,6 +130,11 @@ export default async function CourseDetailsPage({ params }: { params: Promise<an
                         <CourseImageForm
                             courseId={course.id}
                             initialData={{ imageUrl: course.imageUrl }}
+                        />
+
+                        <CourseBadgeForm
+                            courseId={course.id}
+                            initialData={course.badge}
                         />
 
                     </div>
