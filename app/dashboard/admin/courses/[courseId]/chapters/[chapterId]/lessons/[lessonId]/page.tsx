@@ -4,8 +4,10 @@ import {
     ArrowLeft,
     LayoutDashboard,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { LessonTitleForm } from "@/components/courses/lesson-title-form";
 import { LessonBuilder } from "@/components/courses/lesson-builder";
+import { PublishToggleButton } from "@/components/courses/publish-toggle-button";
 import { QuizBuilder } from "@/components/courses/quiz/quiz-builder";
 import type { LessonBlock } from "@/components/courses/lesson-blocks/types";
 import type { QuizQuestion } from "@/components/courses/quiz/types";
@@ -50,7 +52,9 @@ export default async function LessonDetailsPage({
             quizPassRate:quiz_pass_rate,
             position,
             type,
-            chapterId:chapter_id
+            isPublished:is_published,
+            chapterId:chapter_id,
+            chapter:chapters ( isPublished:is_published )
         `)
         .eq("id", lessonId)
         .eq("chapter_id", chapterId) // Sécurité : assure que la leçon appartient bien à ce chapitre
@@ -73,6 +77,10 @@ export default async function LessonDetailsPage({
         return notFound();
     }
 
+    // Relation to-one : PostgREST peut la renvoyer sous forme d'objet ou de tableau selon le sens d'embedding
+    const rawChapter = Array.isArray(lesson.chapter) ? lesson.chapter[0] : lesson.chapter;
+    const chapterIsPublished = !!rawChapter?.isPublished;
+
     return (
         <div className="min-h-screen bg-slate-50 font-sans p-4 md:p-6 lg:p-8">
             <div className="max-w-6xl mx-auto">
@@ -94,7 +102,29 @@ export default async function LessonDetailsPage({
                             <p className="text-sm text-slate-500">
                                 Manage your lesson title and content.
                             </p>
+                            {lesson.isPublished && !chapterIsPublished && (
+                                <p className="text-xs font-medium text-amber-600 mt-1">
+                                    This lesson is published but its chapter is a draft, so students cannot see it yet.
+                                </p>
+                            )}
                         </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <Badge
+                            className={`px-3 py-1.5 border-none font-bold shadow-sm ${
+                                lesson.isPublished
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-amber-100 text-amber-700"
+                            }`}
+                        >
+                            {lesson.isPublished ? "Published" : "Draft"}
+                        </Badge>
+                        <PublishToggleButton
+                            table="lessons"
+                            id={lesson.id}
+                            isPublished={lesson.isPublished}
+                        />
                     </div>
                 </div>
 

@@ -11,6 +11,7 @@ import { hasActiveAccess, hasCourseAccess } from "@/utils/subscription";
 import { TsoUnlockButton } from "@/components/tso-unlock-button";
 import { SubscribeButton } from "@/components/subscribe-button";
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
+import { NewBadgeDialog } from "@/components/badges/new-badge-dialog";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -31,8 +32,10 @@ export default async function DashboardPage() {
     // C'est ce même signal qui déclenche le parcours d'onboarding ci-dessous.
     const { isFirstVisit } = await triggerWelcomeEmailAction();
 
-    // 2. Récupération du profil (statut d'abonnement) et du compte TSO actif
-    const [{ data: profile }, { data: tsoAccount }] = await Promise.all([
+    // 2. Récupération du profil (statut d'abonnement), du compte TSO actif et des badges
+    // débloqués mais pas encore vus (seen_at IS NULL -> déclenche la pop-up ci-dessous, une
+    // seule fois, cf. components/badges/new-badge-dialog.tsx).
+    const [{ data: profile }, { data: tsoAccount }, { data: rawNewBadges }] = await Promise.all([
         supabase
             .from("users")
             .select("name, subscription_status, trial_ends_at")
@@ -44,7 +47,34 @@ export default async function DashboardPage() {
             .eq("assigned_to_user_id", user.id)
             .eq("status", "ASSIGNED")
             .maybeSingle(),
+        supabase
+            .from("user_badges")
+            .select(`
+                id,
+                badge:badges (
+                    name,
+                    description,
+                    icon,
+                    course:courses ( title )
+                )
+            `)
+            .eq("user_id", user.id)
+            .is("seen_at", null)
+            .order("unlocked_at", { ascending: true }),
     ]);
+
+    const newBadges = (rawNewBadges || []).flatMap((row) => {
+        const badge = Array.isArray(row.badge) ? row.badge[0] : row.badge;
+        if (!badge) return [];
+        const course = Array.isArray(badge.course) ? badge.course[0] : badge.course;
+        return [{
+            userBadgeId: row.id,
+            name: badge.name as string,
+            description: badge.description as string | null,
+            icon: badge.icon as string,
+            courseTitle: course?.title || "your course",
+        }];
+    });
 
     const subscriptionInfo = {
         subscription_status: profile?.subscription_status ?? null,
@@ -78,6 +108,9 @@ export default async function DashboardPage() {
             )
         `)
         .eq("is_published", true)
+        // Seuls les chapitres et leçons publiés comptent dans la progression (le cours est conservé même sans contenu)
+        .eq("chapters.is_published", true)
+        .eq("chapters.lessons.is_published", true)
         .order("position", { ascending: true });
 
     // 4. Tri des chapitres et leçons par position (PostgREST ne garantit pas l'ordre des relations imbriquées sans syntaxe complexe)
@@ -103,6 +136,8 @@ export default async function DashboardPage() {
                 hasTsoStep={hasTsoStep}
                 hasCourseStep={hasCourseStep}
             />
+
+            <NewBadgeDialog badges={newBadges} />
 
             {/* TSO ACCESS CARD */}
             <div className="mb-10 bg-slate-900 rounded-[2rem] p-6 md:p-8 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-slate-800">

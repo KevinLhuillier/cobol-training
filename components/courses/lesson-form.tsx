@@ -45,7 +45,8 @@ export default function LessonForm({ courseId, chapterId }: LessonFormProps) {
                 .insert({
                     title: title.trim(),
                     chapter_id: chapterId,
-                    position: newPosition
+                    position: newPosition,
+                    is_published: false // Brouillon par défaut
                 });
 
             if (insertError) throw insertError;

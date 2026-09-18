@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Trophy } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { DashboardLayoutWrapper } from "@/components/dashboard-layout-wrapper";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +19,7 @@ export default async function DashboardLayout({
     let trialDaysLeft = 0;
     let unreadMessagesCount = 0;
     let userId: string | null = null;
+    let badgesCount = 0;
 
     try {
         const supabase = await createClient();
@@ -63,6 +66,13 @@ export default async function DashboardLayout({
             if (typeof unreadCount === "number") {
                 unreadMessagesCount = unreadCount;
             }
+
+            // 4. Nombre de badges débloqués (affiché à gauche du bloc "Welcome").
+            const { count } = await supabase
+                .from("user_badges")
+                .select("id", { count: "exact", head: true })
+                .eq("user_id", user.id);
+            badgesCount = count || 0;
         }
     } catch (error) {
         console.error("Erreur de récupération du rôle dans le layout:", error);
@@ -104,6 +114,15 @@ export default async function DashboardLayout({
                         <div className="h-10 w-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center font-bold text-slate-600">
                             {initial}
                         </div>
+                        {userId && (
+                            <Link
+                                href="/dashboard/badges"
+                                className="flex items-center gap-1.5 h-9 px-3 rounded-full bg-amber-50 text-amber-700 border border-amber-100 hover:bg-amber-100 transition-colors font-bold text-sm shrink-0"
+                            >
+                                <Trophy className="h-4 w-4" />
+                                {badgesCount}
+                            </Link>
+                        )}
                     </div>
                 </header>
             }

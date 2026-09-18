@@ -12,6 +12,7 @@ import {
 import LessonForm from "@/components/courses/lesson-form";
 import { LessonList } from "@/components/courses/lesson-list";
 import { ChapterTitleForm } from "@/components/courses/chapter-title-form";
+import { PublishToggleButton } from "@/components/courses/publish-toggle-button";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
@@ -49,11 +50,13 @@ export default async function ChapterDetailsPage({
             id,
             title,
             position,
+            isPublished:is_published,
             courseId:course_id,
             lessons (
                 id,
                 title,
                 position,
+                isPublished:is_published,
                 type,
                 chapterId:chapter_id
             )
@@ -108,6 +111,23 @@ export default async function ChapterDetailsPage({
                                 Manage your chapter title and add video lessons.
                             </p>
                         </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <Badge
+                            className={`px-3 py-1.5 border-none font-bold shadow-sm ${
+                                chapter.isPublished
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-amber-100 text-amber-700"
+                            }`}
+                        >
+                            {chapter.isPublished ? "Published" : "Draft"}
+                        </Badge>
+                        <PublishToggleButton
+                            table="chapters"
+                            id={chapter.id}
+                            isPublished={chapter.isPublished}
+                        />
                     </div>
                 </div>
 

@@ -44,7 +44,7 @@ export default async function CoursePlayer({
     const { courseId } = resolvedParams;
 
     // 2. FETCH SUPABASE : Récupération massive (Cours -> Chapitres -> Leçons -> Progression)
-    // Seuls les chapitres et cours "publiés" devraient normalement être visibles par l'étudiant
+    // Seuls les cours, chapitres et leçons publiés sont visibles par l'étudiant (cf. filtres ci-dessous)
     const { data: rawCourse, error } = await supabase
         .from("courses")
         .select(`
@@ -84,6 +84,9 @@ export default async function CoursePlayer({
         `)
         .eq("id", courseId)
         .eq("is_published", true)
+        // Seuls les chapitres et leçons publiés sont visibles (filtre sur les relations imbriquées, le cours est conservé)
+        .eq("chapters.is_published", true)
+        .eq("chapters.lessons.is_published", true)
         .order("position", { referencedTable: "chapters", ascending: true })
         .order("position", { referencedTable: "chapters.lessons", ascending: true })
         .order("created_at", { referencedTable: "chapters.lessons.quiz_attempts", ascending: false })
@@ -172,7 +175,7 @@ export default async function CoursePlayer({
                     quizAttempts: userQuizAttempts
                 };
             })
-        }))
+        })).filter(chapter => chapter.lessons.length > 0) // un chapitre sans leçon publiée n'est pas affiché
     };
 
     const allLessons = formattedCourse.chapters.flatMap(chap => chap.lessons);
