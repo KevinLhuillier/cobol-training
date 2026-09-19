@@ -27,7 +27,7 @@ interface BlockPaletteProps {
 
 export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
     return (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 lg:justify-items-center">
             {PALETTE_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const title = item.enabled ? item.label : `${item.label} (Coming soon)`;

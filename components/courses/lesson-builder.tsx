@@ -267,26 +267,26 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
                         );
                     })
                 )}
+            </div>
 
-                <div className="flex items-center gap-3 pt-2">
+            {/* PALETTE DE COMPOSANTS + SAUVEGARDE — fixée en haut au défilement (lg+ seulement,
+                là où elle est à côté du canvas plutôt qu'au-dessus) pour que la palette et le
+                bouton "Save content" restent accessibles sur une leçon avec beaucoup de blocs. */}
+            <div className="w-full lg:w-36 shrink-0 lg:sticky lg:top-6 lg:self-start">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Components</p>
+                <BlockPalette onAddBlock={addBlock} />
+
+                <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
                     <Button
                         onClick={onSave}
                         disabled={isSaving || !isDirty}
-                        className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm"
+                        className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm"
                     >
                         {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                         Save content
                     </Button>
-                    {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+                    {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
                 </div>
-            </div>
-
-            {/* PALETTE DE COMPOSANTS — fixée en haut au défilement (lg+ seulement, là où elle
-                est à côté du canvas plutôt qu'au-dessus) pour rester accessible sur une leçon
-                avec beaucoup de blocs. */}
-            <div className="w-full lg:w-auto shrink-0 lg:sticky lg:top-6 lg:self-start">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Components</p>
-                <BlockPalette onAddBlock={addBlock} />
             </div>
         </div>
     );
