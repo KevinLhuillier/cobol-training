@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, XCircle, RotateCcw, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,7 @@ export function QuizPlayer({
         attempts[0] ? { score: attempts[0].score, total: attempts[0].total, passed: attempts[0].passed, selections: {} } : null
     );
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isNavigating, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
 
     const isRetaking = lastResult === null;
@@ -159,11 +160,18 @@ export function QuizPlayer({
                         </Button>
                         {nextLessonId && lastResult.passed && (
                             <Button
-                                onClick={() => router.push(`/dashboard/courses/${courseId}?lessonId=${nextLessonId}`)}
+                                onClick={() =>
+                                    startTransition(() => router.push(`/dashboard/courses/${courseId}?lessonId=${nextLessonId}`))
+                                }
+                                disabled={isNavigating}
                                 className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm"
                             >
                                 Continue
-                                <ArrowRight className="h-4 w-4 ml-2" />
+                                {isNavigating ? (
+                                    <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                                ) : (
+                                    <ArrowRight className="h-4 w-4 ml-2" />
+                                )}
                             </Button>
                         )}
                     </div>

@@ -15,6 +15,7 @@ interface CourseListProps {
         title: string;
         is_published: boolean;
         is_free: boolean;
+        image_url: string | null;
         updated_at: string;
         position: number;
         chaptersCount: number;
@@ -151,7 +152,7 @@ export function CourseList({ items }: CourseListProps) {
                                 >
                                     <Pencil className="h-4 w-4" />
                                 </Link>
-                                <CourseDeleteButton courseId={course.id} courseTitle={course.title} />
+                                <CourseDeleteButton courseId={course.id} courseTitle={course.title} imageUrl={course.image_url} />
                             </div>
                         </td>
                     </tr>

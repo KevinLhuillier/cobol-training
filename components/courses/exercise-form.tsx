@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Send, Loader2, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,9 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
     const supabase = createClient();
     const [answer, setAnswer] = useState(initialAnswer || "");
     const [isLoading, setIsLoading] = useState(false);
+    // Maintient le spinner jusqu'à la fin de la navigation / du rafraîchissement
+    const [isNavigating, startTransition] = useTransition();
+    const busy = isLoading || isNavigating;
     const [error, setError] = useState("");
 
     // Calcul de l'état actuel de l'exercice
@@ -60,13 +63,15 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                 throw new Error("Failed to submit exercise.");
             }
 
-            // 3. Redirection si une leçon suivante existe
-            if (nextLessonId) {
-                router.push(`/dashboard/courses/${courseId}?lessonId=${nextLessonId}`);
-            }
+            startTransition(() => {
+                // 3. Redirection si une leçon suivante existe
+                if (nextLessonId) {
+                    router.push(`/dashboard/courses/${courseId}?lessonId=${nextLessonId}`);
+                }
 
-            // Rafraîchir la page courante pour mettre à jour l'UI (le badge passera à "Review Pending")
-            router.refresh();
+                // Rafraîchir la page courante pour mettre à jour l'UI (le badge passera à "Review Pending")
+                router.refresh();
+            });
         } catch (err) {
             if (err instanceof Error) setError(err.message);
             else setError("An unexpected error occurred");
@@ -118,7 +123,7 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                 <textarea
                     required
                     // On grise le champ si approuvé OU en attente de review
-                    disabled={isLoading || isPending || isApproved}
+                    disabled={busy || isPending || isApproved}
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
                     placeholder="Type or paste your code/answer here..."
@@ -146,10 +151,10 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                         <div className="ml-auto">
                             <Button
                                 type="submit"
-                                disabled={isLoading || !answer.trim()}
+                                disabled={busy || !answer.trim()}
                                 className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 h-11"
                             >
-                                {isLoading ? (
+                                {busy ? (
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                 ) : (
                                     <Send className="h-4 w-4 mr-2" />

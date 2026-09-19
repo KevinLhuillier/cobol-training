@@ -1,19 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Image as ImageIcon, Upload, X } from "lucide-react";
 // 🟢 Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
+import { deleteCourseImage, uploadCourseImage } from "@/utils/course-image-storage";
+import { IMAGE_ACCEPT, validateImageFile } from "@/utils/public-image-storage";
 
 export default function NewCoursePage() {
     const router = useRouter();
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    // L'image n'est envoyée sur S3 qu'à la soumission (pas de fichier orphelin si l'admin abandonne)
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const previewUrl = useMemo(() => (imageFile ? URL.createObjectURL(imageFile) : null), [imageFile]);
+
+    useEffect(() => {
+        return () => {
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+        };
+    }, [previewUrl]);
 
     // Initialisation du client Supabase
     const supabase = createClient();
+
+    function onFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+        const file = event.target.files?.[0];
+        event.target.value = ""; // permet de re-sélectionner le même fichier juste après une erreur
+        if (!file) return;
+
+        try {
+            validateImageFile(file);
+            setError("");
+            setImageFile(file);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Invalid image");
+        }
+    }
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -23,9 +49,14 @@ export default function NewCoursePage() {
         const formData = new FormData(event.currentTarget);
         const title = formData.get("title") as string;
         const description = formData.get("description") as string;
-        const imageUrl = formData.get("imageUrl") as string;
+        let imageUrl: string | null = null;
 
         try {
+            // 0. Upload de l'image de couverture (si fournie) dans le bucket S3 "course-images"
+            if (imageFile) {
+                imageUrl = await uploadCourseImage(imageFile);
+            }
+
             // 1. Trouver la position du dernier cours pour placer le nouveau à la fin
             const { data: lastCourse } = await supabase
                 .from("courses")
@@ -43,7 +74,7 @@ export default function NewCoursePage() {
                 .insert({
                     title,
                     description: description || null, // Gestion des champs vides
-                    image_url: imageUrl || null,      // Conversion en snake_case pour Postgres
+                    image_url: imageUrl,              // Conversion en snake_case pour Postgres
                     is_published: false,              // Brouillon par défaut
                     position: newPosition
                 });
@@ -58,6 +89,12 @@ export default function NewCoursePage() {
             router.refresh(); // Force le rafraîchissement des données
 
         } catch (err) {
+            // Le cours n'a pas été créé : on ne laisse pas l'image envoyée traîner dans le bucket
+            if (imageUrl) {
+                deleteCourseImage(imageUrl).catch((cleanupErr) =>
+                    console.error("Course image cleanup failed:", cleanupErr)
+                );
+            }
             if (err instanceof Error) {
                 setError(err.message);
             } else {
@@ -127,18 +164,53 @@ export default function NewCoursePage() {
                             />
                         </div>
 
-                        {/* IMAGE URL */}
+                        {/* COVER IMAGE */}
                         <div className="space-y-2">
-                            <label htmlFor="imageUrl" className="text-sm font-bold text-slate-900">
-                                Cover Image URL
-                            </label>
+                            <span className="text-sm font-bold text-slate-900">Cover Image</span>
                             <input
-                                id="imageUrl"
-                                name="imageUrl"
-                                type="url"
-                                placeholder="https://example.com/image.png"
-                                className="text-slate-900 w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all outline-none"
+                                ref={fileInputRef}
+                                type="file"
+                                accept={IMAGE_ACCEPT}
+                                onChange={onFileSelected}
+                                className="hidden"
                             />
+                            {previewUrl ? (
+                                <div className="relative aspect-video w-full max-w-md rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={previewUrl} alt="Cover preview" className="w-full h-full object-cover" />
+                                    <div className="absolute top-2 right-2 flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isLoading}
+                                            className="h-8 px-3 rounded-lg bg-white/90 backdrop-blur text-xs font-bold text-slate-700 hover:bg-white shadow-sm flex items-center gap-1.5 disabled:opacity-60"
+                                        >
+                                            <Upload className="h-3.5 w-3.5" />
+                                            Replace
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setImageFile(null)}
+                                            disabled={isLoading}
+                                            title="Remove image"
+                                            className="h-8 w-8 rounded-lg bg-white/90 backdrop-blur text-slate-500 hover:text-red-600 hover:bg-white shadow-sm flex items-center justify-center disabled:opacity-60"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isLoading}
+                                    className="aspect-video w-full max-w-md rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-colors flex flex-col items-center justify-center text-slate-400 disabled:opacity-60"
+                                >
+                                    <ImageIcon className="h-8 w-8 mb-2 opacity-50" />
+                                    <p className="text-sm font-medium text-slate-500">Click to upload an image</p>
+                                    <p className="text-xs mt-1">PNG, JPEG, WEBP or GIF — 8MB max</p>
+                                </button>
+                            )}
                             <p className="text-xs text-slate-500 font-medium">
                                 You can leave this blank for now and add an image later.
                             </p>
