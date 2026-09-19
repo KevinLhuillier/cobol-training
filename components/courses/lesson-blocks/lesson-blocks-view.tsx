@@ -3,6 +3,7 @@ import { imageSizeClassName } from "./image-size";
 import { CodeBlockView } from "./code-block-view";
 import { VideoBlockView } from "./video-block-view";
 import { CalloutBlockView } from "./callout-block-view";
+import { DividerBlockView } from "./divider-block-view";
 import type { LessonBlock } from "./types";
 
 interface LessonBlocksViewProps {
@@ -36,6 +37,8 @@ export function LessonBlocksView({ blocks }: LessonBlocksViewProps) {
                     case "callout":
                         if (!block.data.title && !block.data.content) return null;
                         return <CalloutBlockView key={block.id} data={block.data} />;
+                    case "divider":
+                        return <DividerBlockView key={block.id} data={block.data} />;
                     default:
                         return null;
                 }

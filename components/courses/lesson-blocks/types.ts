@@ -66,6 +66,22 @@ export interface CalloutBlock {
     data: CalloutBlockData;
 }
 
-export type LessonBlock = TextBlock | ImageBlock | CodeBlock | VideoBlock | CalloutBlock;
+export type DividerShape = "line" | "dashed" | "dotted" | "double" | "dots";
+
+export interface DividerBlockData {
+    shape: DividerShape;
+    // Espace (en px) ajouté au-dessus / en dessous du séparateur, en plus de l'espacement
+    // standard entre deux blocs (cf. dividerSpacing dans divider-style.ts pour la validation).
+    marginTop: number;
+    marginBottom: number;
+}
+
+export interface DividerBlock {
+    id: string;
+    type: "divider";
+    data: DividerBlockData;
+}
+
+export type LessonBlock = TextBlock | ImageBlock | CodeBlock | VideoBlock | CalloutBlock | DividerBlock;
 
 export type LessonBlockType = LessonBlock["type"];

@@ -1,6 +1,6 @@
 "use client";
 
-import { Type, Image as ImageIcon, Code2, Video, Info } from "lucide-react";
+import { Type, Image as ImageIcon, Code2, Video, Info, Minus } from "lucide-react";
 import type { LessonBlockType } from "./types";
 
 interface PaletteItem {
@@ -18,6 +18,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     { type: "code", icon: Code2, label: "Code", enabled: true },
     { type: "video", icon: Video, label: "Video", enabled: true },
     { type: "callout", icon: Info, label: "Info block", enabled: true },
+    { type: "divider", icon: Minus, label: "Divider", enabled: true },
 ];
 
 interface BlockPaletteProps {
