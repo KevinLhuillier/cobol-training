@@ -4,13 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { deleteCourseImage } from "@/utils/course-image-storage";
 
 interface CourseDeleteButtonProps {
     courseId: string;
     courseTitle: string;
+    imageUrl: string | null;
 }
 
-export function CourseDeleteButton({ courseId, courseTitle }: CourseDeleteButtonProps) {
+export function CourseDeleteButton({ courseId, courseTitle, imageUrl }: CourseDeleteButtonProps) {
     const router = useRouter();
     const supabase = createClient();
     const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +34,12 @@ export function CourseDeleteButton({ courseId, courseTitle }: CourseDeleteButton
                 .eq("id", courseId);
 
             if (deleteError) throw deleteError;
+
+            // Nettoyage de l'image de couverture dans le bucket S3 (sans effet pour une URL externe) —
+            // un échec ici ne doit pas empêcher le recalcul des positions ci-dessous.
+            if (imageUrl) {
+                deleteCourseImage(imageUrl).catch((err) => console.error("Course image cleanup failed:", err));
+            }
 
             // 2. Récupération des cours restants, triés par leur ancienne position
             const { data: remainingCourses, error: fetchError } = await supabase

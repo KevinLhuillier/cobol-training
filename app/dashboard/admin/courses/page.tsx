@@ -36,6 +36,7 @@ export default async function AdminCoursesPage() {
             title,
             is_published,
             is_free,
+            image_url,
             updated_at,
             position,
             chapters!left(
