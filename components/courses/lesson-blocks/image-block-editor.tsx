@@ -69,7 +69,7 @@ export function ImageBlockEditor({
             {block.data.url ? (
                 <div className="space-y-3">
                     {block.data.caption?.trim() && (
-                        <p className="text-center text-lg font-bold text-slate-900">{block.data.caption}</p>
+                        <p className="text-center text-base text-slate-900">{block.data.caption}</p>
                     )}
                     <div className="relative rounded-xl overflow-hidden border border-slate-100 bg-slate-50 p-2">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
