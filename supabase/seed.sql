@@ -729,6 +729,119 @@ BEGIN
     END LOOP;
 END $$;
 
+-- ===== Module 5 - JCL Basics : Quiz (dernière leçon) =====
+DO $$
+DECLARE
+    v_course_id UUID;
+    v_chapter_id UUID;
+    v_position INTEGER;
+BEGIN
+    SELECT id INTO v_course_id FROM courses WHERE title = 'Module 5 - JCL Basics';
+    SELECT id INTO v_chapter_id FROM chapters WHERE course_id = v_course_id AND title = 'Chapter 1 - JCL Basics';
+
+    IF NOT EXISTS (SELECT 1 FROM lessons WHERE chapter_id = v_chapter_id AND title = 'Quiz') THEN
+        SELECT COALESCE(MAX(position), 0) + 1 INTO v_position FROM lessons WHERE chapter_id = v_chapter_id;
+
+        INSERT INTO lessons (title, type, position, chapter_id, quiz_questions, quiz_pass_rate, is_published)
+        VALUES (
+            'Quiz',
+            'QUIZ',
+            v_position,
+            v_chapter_id,
+            '[
+                {
+                    "id": "m5-q1",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Which instruction is indispensable for naming a Job and submitting it to the system?",
+                    "answers": [
+                        {"id": "m5-q1-a1", "text": "//START", "isCorrect": false},
+                        {"id": "m5-q1-a2", "text": "//JOB", "isCorrect": true, "explanation": "The JOB instruction is the first card of any JCL."},
+                        {"id": "m5-q1-a3", "text": "//EXEC", "isCorrect": false},
+                        {"id": "m5-q1-a4", "text": "//BEGIN", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m5-q2",
+                    "type": "SINGLE_CHOICE",
+                    "text": "You want to run the \"SORT\" program to sort data. Which instruction do you use?",
+                    "answers": [
+                        {"id": "m5-q2-a1", "text": "//STEP1 RUN PGM=SORT", "isCorrect": false},
+                        {"id": "m5-q2-a2", "text": "//STEP1 CALL PGM=SORT", "isCorrect": false},
+                        {"id": "m5-q2-a3", "text": "//STEP1 EXEC PGM=SORT", "isCorrect": true, "explanation": "The EXEC (Execute) instruction defines a job step and allows a program to be executed."},
+                        {"id": "m5-q2-a4", "text": "//STEP1 PROGRAM=SORT", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m5-q3",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Where must the JOBLIB instruction be placed so that it is valid for all steps?",
+                    "answers": [
+                        {"id": "m5-q3-a1", "text": "At the very end of the JCL.", "isCorrect": false},
+                        {"id": "m5-q3-a2", "text": "Immediately after the JOB card.", "isCorrect": true},
+                        {"id": "m5-q3-a3", "text": "After each EXEC instruction.", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m5-q4",
+                    "type": "SINGLE_CHOICE",
+                    "text": "The STEPLIB instruction is used to specify a program library...",
+                    "answers": [
+                        {"id": "m5-q4-a1", "text": "For the entire Job only.", "isCorrect": false},
+                        {"id": "m5-q4-a2", "text": "Only for the step that contains it.", "isCorrect": true, "explanation": "The STEPLIB is local to a step and overrides the JOBLIB for that specific step."},
+                        {"id": "m5-q4-a3", "text": "For all the user''s Jobs.", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m5-q5",
+                    "type": "SINGLE_CHOICE",
+                    "text": "Which return code (RC) is considered a total success without any warning messages?",
+                    "answers": [
+                        {"id": "m5-q5-a1", "text": "RC 0", "isCorrect": true, "explanation": "RC 0 means \"perfect execution\" (RC 4 is a simple warning)."},
+                        {"id": "m5-q5-a2", "text": "RC 4", "isCorrect": false},
+                        {"id": "m5-q5-a3", "text": "RC 8", "isCorrect": false},
+                        {"id": "m5-q5-a4", "text": "RC 100", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m5-q6",
+                    "type": "SINGLE_CHOICE",
+                    "text": "If your Job has three steps with the following codes: Step1 (RC=0), Step2 (RC=8), Step3 (RC=4). What will be the displayed MAXCC at the end?",
+                    "answers": [
+                        {"id": "m5-q6-a1", "text": "0", "isCorrect": false},
+                        {"id": "m5-q6-a2", "text": "4", "isCorrect": false},
+                        {"id": "m5-q6-a3", "text": "12", "isCorrect": false},
+                        {"id": "m5-q6-a4", "text": "8", "isCorrect": true, "explanation": "The MAXCC retains the highest (most critical) value encountered."}
+                    ]
+                },
+                {
+                    "id": "m5-q7",
+                    "type": "SINGLE_CHOICE",
+                    "text": "How do you write a comment to explain what a line of code does?",
+                    "answers": [
+                        {"id": "m5-q7-a1", "text": "# This is a comment", "isCorrect": false},
+                        {"id": "m5-q7-a2", "text": "// This is a comment", "isCorrect": false},
+                        {"id": "m5-q7-a3", "text": "//* This is a comment", "isCorrect": true, "explanation": "In JCL, comments always start with //*."},
+                        {"id": "m5-q7-a4", "text": "-- This is a comment", "isCorrect": false}
+                    ]
+                },
+                {
+                    "id": "m5-q8",
+                    "type": "SINGLE_CHOICE",
+                    "text": "What is the utility of the // line (double slashes alone) at the end of the Job?",
+                    "answers": [
+                        {"id": "m5-q8-a1", "text": "It is used to restart the Job.", "isCorrect": false},
+                        {"id": "m5-q8-a2", "text": "It marks the end of the Job.", "isCorrect": true},
+                        {"id": "m5-q8-a3", "text": "It causes an intentional error.", "isCorrect": false},
+                        {"id": "m5-q8-a4", "text": "It is used to cancel the Job.", "isCorrect": false}
+                    ]
+                }
+            ]'::jsonb,
+            70,
+            true
+        );
+    END IF;
+END $$;
+
 -- ===== Module 6 - Files and Libraries =====
 DO $$
 DECLARE
