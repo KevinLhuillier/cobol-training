@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,9 @@ export function CourseProgressButton({ courseId, chapterId, lessonId, isComplete
     const router = useRouter();
     const supabase = createClient();
     const [isLoading, setIsLoading] = useState(false);
+    // Maintient le spinner jusqu'à la fin de la navigation (router.push n'est pas attendu)
+    const [isNavigating, startTransition] = useTransition();
+    const busy = isLoading || isNavigating;
 
     const onClick = async () => {
         try {
@@ -47,13 +50,15 @@ export function CourseProgressButton({ courseId, chapterId, lessonId, isComplete
             }
 
             // 3. Navigation
-            if (!isCompleted && nextLessonId) {
-                // Si on vient de valider et qu'il y a une suite -> Leçon suivante
-                router.push(`/dashboard/courses/${courseId}?lessonId=${nextLessonId}`);
-            } else {
-                // Sinon (on a annulé, ou c'est la toute dernière leçon) -> Rafraîchissement
-                router.refresh();
-            }
+            startTransition(() => {
+                if (!isCompleted && nextLessonId) {
+                    // Si on vient de valider et qu'il y a une suite -> Leçon suivante
+                    router.push(`/dashboard/courses/${courseId}?lessonId=${nextLessonId}`);
+                } else {
+                    // Sinon (on a annulé, ou c'est la toute dernière leçon) -> Rafraîchissement
+                    router.refresh();
+                }
+            });
         } catch (error) {
             console.error("Progress error:", error);
             alert("An error occurred while updating your progress.");
@@ -65,7 +70,7 @@ export function CourseProgressButton({ courseId, chapterId, lessonId, isComplete
     return (
         <Button
             onClick={onClick}
-            disabled={isLoading}
+            disabled={busy}
             size="lg"
             className={`shrink-0 rounded-xl shadow-md transition-colors ${
                 isCompleted
@@ -73,7 +78,7 @@ export function CourseProgressButton({ courseId, chapterId, lessonId, isComplete
                     : "bg-slate-900 hover:bg-slate-800 text-white"
             }`}
         >
-            {isLoading ? (
+            {busy ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : isCompleted ? (
                 <X className="mr-2 h-4 w-4" />

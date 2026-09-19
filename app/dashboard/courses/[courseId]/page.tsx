@@ -16,6 +16,7 @@ import {
 import { LessonBlocksView } from "@/components/courses/lesson-blocks/lesson-blocks-view";
 import type { LessonBlock } from "@/components/courses/lesson-blocks/types";
 import { CourseProgressButton } from "@/components/courses/course-progress-button";
+import { LessonLinkIndicator } from "@/components/courses/lesson-link-indicator";
 import { ExerciseForm } from "@/components/courses/exercise-form";
 import { QuizPlayer } from "@/components/courses/quiz/quiz-player";
 import type { QuizQuestion } from "@/components/courses/quiz/types";
@@ -338,13 +339,15 @@ export default async function CoursePlayer({
                                                     >
 
                                                         <div className="mt-0.5 shrink-0">
-                                                            {isCurrent ? (
-                                                                <PlayCircle className="h-5 w-5 text-blue-600" />
-                                                            ) : isCompleted ? (
-                                                                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                                                            ) : (
-                                                                <CheckCircle2 className="h-5 w-5 text-slate-300" />
-                                                            )}
+                                                            <LessonLinkIndicator>
+                                                                {isCurrent ? (
+                                                                    <PlayCircle className="h-5 w-5 text-blue-600" />
+                                                                ) : isCompleted ? (
+                                                                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                                                                ) : (
+                                                                    <CheckCircle2 className="h-5 w-5 text-slate-300" />
+                                                                )}
+                                                            </LessonLinkIndicator>
                                                         </div>
                                                         <div className="flex-1">
                                                             <p className={`text-sm ${
