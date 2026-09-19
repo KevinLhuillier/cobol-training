@@ -12,9 +12,12 @@ import { ImageBlockEditor } from "@/components/courses/lesson-blocks/image-block
 import { CodeBlockEditor } from "@/components/courses/lesson-blocks/code-block-editor";
 import { VideoBlockEditor } from "@/components/courses/lesson-blocks/video-block-editor";
 import { CalloutBlockEditor } from "@/components/courses/lesson-blocks/callout-block-editor";
+import { DividerBlockEditor } from "@/components/courses/lesson-blocks/divider-block-editor";
+import { DIVIDER_DEFAULT_DATA } from "@/components/courses/lesson-blocks/divider-style";
 import type {
     CalloutBlockData,
     CodeBlockData,
+    DividerBlockData,
     ImageBlock,
     ImageBlockData,
     LessonBlock,
@@ -80,6 +83,9 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
                 { id: createBlockId(), type: "callout", data: { variant: "info", title: "", content: "" } },
             ]);
             setIsDirty(true);
+        } else if (type === "divider") {
+            setBlocks((prev) => [...prev, { id: createBlockId(), type: "divider", data: { ...DIVIDER_DEFAULT_DATA } }]);
+            setIsDirty(true);
         }
     };
 
@@ -114,6 +120,13 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
     const updateCalloutBlock = (id: string, patch: Partial<CalloutBlockData>) => {
         setBlocks((prev) =>
             prev.map((block) => (block.id === id && block.type === "callout" ? { ...block, data: { ...block.data, ...patch } } : block))
+        );
+        setIsDirty(true);
+    };
+
+    const updateDividerBlock = (id: string, patch: Partial<DividerBlockData>) => {
+        setBlocks((prev) =>
+            prev.map((block) => (block.id === id && block.type === "divider" ? { ...block, data: { ...block.data, ...patch } } : block))
         );
         setIsDirty(true);
     };
@@ -233,6 +246,17 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
                             );
                         }
 
+                        if (block.type === "divider") {
+                            return (
+                                <DividerBlockEditor
+                                    key={block.id}
+                                    block={block}
+                                    onChange={(patch) => updateDividerBlock(block.id, patch)}
+                                    {...sharedProps}
+                                />
+                            );
+                        }
+
                         return (
                             <TextBlockEditor
                                 key={block.id}
@@ -243,26 +267,26 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
                         );
                     })
                 )}
+            </div>
 
-                <div className="flex items-center gap-3 pt-2">
+            {/* PALETTE DE COMPOSANTS + SAUVEGARDE — fixée en haut au défilement (lg+ seulement,
+                là où elle est à côté du canvas plutôt qu'au-dessus) pour que la palette et le
+                bouton "Save content" restent accessibles sur une leçon avec beaucoup de blocs. */}
+            <div className="w-full lg:w-36 shrink-0 lg:sticky lg:top-6 lg:self-start">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Components</p>
+                <BlockPalette onAddBlock={addBlock} />
+
+                <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
                     <Button
                         onClick={onSave}
                         disabled={isSaving || !isDirty}
-                        className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm"
+                        className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm"
                     >
                         {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                         Save content
                     </Button>
-                    {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+                    {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
                 </div>
-            </div>
-
-            {/* PALETTE DE COMPOSANTS — fixée en haut au défilement (lg+ seulement, là où elle
-                est à côté du canvas plutôt qu'au-dessus) pour rester accessible sur une leçon
-                avec beaucoup de blocs. */}
-            <div className="w-full lg:w-auto shrink-0 lg:sticky lg:top-6 lg:self-start">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Components</p>
-                <BlockPalette onAddBlock={addBlock} />
             </div>
         </div>
     );

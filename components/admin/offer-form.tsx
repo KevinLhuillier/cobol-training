@@ -9,6 +9,7 @@ interface OfferFormProps {
     initialData: {
         title: string;
         priceCents: number;
+        originalPriceCents: number | null;
         features: string[];
         stripePriceId: string;
     };
@@ -19,6 +20,9 @@ export function OfferForm({ initialData }: OfferFormProps) {
 
     const [title, setTitle] = useState(initialData.title);
     const [price, setPrice] = useState((initialData.priceCents / 100).toFixed(2));
+    const [originalPrice, setOriginalPrice] = useState(
+        initialData.originalPriceCents !== null ? (initialData.originalPriceCents / 100).toFixed(2) : ""
+    );
     const [features, setFeatures] = useState(initialData.features.length > 0 ? initialData.features : [""]);
     const [stripePriceId, setStripePriceId] = useState(initialData.stripePriceId);
     const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +48,8 @@ export function OfferForm({ initialData }: OfferFormProps) {
 
         const trimmedTitle = title.trim();
         const parsedPrice = parseFloat(price.replace(",", "."));
+        const trimmedOriginalPrice = originalPrice.trim();
+        const parsedOriginalPrice = trimmedOriginalPrice ? parseFloat(trimmedOriginalPrice.replace(",", ".")) : null;
         const cleanedFeatures = features.map((f) => f.trim()).filter(Boolean);
 
         if (!trimmedTitle) {
@@ -53,6 +59,16 @@ export function OfferForm({ initialData }: OfferFormProps) {
         if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
             setError("Please enter a valid price.");
             return;
+        }
+        if (parsedOriginalPrice !== null) {
+            if (!Number.isFinite(parsedOriginalPrice) || parsedOriginalPrice < 0) {
+                setError("Please enter a valid original price.");
+                return;
+            }
+            if (Math.round(parsedOriginalPrice * 100) <= Math.round(parsedPrice * 100)) {
+                setError("The original price must be higher than the current price.");
+                return;
+            }
         }
         if (cleanedFeatures.length === 0) {
             setError("Please add at least one feature.");
@@ -69,6 +85,7 @@ export function OfferForm({ initialData }: OfferFormProps) {
             await updateOfferSettings({
                 title: trimmedTitle,
                 priceCents: Math.round(parsedPrice * 100),
+                originalPriceCents: parsedOriginalPrice !== null ? Math.round(parsedOriginalPrice * 100) : null,
                 features: cleanedFeatures,
                 stripePriceId: trimmedPriceId,
             });
@@ -133,6 +150,30 @@ export function OfferForm({ initialData }: OfferFormProps) {
                 <p className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl p-3 mt-2">
                     <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
                     This is only what students see on the offer page. It must match the amount configured on the Stripe Price below — Stripe is what actually gets charged at checkout.
+                </p>
+            </div>
+
+            {/* ORIGINAL PRICE (STRUCK THROUGH) */}
+            <div className="space-y-2">
+                <label htmlFor="offer-original-price" className="text-sm font-bold text-slate-900">
+                    Original price (€, optional)
+                </label>
+                <div className="relative max-w-[200px]">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">€</span>
+                    <input
+                        id="offer-original-price"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={originalPrice}
+                        onChange={(e) => setOriginalPrice(e.target.value)}
+                        disabled={isLoading}
+                        placeholder="—"
+                        className="text-slate-900 w-full h-12 pl-8 pr-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all outline-none"
+                    />
+                </div>
+                <p className="text-xs text-slate-500">
+                    If filled in, this price is shown struck through next to the current price on the offer page. It must be higher than the current price. Leave empty to show no struck-through price.
                 </p>
             </div>
 

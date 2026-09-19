@@ -8,6 +8,7 @@ import { stripe } from "@/utils/stripe";
 interface UpdateOfferSettingsInput {
     title: string;
     priceCents: number;
+    originalPriceCents: number | null;
     features: string[];
     stripePriceId: string;
 }
@@ -33,6 +34,18 @@ export async function updateOfferSettings(input: UpdateOfferSettingsInput) {
         throw new Error("Please enter a valid price.");
     }
 
+    // Prix barré facultatif : s'il est renseigné, il doit être supérieur au prix courant, sinon
+    // l'étudiant verrait une "remise" absurde (prix barré ≤ prix affiché).
+    const originalPriceCents = input.originalPriceCents === null ? null : Math.round(input.originalPriceCents);
+    if (originalPriceCents !== null) {
+        if (!Number.isFinite(originalPriceCents) || originalPriceCents < 0) {
+            throw new Error("Please enter a valid original price.");
+        }
+        if (originalPriceCents <= Math.round(input.priceCents)) {
+            throw new Error("The original price must be higher than the current price.");
+        }
+    }
+
     const features = input.features.map((f) => f.trim()).filter(Boolean);
     if (features.length === 0) throw new Error("Please add at least one feature.");
 
@@ -56,6 +69,7 @@ export async function updateOfferSettings(input: UpdateOfferSettingsInput) {
         .update({
             title,
             price_cents: Math.round(input.priceCents),
+            original_price_cents: originalPriceCents,
             features,
             stripe_price_id: stripePriceId,
         })
@@ -66,5 +80,5 @@ export async function updateOfferSettings(input: UpdateOfferSettingsInput) {
     revalidatePath("/dashboard/admin/offer");
     revalidatePath("/dashboard/subscribe");
 
-    return { title, priceCents: input.priceCents, features, stripePriceId };
+    return { title, priceCents: input.priceCents, originalPriceCents, features, stripePriceId };
 }
