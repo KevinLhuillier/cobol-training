@@ -78,7 +78,7 @@ export default function Sidebar({ userId = null, isAdmin = false, subscriptionSt
                 Main Menu
             </h3>
 
-            <nav className="flex flex-col gap-2">
+            <nav className="flex flex-col gap-1">
                 {menuItems.map((item, index) => {
                     const MenuIcon = item.icon;
                     const isActive = pathname === item.href;
@@ -87,7 +87,7 @@ export default function Sidebar({ userId = null, isAdmin = false, subscriptionSt
                         <Link
                             key={index}
                             href={item.href}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-medium ${
+                            className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${
                                 isActive
                                     ? "bg-slate-100 text-slate-900"
                                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -110,7 +110,7 @@ export default function Sidebar({ userId = null, isAdmin = false, subscriptionSt
                     );
                 })}
 
-                <div className="[&>button]:w-full [&>button]:justify-start [&>button]:px-4 [&>button]:py-3 [&>button]:h-auto [&>button]:border-transparent [&>button]:shadow-none [&>button]:text-sm mt-auto pt-4 border-t border-slate-100">
+                <div className="[&>button]:w-full [&>button]:justify-start [&>button]:px-4 [&>button]:py-2.5 [&>button]:h-auto [&>button]:border-transparent [&>button]:shadow-none [&>button]:text-sm mt-auto pt-4 border-t border-slate-100">
                     <LogoutButton />
                 </div>
 
