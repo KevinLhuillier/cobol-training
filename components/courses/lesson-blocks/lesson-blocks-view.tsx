@@ -22,7 +22,7 @@ export function LessonBlocksView({ blocks }: LessonBlocksViewProps) {
                         return (
                             <figure key={block.id}>
                                 {block.data.caption?.trim() && (
-                                    <figcaption className="mb-3 text-center text-lg font-bold text-slate-900">
+                                    <figcaption className="mb-3 text-center text-base text-slate-900">
                                         {block.data.caption}
                                     </figcaption>
                                 )}
