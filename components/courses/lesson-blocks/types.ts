@@ -16,6 +16,9 @@ export interface ImageBlockData {
     // Absent sur les blocs créés avant l'ajout de ce réglage : à traiter comme "full"
     // partout où ce champ est lu (cf. imageSizeClassName dans image-size.ts).
     size?: ImageBlockSize;
+    // Titre facultatif affiché centré au-dessus de l'image. Absent sur les blocs créés avant l'ajout
+    // de ce champ : à traiter comme "pas de titre".
+    caption?: string;
 }
 
 export interface ImageBlock {
