@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { LOGO_CT_DATA_URI } from "@/utils/logo-ct";
+import { getFirstName } from "@/utils/first-name";
 
 // Initialisation unique de Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -265,7 +266,7 @@ export async function sendWelcomeEmail(toEmail: string, studentName: string, das
           <tr>
             <td align="left" style="padding-bottom: 32px;">
               <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
-                Welcome aboard, ${studentName}!
+                Welcome aboard, ${getFirstName(studentName)}!
               </p>
               <p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">
                 Welcome to our dedicated Cobol and Mainframe learning platform. Here, you will find comprehensive courses and hands-on exercises, giving you the unique opportunity to practice directly on a live TSO environment.
@@ -951,8 +952,7 @@ export async function sendTrialEndingSoonEmail(toEmail: string, studentName: str
  * (cron expire-trials) pour vérifier que l'accès au mainframe se passe bien.
  */
 export async function sendTrialCheckInEmail(toEmail: string, studentName: string) {
-    // Certains élèves saisissent leur nom complet : on ne garde que le premier mot pour rester naturel.
-    const firstName = studentName.trim().split(/\s+/)[0] || "there";
+    const firstName = getFirstName(studentName, "there");
 
     return await resend.emails.send({
         from: FROM_EMAIL,

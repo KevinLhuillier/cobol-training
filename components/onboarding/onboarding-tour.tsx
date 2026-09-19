@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Rocket, Terminal, MessageCircle, PlayCircle } from "lucide-react";
+import { getFirstName } from "@/utils/first-name";
 import {
     Dialog,
     DialogContent,
@@ -116,7 +117,7 @@ export function OnboardingTour({ active, studentName, hasTsoStep, hasCourseStep 
                         <div className="h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center mb-3">
                             <Rocket className="h-6 w-6 text-white" />
                         </div>
-                        <DialogTitle>Welcome aboard, {studentName}!</DialogTitle>
+                        <DialogTitle>Welcome aboard, {getFirstName(studentName)}!</DialogTitle>
                         <DialogDescription>
                             Welcome to our dedicated Cobol and Mainframe learning platform. You&apos;ll find
                             comprehensive courses and hands-on exercises, with the opportunity to practice
