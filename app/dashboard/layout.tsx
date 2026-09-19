@@ -8,6 +8,7 @@ import { createClient } from "@/utils/supabase/server";
 import { ensureTrialStarted, recordLoginEvent } from "@/app/actions/auth";
 import { LogoCtIcon } from "@/components/logo-ct-icon";
 import { MobileSidebarButton } from "@/components/mobile-sidebar";
+import { getFirstName } from "@/utils/first-name";
 
 export default async function DashboardLayout({
                                                   children,
@@ -82,6 +83,8 @@ export default async function DashboardLayout({
     // Récupère la première lettre du nom pour l'avatar
     const initial = userName.charAt(0).toUpperCase();
 
+    const firstName = getFirstName(userName);
+
     return (
         <DashboardLayoutWrapper
             sidebar={
@@ -104,7 +107,7 @@ export default async function DashboardLayout({
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                         <div className="text-right hidden sm:flex sm:flex-col sm:items-end gap-1">
-                            <p className="text-sm font-bold text-slate-900">Welcome, {userName}</p>
+                            <p className="text-sm font-bold text-slate-900">Welcome, {firstName}</p>
                             {subscriptionStatus === "ACTIVE" ? (
                                 <Badge className="border-none bg-emerald-100 text-emerald-700">Subscribed</Badge>
                             ) : subscriptionStatus === "TRIAL" && trialDaysLeft > 0 ? (
