@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/utils/supabase/server";
 import { ensureTrialStarted, recordLoginEvent } from "@/app/actions/auth";
 import { LogoCtIcon } from "@/components/logo-ct-icon";
+import { MobileSidebarButton } from "@/components/mobile-sidebar";
 
 export default async function DashboardLayout({
                                                   children,
@@ -94,11 +95,14 @@ export default async function DashboardLayout({
             }
             header={
                 <header className="max-w-[1600px] w-full mx-auto mb-6 flex items-center justify-between px-2">
-                    <h1 className="flex items-center gap-2.5 text-2xl font-extrabold text-slate-800 tracking-tight">
-                        <LogoCtIcon className="h-8 w-auto shrink-0" />
-                        Cobol Training
-                    </h1>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <MobileSidebarButton />
+                        <h1 className="flex items-center gap-2.5 min-w-0 text-lg sm:text-2xl font-extrabold text-slate-800 tracking-tight">
+                            <LogoCtIcon className="h-8 w-auto shrink-0" />
+                            <span className="truncate">Cobol Training</span>
+                        </h1>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
                         <div className="text-right hidden sm:flex sm:flex-col sm:items-end gap-1">
                             <p className="text-sm font-bold text-slate-900">Welcome, {userName}</p>
                             {subscriptionStatus === "ACTIVE" ? (

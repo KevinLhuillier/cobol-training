@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
+import { MobileSidebarDrawer, MobileSidebarProvider } from "@/components/mobile-sidebar";
 
 interface DashboardLayoutWrapperProps {
     header: ReactNode;
@@ -22,15 +23,19 @@ export function DashboardLayoutWrapper({ header, sidebar, children }: DashboardL
     }
 
     // Sinon, on restitue EXACTEMENT ton layout d'origine
+    // Sous lg, la sidebar devient un tiroir ouvert par le hamburger du header ; à partir de lg
+    // elle reste affichée à côté du contenu (cf. components/mobile-sidebar.tsx).
     return (
-        <div className="min-h-screen bg-slate-100 p-4 md:p-6 lg:p-8 flex flex-col font-sans">
-            {header}
-            <main className="flex-1 max-w-[1600px] w-full mx-auto flex flex-col lg:flex-row gap-6">
-                {sidebar}
-                <section className="flex-1 bg-white rounded-3xl shadow-sm p-6 lg:p-8">
-                    {children}
-                </section>
-            </main>
-        </div>
+        <MobileSidebarProvider>
+            <div className="min-h-screen bg-slate-100 p-4 md:p-6 lg:p-8 flex flex-col font-sans">
+                {header}
+                <main className="flex-1 max-w-[1600px] w-full mx-auto flex flex-col lg:flex-row gap-6">
+                    <MobileSidebarDrawer>{sidebar}</MobileSidebarDrawer>
+                    <section className="flex-1 bg-white rounded-3xl shadow-sm p-6 lg:p-8">
+                        {children}
+                    </section>
+                </main>
+            </div>
+        </MobileSidebarProvider>
     );
 }

@@ -61,6 +61,18 @@ const STEP_CONFIG: Record<StepId, StepConfig> = {
     },
 };
 
+// Sous le breakpoint lg, la Sidebar est un tiroir fermé (cf. components/mobile-sidebar.tsx) : sa
+// ligne "Messages" n'est ni visible ni atteignable. L'étape pointe alors vers le bouton hamburger.
+const MOBILE_MEDIA_QUERY = "(max-width: 1023.98px)";
+
+const MOBILE_OVERRIDES: Partial<Record<StepId, { anchorId: string; description: string; side: StepConfig["side"] }>> = {
+    messages: {
+        anchorId: "onboarding-menu-anchor",
+        description: "Open the menu, then tap Messages to reach out to me anytime if you have a question.",
+        side: "bottom",
+    },
+};
+
 interface OnboardingTourProps {
     active: boolean;
     studentName: string;
@@ -124,6 +136,9 @@ export function OnboardingTour({ active, studentName, hasTsoStep, hasCourseStep 
                 if (id !== currentStep) return null;
                 const config = STEP_CONFIG[id];
                 const Icon = config.icon;
+                // Évalué ici (et non au niveau du composant) : on n'arrive à ce code qu'après une
+                // interaction côté client, donc jamais pendant le rendu serveur (pas de window).
+                const mobile = window.matchMedia(MOBILE_MEDIA_QUERY).matches ? MOBILE_OVERRIDES[id] : undefined;
                 return (
                     <Popover
                         key={id}
@@ -134,8 +149,8 @@ export function OnboardingTour({ active, studentName, hasTsoStep, hasCourseStep 
                     >
                         <PopoverPortal>
                             <PopoverPositioner
-                                anchor={() => document.getElementById(ANCHOR_IDS[id])}
-                                side={config.side}
+                                anchor={() => document.getElementById(mobile?.anchorId ?? ANCHOR_IDS[id])}
+                                side={mobile?.side ?? config.side}
                                 sideOffset={12}
                             >
                                 <PopoverPopup>
@@ -146,7 +161,7 @@ export function OnboardingTour({ active, studentName, hasTsoStep, hasCourseStep 
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="font-bold text-sm mb-1">{config.title}</p>
-                                            <p className="text-xs text-slate-300 mb-3">{config.description}</p>
+                                            <p className="text-xs text-slate-300 mb-3">{mobile?.description ?? config.description}</p>
                                             <PopoverClose className="text-xs font-bold bg-white text-slate-900 rounded-lg px-3 py-1.5 hover:bg-slate-100 transition-colors cursor-pointer">
                                                 Got it
                                             </PopoverClose>
