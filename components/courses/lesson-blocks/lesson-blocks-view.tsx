@@ -20,13 +20,19 @@ export function LessonBlocksView({ blocks }: LessonBlocksViewProps) {
                     case "image":
                         if (!block.data.url) return null;
                         return (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                                key={block.id}
-                                src={block.data.url}
-                                alt={block.data.alt}
-                                className={`block mx-auto rounded-2xl ${imageSizeClassName(block.data.size)}`}
-                            />
+                            <figure key={block.id}>
+                                {block.data.caption?.trim() && (
+                                    <figcaption className="mb-3 text-center text-lg font-bold text-slate-900">
+                                        {block.data.caption}
+                                    </figcaption>
+                                )}
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={block.data.url}
+                                    alt={block.data.alt}
+                                    className={`block mx-auto rounded-2xl ${imageSizeClassName(block.data.size)}`}
+                                />
+                            </figure>
                         );
                     case "code":
                         if (!block.data.code) return null;

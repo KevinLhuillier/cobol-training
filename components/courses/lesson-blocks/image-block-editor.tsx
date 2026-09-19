@@ -68,6 +68,9 @@ export function ImageBlockEditor({
 
             {block.data.url ? (
                 <div className="space-y-3">
+                    {block.data.caption?.trim() && (
+                        <p className="text-center text-lg font-bold text-slate-900">{block.data.caption}</p>
+                    )}
                     <div className="relative rounded-xl overflow-hidden border border-slate-100 bg-slate-50 p-2">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -112,6 +115,14 @@ export function ImageBlockEditor({
                             })}
                         </div>
                     </div>
+
+                    <input
+                        type="text"
+                        value={block.data.caption ?? ""}
+                        onChange={(e) => onChange({ caption: e.target.value })}
+                        placeholder="Title (optional, displayed centered above the image)"
+                        className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm"
+                    />
 
                     <input
                         type="text"
