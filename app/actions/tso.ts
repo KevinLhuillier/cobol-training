@@ -8,7 +8,7 @@ const LOW_TSO_AVAILABILITY_THRESHOLD = 10;
 
 const ERROR_MESSAGES: Record<string, string> = {
     already_assigned: "You already have an active TSO account.",
-    no_active_access: "Your trial has ended. Please subscribe to unlock a TSO account.",
+    no_active_access: "You don't have Mainframe access right now. Please upgrade to unlock a TSO account.",
     no_account_available: "No TSO account is available right now. Please contact your instructor.",
 };
 
@@ -27,14 +27,17 @@ export async function unlockTsoAccount() {
 
     const { data: profile } = await supabase
         .from("users")
-        .select("email, name, subscription_status, trial_ends_at")
+        .select("email, name, subscription_status, trial_ends_at, mainframe_ends_at")
         .eq("id", user.id)
         .single();
 
+    // claim_tso_account() a déjà validé l'accès côté base : ici on ne fait que décrire sa nature.
     const access: TsoAccessInfo =
-        profile?.subscription_status === "ACTIVE"
+        profile?.subscription_status === "ACTIVE" || profile?.subscription_status === "LIFETIME_ADDON"
             ? { type: "subscription" }
-            : { type: "trial", endsAt: profile?.trial_ends_at ?? new Date().toISOString() };
+            : profile?.subscription_status === "LIFETIME"
+                ? { type: "lifetime", endsAt: profile.mainframe_ends_at ?? new Date().toISOString() }
+                : { type: "trial", endsAt: profile?.trial_ends_at ?? new Date().toISOString() };
 
     if (profile?.email && account) {
         try {

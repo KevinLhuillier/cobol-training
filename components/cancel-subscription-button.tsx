@@ -15,7 +15,12 @@ import {
 } from "@/components/ui/dialog";
 import { cancelSubscription } from "@/app/actions/stripe";
 
-export function CancelSubscriptionButton() {
+interface CancelSubscriptionButtonProps {
+    /** Offre préférentielle mainframe + feedback : les modules restent acquis après l'annulation. */
+    isAddon?: boolean;
+}
+
+export function CancelSubscriptionButton({ isAddon = false }: CancelSubscriptionButtonProps) {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -53,13 +58,22 @@ export function CancelSubscriptionButton() {
                             Wait — before you cancel
                         </DialogTitle>
                         <DialogDescription>
-                            Heads up: the price of this subscription is about to increase to{" "}
-                            <span className="font-bold text-slate-700">$29/month</span>. Staying subscribed now locks in your current rate for as long as your subscription stays active.
+                            {isAddon ? (
+                                <>
+                                    Cancelling ends your Mainframe (TSO) access and personalized feedback. Your lifetime access to all courses stays yours,
+                                    and you can come back to this plan later.
+                                </>
+                            ) : (
+                                <>
+                                    Heads up: the price of this subscription is about to increase to{" "}
+                                    <span className="font-bold text-slate-700">$29/month</span>. Staying subscribed now locks in your current rate for as long as your subscription stays active.
+                                </>
+                            )}
                         </DialogDescription>
                     </DialogHeader>
 
                     <p className="text-sm text-slate-500">
-                        If you cancel anyway, you&apos;ll keep full access until the end of your current billing period — you won&apos;t be charged again after that.
+                        {`If you cancel anyway, you'll keep ${isAddon ? "your Mainframe access and feedback" : "full access"} until the end of your current billing period — you won't be charged again after that.`}
                     </p>
 
                     {error && <p className="mt-3 text-sm text-red-500 font-medium">{error}</p>}

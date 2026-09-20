@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Tag, ExternalLink } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { OfferForm } from "@/components/admin/offer-form";
+import type { OfferKind } from "@/utils/offers";
 
 export default async function AdminOfferPage() {
     const supabase = await createClient();
@@ -21,12 +22,33 @@ export default async function AdminOfferPage() {
         return redirect("/dashboard");
     }
 
-    // 2. FETCH : Paramètres actuels de l'offre (ligne unique, id = 1)
-    const { data: offer } = await supabase
+    // 2. FETCH : Paramètres actuels des trois offres (une ligne par type, cf. offer_settings.kind)
+    const { data: offerRows } = await supabase
         .from("offer_settings")
-        .select("title, price_cents, original_price_cents, features, stripe_price_id")
-        .eq("id", 1)
-        .single();
+        .select("kind, title, price_cents, original_price_cents, features, stripe_price_id, mainframe_months");
+
+    const offerByKind = new Map<OfferKind, NonNullable<typeof offerRows>[number]>((offerRows || []).map((row) => [row.kind as OfferKind, row]));
+
+    const sections: { kind: OfferKind; heading: string; description: string; fallbackTitle: string }[] = [
+        {
+            kind: "SUBSCRIPTION",
+            heading: "Subscription",
+            description: "Monthly subscription: all modules, mainframe access and feedback while it stays active.",
+            fallbackTitle: "Cobol Training subscription",
+        },
+        {
+            kind: "LIFETIME",
+            heading: "Lifetime",
+            description: "One-time payment: lifetime access to all modules, plus mainframe access and feedback for a limited period.",
+            fallbackTitle: "Cobol Training Lifetime",
+        },
+        {
+            kind: "LIFETIME_ADDON",
+            heading: "Mainframe + Feedback (lifetime members)",
+            description: "Monthly subscription at a preferential rate. Only shown to lifetime members whose included mainframe period has ended.",
+            fallbackTitle: "Mainframe + Feedback",
+        },
+    ];
 
     return (
         <div className="font-sans">
@@ -40,7 +62,7 @@ export default async function AdminOfferPage() {
                         <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
                             Offer
                         </h1>
-                        <p className="text-sm text-slate-500">Manage what students see on the subscription page</p>
+                        <p className="text-sm text-slate-500">Manage what students see on the offers page</p>
                     </div>
                 </div>
 
@@ -62,16 +84,29 @@ export default async function AdminOfferPage() {
                 </div>
             </header>
 
-            <main className="w-full max-w-2xl mx-auto">
-                <OfferForm
-                    initialData={{
-                        title: offer?.title ?? "Cobol Training subscription",
-                        priceCents: offer?.price_cents ?? 1500,
-                        originalPriceCents: offer?.original_price_cents ?? null,
-                        features: offer?.features ?? [],
-                        stripePriceId: offer?.stripe_price_id ?? "",
-                    }}
-                />
+            <main className="w-full max-w-2xl mx-auto space-y-12">
+                {sections.map(({ kind, heading, description, fallbackTitle }) => {
+                    const offer = offerByKind.get(kind);
+                    return (
+                        <section key={kind} className="space-y-4">
+                            <div className="px-2">
+                                <h2 className="text-lg font-extrabold text-slate-900">{heading}</h2>
+                                <p className="text-sm text-slate-500">{description}</p>
+                            </div>
+                            <OfferForm
+                                kind={kind}
+                                initialData={{
+                                    title: offer?.title ?? fallbackTitle,
+                                    priceCents: offer?.price_cents ?? 0,
+                                    originalPriceCents: offer?.original_price_cents ?? null,
+                                    features: offer?.features ?? [],
+                                    stripePriceId: offer?.stripe_price_id ?? "",
+                                    mainframeMonths: offer?.mainframe_months ?? null,
+                                }}
+                            />
+                        </section>
+                    );
+                })}
             </main>
         </div>
     );

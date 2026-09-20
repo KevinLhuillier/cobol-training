@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Send, Loader2, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SubscribeButton } from "@/components/subscribe-button";
 // 🟢 Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
 
@@ -16,9 +17,11 @@ interface ExerciseFormProps {
     nextLessonId?: string;
     exerciseStatus?: string | null;
     reviewFeedback?: string | null;
+    /** Faux pour les membres de l'offre à vie dont la période de correction est terminée. */
+    canRequestFeedback?: boolean;
 }
 
-export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isCompleted, nextLessonId, exerciseStatus, reviewFeedback }: ExerciseFormProps) {
+export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isCompleted, nextLessonId, exerciseStatus, reviewFeedback, canRequestFeedback = true }: ExerciseFormProps) {
     const router = useRouter();
     const supabase = createClient();
     const [answer, setAnswer] = useState(initialAnswer || "");
@@ -123,7 +126,7 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                 <textarea
                     required
                     // On grise le champ si approuvé OU en attente de review
-                    disabled={busy || isPending || isApproved}
+                    disabled={busy || isPending || isApproved || !canRequestFeedback}
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
                     placeholder="Type or paste your code/answer here..."
@@ -146,8 +149,19 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                         </div>
                     )}
 
+                    {/* Plus de correction incluse : on explique pourquoi l'envoi est indisponible */}
+                    {!canRequestFeedback && !isApproved && !isPending && (
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:justify-between">
+                            <p className="text-sm text-slate-600 flex items-start gap-2">
+                                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-slate-400" />
+                                Submitting exercises for review isn&apos;t included in your current plan. Upgrade to have your exercises reviewed by your instructor.
+                            </p>
+                            <SubscribeButton className="shrink-0" />
+                        </div>
+                    )}
+
                     {/* Bouton d'envoi affiché uniquement si ni en attente ni approuvé */}
-                    {!isApproved && !isPending && (
+                    {canRequestFeedback && !isApproved && !isPending && (
                         <div className="ml-auto">
                             <Button
                                 type="submit"

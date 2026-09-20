@@ -6,8 +6,10 @@ import { createAdminClient } from "@/utils/supabase/admin";
 import { stripe } from "@/utils/stripe";
 import { sendSubscriptionCancellationScheduledEmail } from "@/utils/mail";
 import { findActiveTrialDiscountPromotionCode } from "@/utils/stripe-trial-discount";
+import { getPurchasableOffers, type OfferKind } from "@/utils/offers";
+import { getEffectiveStatus } from "@/utils/subscription";
 
-export async function createCheckoutSession(promoCode?: string) {
+export async function createCheckoutSession(offerKind: OfferKind = "SUBSCRIPTION", promoCode?: string) {
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -15,16 +17,27 @@ export async function createCheckoutSession(promoCode?: string) {
 
     const { data: profile } = await supabase
         .from("users")
-        .select("email, stripe_customer_id")
+        .select("email, stripe_customer_id, subscription_status, mainframe_ends_at")
         .eq("id", user.id)
         .single();
 
     if (!profile) throw new Error("Profile not found");
 
+    // La page d'offres masque déjà ce qui n'est pas proposé, mais cette action est appelable
+    // directement : on revérifie ici (ex. un abonné ACTIVE ne doit pas pouvoir acheter l'offre à vie).
+    const status = getEffectiveStatus({
+        subscription_status: profile.subscription_status,
+        trial_ends_at: null,
+        mainframe_ends_at: profile.mainframe_ends_at,
+    });
+    if (!getPurchasableOffers(status).includes(offerKind)) {
+        throw new Error("This offer isn't available for your account.");
+    }
+
     const { data: offer } = await supabase
         .from("offer_settings")
         .select("stripe_price_id")
-        .eq("id", 1)
+        .eq("kind", offerKind)
         .single();
 
     if (!offer?.stripe_price_id) throw new Error("No offer configured");
@@ -46,8 +59,14 @@ export async function createCheckoutSession(promoCode?: string) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
+    // offer_kind est relu par le webhook pour savoir quel statut attribuer (l'offre à vie est un
+    // paiement unique, les deux autres des abonnements). Pour un abonnement il est aussi copié sur
+    // la Subscription Stripe : les évènements customer.subscription.* ne portent pas les metadata
+    // de la session, et le webhook doit distinguer l'offre préférentielle de l'abonnement standard.
+    const metadata = { supabase_user_id: user.id, offer_kind: offerKind };
+
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
-        mode: "subscription",
+        mode: offerKind === "LIFETIME" ? "payment" : "subscription",
         customer: customerId,
         customer_update: { address: "auto", name: "auto" },
         billing_address_collection: "required",
@@ -55,13 +74,22 @@ export async function createCheckoutSession(promoCode?: string) {
         line_items: [{ price: offer.stripe_price_id, quantity: 1 }],
         success_url: `${appUrl}/dashboard?subscribed=true`,
         cancel_url: `${appUrl}/dashboard`,
-        metadata: { supabase_user_id: user.id },
+        metadata,
     };
+
+    if (offerKind === "LIFETIME") {
+        // Sans cela, un paiement unique ne génère ni facture ni reçu exploitable (l'abonnement, si).
+        sessionParams.invoice_creation = { enabled: true };
+    } else {
+        sessionParams.subscription_data = { metadata };
+    }
 
     // Stripe interdit de combiner discounts et allow_promotion_codes sur une même session :
     // si on a un code valide à pré-appliquer, pas de champ de saisie manuelle ; sinon on
     // laisse ce champ disponible pour qu'un code puisse être entré à la main au checkout.
-    const promotionCode = promoCode ? await findActiveTrialDiscountPromotionCode(promoCode, customerId) : null;
+    // Le code de relance fin d'essai (-20%) ne concerne que l'abonnement standard.
+    const promotionCode =
+        promoCode && offerKind === "SUBSCRIPTION" ? await findActiveTrialDiscountPromotionCode(promoCode, customerId) : null;
     if (promotionCode) {
         sessionParams.discounts = [{ promotion_code: promotionCode.id }];
     } else {

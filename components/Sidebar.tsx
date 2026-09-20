@@ -13,11 +13,13 @@ interface SidebarProps {
     isAdmin?: boolean;
     subscriptionStatus?: string | null;
     trialDaysLeft?: number;
+    mainframeDaysLeft?: number;
+    lifetimeOfferAvailable?: boolean;
     unreadMessagesCount?: number;
 }
 
 // Les props sont désormais injectées par le Layout serveur Supabase
-export default function Sidebar({ userId = null, isAdmin = false, subscriptionStatus = null, trialDaysLeft = 0, unreadMessagesCount = 0 }: SidebarProps) {
+export default function Sidebar({ userId = null, isAdmin = false, subscriptionStatus = null, trialDaysLeft = 0, mainframeDaysLeft = 0, lifetimeOfferAvailable = false, unreadMessagesCount = 0 }: SidebarProps) {
     const pathname = usePathname();
     // Valeur initiale = calcul serveur du layout ; ensuite tenue à jour uniquement par
     // l'abonnement temps réel ci-dessous (seule source possible de changement de ce compteur).
@@ -115,7 +117,12 @@ export default function Sidebar({ userId = null, isAdmin = false, subscriptionSt
                 </div>
 
                 <div className="px-1">
-                    <SubscriptionStatus subscriptionStatus={subscriptionStatus} trialDaysLeft={trialDaysLeft} />
+                    <SubscriptionStatus
+                        subscriptionStatus={subscriptionStatus}
+                        trialDaysLeft={trialDaysLeft}
+                        mainframeDaysLeft={mainframeDaysLeft}
+                        canUpgradeToLifetime={lifetimeOfferAvailable}
+                    />
                 </div>
             </nav>
         </aside>

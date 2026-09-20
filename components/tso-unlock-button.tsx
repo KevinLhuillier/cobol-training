@@ -22,7 +22,7 @@ interface TsoAccount {
     port: number | null;
 }
 
-type TsoAccess = { type: "subscription" } | { type: "trial"; endsAt: string };
+type TsoAccess = { type: "subscription" } | { type: "trial"; endsAt: string } | { type: "lifetime"; endsAt: string };
 
 function formatAccessMessage(access: TsoAccess | null): string {
     if (!access) return "";
@@ -34,6 +34,9 @@ function formatAccessMessage(access: TsoAccess | null): string {
         day: "numeric",
         year: "numeric",
     });
+    if (access.type === "lifetime") {
+        return `This account is included with your purchase until ${formattedDate}.`;
+    }
     return `This account is valid until your trial ends on ${formattedDate}.`;
 }
 
