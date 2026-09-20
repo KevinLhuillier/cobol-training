@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { LogoCtIcon } from "@/components/logo-ct-icon";
+import { Turnstile } from "@/components/turnstile";
 
 // Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
@@ -21,6 +22,14 @@ function LoginForm() {
 
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const [captchaReset, setCaptchaReset] = useState(0);
+
+    // Un token Turnstile n'est valable qu'une fois : on en redemande un après chaque tentative.
+    const resetCaptcha = () => {
+        setCaptchaToken(null);
+        setCaptchaReset((n) => n + 1);
+    };
 
     // Initialisation du client Supabase
     const supabase = createClient();
@@ -39,7 +48,9 @@ function LoginForm() {
             const { error: supabaseError } = await supabase.auth.signInWithPassword({
                 email,
                 password,
+                options: { captchaToken: captchaToken ?? undefined },
             });
+            resetCaptcha();
 
             if (supabaseError) {
                 console.error("Supabase Login Error:", supabaseError);
@@ -65,6 +76,7 @@ function LoginForm() {
 
         } catch (err) {
             console.error("Login Error:", err);
+            resetCaptcha();
             setError("Unable to contact the server. Please try again.");
             setIsLoading(false);
         }
@@ -140,7 +152,7 @@ function LoginForm() {
 
                 <Button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || !captchaToken}
                     className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md text-base font-semibold mt-4 disabled:opacity-80"
                 >
                     {isLoading ? (
@@ -152,6 +164,8 @@ function LoginForm() {
                         "Sign In"
                     )}
                 </Button>
+
+                <Turnstile action="login" onToken={setCaptchaToken} resetSignal={captchaReset} />
             </form>
 
             {/* REDIRECTION INSCRIPTION */}

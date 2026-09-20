@@ -145,8 +145,10 @@ export async function updateName(name: string) {
 
 /**
  * Change le mot de passe de l'utilisateur connecté, après vérification de son mot de passe actuel.
+ * captchaToken : token Turnstile requis par Supabase Auth pour ce signInWithPassword de vérification
+ * dès que le captcha est activé sur le projet.
  */
-export async function changePassword(currentPassword: string, newPassword: string) {
+export async function changePassword(currentPassword: string, newPassword: string, captchaToken?: string) {
     try {
         if (newPassword.length < 8) {
             return { error: "New password must be at least 8 characters long." };
@@ -162,6 +164,7 @@ export async function changePassword(currentPassword: string, newPassword: strin
         const { error: signInError } = await supabase.auth.signInWithPassword({
             email: user.email,
             password: currentPassword,
+            options: { captchaToken },
         });
         if (signInError) {
             return { error: "Current password is incorrect." };

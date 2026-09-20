@@ -9,12 +9,21 @@ import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { LogoCtIcon } from "@/components/logo-ct-icon";
+import { Turnstile } from "@/components/turnstile";
 import { notifyAdminNewRegistration, checkRegistrationAllowed, addStudentToResendAudience } from "@/app/actions/auth";
 
 export default function RegisterPage() {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const [captchaReset, setCaptchaReset] = useState(0);
+
+    // Un token Turnstile n'est valable qu'une fois : on en redemande un après chaque tentative.
+    const resetCaptcha = () => {
+        setCaptchaToken(null);
+        setCaptchaReset((n) => n + 1);
+    };
 
     // Initialize Supabase client
     const supabase = createClient();
@@ -68,9 +77,11 @@ export default function RegisterPage() {
                     data: {
                         name: name,
                     },
-                    emailRedirectTo: `${window.location.origin}/auth/login`
+                    emailRedirectTo: `${window.location.origin}/auth/login`,
+                    captchaToken: captchaToken ?? undefined,
                 },
             });
+            resetCaptcha();
 
             // Erreur classique renvoyée par Supabase (ex: mot de passe trop faible)
             if (supabaseError) {
@@ -109,6 +120,7 @@ export default function RegisterPage() {
 
         } catch (err) {
             console.error("Registration error:", err);
+            resetCaptcha();
             setError("Unable to contact the server. Please try again.");
             setIsLoading(false);
         }
@@ -196,7 +208,7 @@ export default function RegisterPage() {
 
                     <Button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={isLoading || !captchaToken}
                         className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md text-base font-semibold mt-4 disabled:opacity-80"
                     >
                         {isLoading ? (
@@ -208,6 +220,8 @@ export default function RegisterPage() {
                             "Create Account"
                         )}
                     </Button>
+
+                    <Turnstile action="signup" onToken={setCaptchaToken} resetSignal={captchaReset} />
                 </form>
 
                 {/* LOGIN REDIRECTION */}

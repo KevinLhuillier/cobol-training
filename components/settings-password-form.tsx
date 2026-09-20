@@ -5,10 +5,13 @@ import { Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Turnstile } from "@/components/turnstile";
 import { changePassword } from "@/app/actions/auth";
 
 export function PasswordForm() {
     const [isLoading, setIsLoading] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const [captchaReset, setCaptchaReset] = useState(0);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
@@ -33,8 +36,11 @@ export function PasswordForm() {
         }
 
         setIsLoading(true);
-        const result = await changePassword(currentPassword, newPassword);
+        const result = await changePassword(currentPassword, newPassword, captchaToken ?? undefined);
         setIsLoading(false);
+        // Un token Turnstile n'est valable qu'une fois : on en redemande un après chaque tentative.
+        setCaptchaToken(null);
+        setCaptchaReset((n) => n + 1);
 
         if (result?.error) {
             setError(result.error);
@@ -97,12 +103,14 @@ export function PasswordForm() {
 
             <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !captchaToken}
                 className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-11 px-5 disabled:opacity-50"
             >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Update password
             </Button>
+
+            <Turnstile action="change-password" onToken={setCaptchaToken} resetSignal={captchaReset} />
         </form>
     );
 }
