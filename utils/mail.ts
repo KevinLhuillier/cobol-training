@@ -386,7 +386,8 @@ export async function sendInviteEmail(toEmail: string, studentName: string, pass
 
 export type TsoAccessInfo =
     | { type: "subscription" }
-    | { type: "trial"; endsAt: string };
+    | { type: "trial"; endsAt: string }
+    | { type: "lifetime"; endsAt: string };
 
 function formatAccessNotice(access: TsoAccessInfo): string {
     if (access.type === "subscription") {
@@ -397,6 +398,9 @@ function formatAccessNotice(access: TsoAccessInfo): string {
         day: "numeric",
         year: "numeric",
     });
+    if (access.type === "lifetime") {
+        return `This access is included with your purchase until <strong>${formattedDate}</strong>.`;
+    }
     return `This access is valid until your trial ends on <strong>${formattedDate}</strong>.`;
 }
 
@@ -484,8 +488,10 @@ export async function sendTsoUnlockEmail(
             <td align="left">
               <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 22px;">
                 ${access.type === "trial"
-                    ? "Remember: subscribe before your trial ends to keep using it without interruption."
-                    : "Thanks for being a subscriber — enjoy your Mainframe access!"}
+                    ? "Remember: upgrade before your trial ends to keep using it without interruption."
+                    : access.type === "lifetime"
+                        ? "Enjoy your Mainframe access — your lifetime access to the courses is yours to keep."
+                        : "Thanks for being a subscriber — enjoy your Mainframe access!"}
               </p>
             </td>
           </tr>
@@ -625,6 +631,164 @@ export async function sendSubscriptionActivatedEmail(toEmail: string, studentNam
 }
 
 /**
+ * Gabarit des emails "offre à vie" destinés aux étudiants : titre, paragraphes et un bouton.
+ */
+function renderStudentCtaEmail(studentName: string, paragraphsHtml: string[], ctaLabel: string, ctaUrl: string): string {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px; background-color: #ffffff; border-radius: 24px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); padding: 40px;">
+
+          <tr>
+            <td align="center" style="padding-bottom: 24px;">
+              <img src="${LOGO_CT_DATA_URI}" alt="Cobol Training" width="56" height="64" style="display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+
+          <tr>
+            <td align="left" style="padding-bottom: 32px;">
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">
+                Hello ${studentName},
+              </p>
+              ${paragraphsHtml
+                  .map((p) => `<p style="margin: 0 0 16px 0; color: #64748b; font-size: 15px; line-height: 24px;">${p}</p>`)
+                  .join("\n              ")}
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center">
+              <a href="${ctaUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                ${ctaLabel}
+              </a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
+}
+
+function formatLongDate(iso: string): string {
+    return new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
+/**
+ * Confirmation d'achat de l'offre à vie (webhook Stripe) : rappelle ce qui est acquis à vie
+ * et jusqu'à quand mainframe + feedback sont inclus.
+ */
+export async function sendLifetimeActivatedEmail(
+    toEmail: string,
+    studentName: string,
+    mainframeEndsAt: string,
+    replacedSubscription = false
+) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "Welcome to Cobol Training — lifetime access unlocked 🎉",
+        html: renderStudentCtaEmail(
+            studentName,
+            [
+                "Thanks for your purchase! You now have <strong>lifetime access to all courses</strong>.",
+                `Your Mainframe (TSO) access and personalized exercise feedback are included until <strong>${formatLongDate(mainframeEndsAt)}</strong>.`,
+                ...(replacedSubscription
+                    ? ["Your monthly subscription has been set to end at the close of your current billing period — you won't be charged again."]
+                    : []),
+            ],
+            "Go to your Dashboard",
+            `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+        ),
+    });
+}
+
+/**
+ * Notifie le propriétaire de l'application qu'une offre à vie vient d'être achetée.
+ */
+export async function sendAdminNewLifetimeEmail(studentName: string, studentEmail: string) {
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject: "New lifetime purchase 💳",
+        html: renderAdminNotificationEmail(
+            "New lifetime purchase",
+            `
+              <p style="margin: 0 0 4px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                A user just bought the lifetime offer:
+              </p>
+              <p style="margin: 0; color: #0f172a; font-size: 15px; line-height: 22px;">
+                <strong>${studentName}</strong> — ${studentEmail}
+              </p>
+            `
+        ),
+    });
+}
+
+export type LifetimeMainframeEndReason =
+    /** La fenêtre mainframe + feedback incluse dans l'achat est écoulée (cron). */
+    | "included_ended"
+    /** L'abonnement préférentiel mainframe + feedback a pris fin (annulation effective). */
+    | "addon_ended"
+    /** Le paiement de l'abonnement préférentiel a échoué : mainframe + feedback suspendus. */
+    | "addon_payment_failed";
+
+/**
+ * Prévient un utilisateur de l'offre à vie que son accès mainframe + feedback est terminé ou
+ * suspendu. Ses modules restent toujours accessibles : contrairement aux emails d'abonnement
+ * standard, ceux-ci ne doivent jamais laisser croire qu'il perd l'accès aux cours.
+ */
+export async function sendLifetimeMainframeEndedEmail(toEmail: string, studentName: string, reason: LifetimeMainframeEndReason) {
+    const keepCourses = "Your <strong>lifetime access to all courses stays yours</strong>.";
+    const upgradeUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscribe`;
+
+    if (reason === "addon_payment_failed") {
+        return await resend.emails.send({
+            from: FROM_EMAIL,
+            to: toEmail,
+            subject: "Action required: your last payment failed",
+            html: renderStudentCtaEmail(
+                studentName,
+                [
+                    `We were unable to process your last Mainframe + Feedback payment, so your Mainframe (TSO) account and exercise feedback have been suspended. ${keepCourses}`,
+                    "Please update your payment method or contact us so we can help — access will be restored as soon as the payment goes through.",
+                ],
+                "Go to Settings",
+                `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`
+            ),
+        });
+    }
+
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: toEmail,
+        subject: "Your Mainframe access has ended",
+        html: renderStudentCtaEmail(
+            studentName,
+            [
+                reason === "included_ended"
+                    ? `The Mainframe (TSO) access and personalized feedback included with your purchase have now ended. ${keepCourses}`
+                    : `Your Mainframe + Feedback subscription has now ended, along with your Mainframe (TSO) account. ${keepCourses}`,
+                "Want to keep practicing on the mainframe and getting your exercises reviewed? Upgrade to our Mainframe + Feedback plan at a special rate reserved for lifetime members.",
+            ],
+            "Upgrade",
+            upgradeUrl
+        ),
+    });
+}
+
+/**
  * Envoie une confirmation lorsque l'utilisateur programme l'annulation de son abonnement
  * (l'accès reste actif jusqu'à la fin de la période en cours).
  */
@@ -727,7 +891,7 @@ export async function sendSubscriptionCanceledEmail(toEmail: string, studentName
                 Your subscription has now ended, along with access to your courses and Mainframe (TSO) account.
               </p>
               <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
-                You're welcome back anytime — subscribe again to pick up right where you left off.
+                You're welcome back anytime — upgrade again to pick up right where you left off.
               </p>
             </td>
           </tr>
@@ -735,7 +899,7 @@ export async function sendSubscriptionCanceledEmail(toEmail: string, studentName
           <tr>
             <td align="center">
               <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
-                Subscribe again
+                Upgrade again
               </a>
             </td>
           </tr>
@@ -924,7 +1088,7 @@ export async function sendTrialEndingSoonEmail(toEmail: string, studentName: str
                 As a reminder, your free trial ends on <strong>${formattedDate}</strong>. After that, you'll lose access to your courses and your Mainframe (TSO) account.
               </p>
               <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
-                Subscribe now to keep access without interruption.
+                Upgrade now to keep access without interruption.
               </p>
             </td>
           </tr>
@@ -932,7 +1096,7 @@ export async function sendTrialEndingSoonEmail(toEmail: string, studentName: str
           <tr>
             <td align="center">
               <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
-                Subscribe now
+                Upgrade now
               </a>
             </td>
           </tr>
@@ -1037,7 +1201,7 @@ export async function sendTrialExpiredEmail(toEmail: string, studentName: string
                 Your 7-day free trial has just ended, along with access to your courses and Mainframe (TSO) account.
               </p>
               <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 24px;">
-                Subscribe now to pick up right where you left off.
+                Upgrade now to pick up right where you left off.
               </p>
             </td>
           </tr>
@@ -1051,7 +1215,7 @@ export async function sendTrialExpiredEmail(toEmail: string, studentName: string
           <tr>
             <td align="center">
               <a href="${subscribeUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
-                Subscribe now
+                Upgrade now
               </a>
             </td>
           </tr>

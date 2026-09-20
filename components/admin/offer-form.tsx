@@ -4,19 +4,26 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, X, AlertTriangle, Save } from "lucide-react";
 import { updateOfferSettings } from "@/app/actions/offer";
+import type { OfferKind } from "@/utils/offers";
 
 interface OfferFormProps {
+    kind: OfferKind;
     initialData: {
         title: string;
         priceCents: number;
         originalPriceCents: number | null;
         features: string[];
         stripePriceId: string;
+        mainframeMonths: number | null;
     };
 }
 
-export function OfferForm({ initialData }: OfferFormProps) {
+export function OfferForm({ kind, initialData }: OfferFormProps) {
     const router = useRouter();
+    const isLifetime = kind === "LIFETIME";
+    // L'abonnement standard ne peut pas exister sans prix Stripe ; les deux autres offres restent
+    // masquées aux étudiants tant que ce champ est vide.
+    const isPriceIdOptional = kind !== "SUBSCRIPTION";
 
     const [title, setTitle] = useState(initialData.title);
     const [price, setPrice] = useState((initialData.priceCents / 100).toFixed(2));
@@ -25,6 +32,7 @@ export function OfferForm({ initialData }: OfferFormProps) {
     );
     const [features, setFeatures] = useState(initialData.features.length > 0 ? initialData.features : [""]);
     const [stripePriceId, setStripePriceId] = useState(initialData.stripePriceId);
+    const [mainframeMonths, setMainframeMonths] = useState(String(initialData.mainframeMonths ?? 3));
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
@@ -75,14 +83,21 @@ export function OfferForm({ initialData }: OfferFormProps) {
             return;
         }
         const trimmedPriceId = stripePriceId.trim();
-        if (!trimmedPriceId) {
+        if (!trimmedPriceId && !isPriceIdOptional) {
             setError("Please enter a Stripe Price ID.");
+            return;
+        }
+        const parsedMonths = isLifetime ? parseInt(mainframeMonths, 10) : null;
+        if (isLifetime && (parsedMonths === null || !Number.isInteger(parsedMonths) || parsedMonths < 1)) {
+            setError("Please enter a valid number of months (1 or more).");
             return;
         }
 
         setIsLoading(true);
         try {
             await updateOfferSettings({
+                kind,
+                mainframeMonths: parsedMonths,
                 title: trimmedTitle,
                 priceCents: Math.round(parsedPrice * 100),
                 originalPriceCents: parsedOriginalPrice !== null ? Math.round(parsedOriginalPrice * 100) : null,
@@ -116,11 +131,11 @@ export function OfferForm({ initialData }: OfferFormProps) {
 
             {/* TITLE */}
             <div className="space-y-2">
-                <label htmlFor="offer-title" className="text-sm font-bold text-slate-900">
+                <label htmlFor={`offer-title-${kind}`} className="text-sm font-bold text-slate-900">
                     Title
                 </label>
                 <input
-                    id="offer-title"
+                    id={`offer-title-${kind}`}
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -131,13 +146,13 @@ export function OfferForm({ initialData }: OfferFormProps) {
 
             {/* PRICE */}
             <div className="space-y-2">
-                <label htmlFor="offer-price" className="text-sm font-bold text-slate-900">
-                    Price (€, excl. VAT)
+                <label htmlFor={`offer-price-${kind}`} className="text-sm font-bold text-slate-900">
+                    Price (€, excl. VAT{isLifetime ? ", one-time" : ", per month"})
                 </label>
                 <div className="relative max-w-[200px]">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">€</span>
                     <input
-                        id="offer-price"
+                        id={`offer-price-${kind}`}
                         type="number"
                         min="0"
                         step="0.01"
@@ -155,13 +170,13 @@ export function OfferForm({ initialData }: OfferFormProps) {
 
             {/* ORIGINAL PRICE (STRUCK THROUGH) */}
             <div className="space-y-2">
-                <label htmlFor="offer-original-price" className="text-sm font-bold text-slate-900">
+                <label htmlFor={`offer-original-price-${kind}`} className="text-sm font-bold text-slate-900">
                     Original price (€, optional)
                 </label>
                 <div className="relative max-w-[200px]">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">€</span>
                     <input
-                        id="offer-original-price"
+                        id={`offer-original-price-${kind}`}
                         type="number"
                         min="0"
                         step="0.01"
@@ -177,13 +192,35 @@ export function OfferForm({ initialData }: OfferFormProps) {
                 </p>
             </div>
 
+            {/* MAINFRAME DURATION (LIFETIME ONLY) */}
+            {isLifetime && (
+                <div className="space-y-2">
+                    <label htmlFor={`offer-mainframe-months-${kind}`} className="text-sm font-bold text-slate-900">
+                        Mainframe + feedback included (months)
+                    </label>
+                    <input
+                        id={`offer-mainframe-months-${kind}`}
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={mainframeMonths}
+                        onChange={(e) => setMainframeMonths(e.target.value)}
+                        disabled={isLoading}
+                        className="text-slate-900 w-full max-w-[200px] h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all outline-none"
+                    />
+                    <p className="text-xs text-slate-500">
+                        How long Mainframe (TSO) access and personalized feedback last after purchase. Read at purchase time: changing it only affects future buyers. The offer card shows it as &quot;N months of Mainframe access &amp; feedback on exercises&quot;, followed by the monthly price of the Mainframe + Feedback offer below (&quot;then preferential rate of €X/month on renewal&quot;) once that offer has a price and a Stripe Price ID.
+                    </p>
+                </div>
+            )}
+
             {/* STRIPE PRICE ID */}
             <div className="space-y-2">
-                <label htmlFor="offer-stripe-price-id" className="text-sm font-bold text-slate-900">
-                    Stripe Price ID
+                <label htmlFor={`offer-stripe-price-id-${kind}`} className="text-sm font-bold text-slate-900">
+                    Stripe Price ID{isPriceIdOptional ? " (optional)" : ""}
                 </label>
                 <input
-                    id="offer-stripe-price-id"
+                    id={`offer-stripe-price-id-${kind}`}
                     type="text"
                     value={stripePriceId}
                     onChange={(e) => setStripePriceId(e.target.value)}
@@ -193,7 +230,11 @@ export function OfferForm({ initialData }: OfferFormProps) {
                     className="text-slate-900 w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all outline-none font-mono text-sm"
                 />
                 <p className="text-xs text-slate-500">
-                    The Price ID from the Stripe Dashboard used at checkout. Create the new price in Stripe first, then paste its ID here — it is verified against Stripe when you save.
+                    {isLifetime
+                        ? "The Price ID of a one-time price from the Stripe Dashboard."
+                        : "The Price ID of a recurring (monthly) price from the Stripe Dashboard."}{" "}
+                    Create the price in Stripe first, then paste its ID here — it is verified against Stripe when you save.
+                    {isPriceIdOptional && " Leave empty to keep this offer hidden from students."}
                 </p>
             </div>
 

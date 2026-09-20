@@ -10,7 +10,7 @@ interface SubscribeButtonProps {
 
 /**
  * Redirige vers la page de présentation de l'offre (/dashboard/subscribe), qui contient le
- * vrai bouton de paiement (CheckoutButton). Utilisé partout où un CTA "Subscribe" apparaît :
+ * vrai bouton de paiement (CheckoutButton). Utilisé partout où un CTA "Upgrade" apparaît :
  * menu (SubscriptionStatus), cours réservés et cartouche TSO du dashboard.
  */
 export function SubscribeButton({ className, children }: SubscribeButtonProps) {
@@ -20,7 +20,7 @@ export function SubscribeButton({ className, children }: SubscribeButtonProps) {
                 className={cn("bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-11 px-5 cursor-pointer", className)}
             >
                 <Sparkles className="mr-2 h-4 w-4" />
-                {children || "Subscribe"}
+                {children || "Upgrade"}
             </Button>
         </Link>
     );

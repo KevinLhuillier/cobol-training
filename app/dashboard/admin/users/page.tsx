@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Users, UserCheck, Clock, AlertTriangle } from "lucide-react";
+import { Users, UserCheck, Clock, AlertTriangle, Infinity as InfinityIcon } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { cn } from "@/lib/utils";
 import { InviteUserDialog } from "@/components/admin/invite-user-dialog";
+import { isLifetimeStatus } from "@/utils/subscription";
 
 const STATUS_FILTERS = [
     { value: "ALL", label: "All" },
@@ -12,6 +13,9 @@ const STATUS_FILTERS = [
     { value: "TRIAL", label: "Trial" },
     { value: "ACTIVE", label: "Active" },
     { value: "UNPAID", label: "Unpaid" },
+    { value: "LIFETIME", label: "Lifetime" },
+    { value: "LIFETIME_EXPIRED", label: "Lifetime expired" },
+    { value: "LIFETIME_ADDON", label: "Lifetime + Mainframe" },
     { value: "CANCELED", label: "Canceled" },
     { value: "EXPIRED", label: "Expired" },
 ] as const;
@@ -28,6 +32,12 @@ function getStatusBadge(status: string | null) {
             return <Badge className="border-none bg-slate-200 text-slate-600 hover:bg-slate-200">Canceled</Badge>;
         case "EXPIRED":
             return <Badge className="border-none bg-slate-100 text-slate-500 hover:bg-slate-100">Expired</Badge>;
+        case "LIFETIME":
+            return <Badge className="border-none bg-violet-100 text-violet-700 hover:bg-violet-100">Lifetime</Badge>;
+        case "LIFETIME_EXPIRED":
+            return <Badge className="border-none bg-violet-50 text-violet-600 hover:bg-violet-50">Lifetime expired</Badge>;
+        case "LIFETIME_ADDON":
+            return <Badge className="border-none bg-violet-100 text-violet-700 hover:bg-violet-100">Lifetime + Mainframe</Badge>;
         case "INVITE_PENDING":
             return <Badge className="border-none bg-blue-100 text-blue-700 hover:bg-blue-100">Invite pending</Badge>;
         default:
@@ -88,6 +98,7 @@ export default async function AdminUsersPage({
     const activeUsers = users.filter(u => u.subscription_status === "ACTIVE").length;
     const trialUsers = users.filter(u => u.subscription_status === "TRIAL").length;
     const unpaidUsers = users.filter(u => u.subscription_status === "UNPAID").length;
+    const lifetimeUsers = users.filter(u => isLifetimeStatus(u.subscription_status)).length;
 
     // 4. Filtre par statut (piloté par l'URL : ?status=ACTIVE)
     const resolvedSearchParams = await searchParams;
@@ -127,7 +138,7 @@ export default async function AdminUsersPage({
             <main className="w-full mx-auto">
 
                 {/* QUICK STATS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
                         <div className="h-12 w-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600">
                             <Users className="h-6 w-6" />
@@ -162,6 +173,15 @@ export default async function AdminUsersPage({
                         <div>
                             <p className="text-sm font-bold text-slate-500">Unpaid</p>
                             <p className="text-2xl font-extrabold text-slate-900">{unpaidUsers}</p>
+                        </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
+                        <div className="h-12 w-12 bg-violet-50 rounded-2xl flex items-center justify-center text-violet-600">
+                            <InfinityIcon className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-bold text-slate-500">Lifetime</p>
+                            <p className="text-2xl font-extrabold text-slate-900">{lifetimeUsers}</p>
                         </div>
                     </div>
                 </div>

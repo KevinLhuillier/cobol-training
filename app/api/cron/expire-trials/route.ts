@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/utils/supabase/admin";
-import { sendTrialExpiredEmail, sendAdminTrialExpiredEmail, sendTrialEndingSoonEmail, sendTrialCheckInEmail, type TrialDiscount } from "@/utils/mail";
+import { sendTrialExpiredEmail, sendAdminTrialExpiredEmail, sendTrialEndingSoonEmail, sendTrialCheckInEmail, sendLifetimeMainframeEndedEmail, type TrialDiscount } from "@/utils/mail";
 import { stripe } from "@/utils/stripe";
 import { createTrialDiscountPromotionCode } from "@/utils/stripe-trial-discount";
 
@@ -65,6 +65,30 @@ export async function GET(request: Request) {
         }
     }
 
+    // 1bis. Termine la fenêtre mainframe + feedback de l'offre à vie : LIFETIME -> LIFETIME_EXPIRED.
+    // Les modules restent accessibles à vie ; seul le TSO est retiré (étape 4). L'UPDATE ne renvoie
+    // que les lignes réellement basculées, donc chaque utilisateur n'est prévenu qu'une seule fois.
+    const { data: lifetimeEndedUsers, error: lifetimeEndedError } = await supabase
+        .from("users")
+        .update({ subscription_status: "LIFETIME_EXPIRED" })
+        .eq("subscription_status", "LIFETIME")
+        .lt("mainframe_ends_at", new Date().toISOString())
+        .select("id, email, name");
+
+    if (lifetimeEndedError) {
+        console.error("Failed to expire lifetime mainframe windows:", lifetimeEndedError);
+        return new Response("Failed to expire lifetime mainframe windows", { status: 500 });
+    }
+
+    for (const lifetimeUser of lifetimeEndedUsers || []) {
+        if (!lifetimeUser.email) continue;
+        try {
+            await sendLifetimeMainframeEndedEmail(lifetimeUser.email, lifetimeUser.name || "Student", "included_ended");
+        } catch (mailError) {
+            console.error("Lifetime mainframe ended email failed:", mailError);
+        }
+    }
+
     // 2. Prévient les utilisateurs dont l'essai se termine demain (fenêtre de 24h à 48h,
     // trial_reminder_sent_at évite un second envoi si un run ultérieur retombe dans la fenêtre).
     const { data: endingSoonUsers, error: endingSoonError } = await supabase
@@ -122,10 +146,11 @@ export async function GET(request: Request) {
     }
 
     // 4. Bloque les comptes TSO des utilisateurs qui n'ont plus d'accès actif.
+    // LIFETIME_EXPIRED : fenêtre mainframe de l'offre à vie terminée (ou offre préférentielle finie).
     const { data: lockedOutUsers, error: lockedOutError } = await supabase
         .from("users")
         .select("id")
-        .in("subscription_status", ["EXPIRED", "CANCELED", "UNPAID"]);
+        .in("subscription_status", ["EXPIRED", "CANCELED", "UNPAID", "LIFETIME_EXPIRED"]);
 
     if (lockedOutError) {
         console.error("Failed to fetch locked-out users:", lockedOutError);

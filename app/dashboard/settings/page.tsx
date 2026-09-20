@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { Mail } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
-import { getTrialDaysLeft } from "@/utils/subscription";
+import { getEffectiveStatus, getTrialDaysLeft } from "@/utils/subscription";
 import { ProfileForm } from "@/components/settings-profile-form";
 import { PasswordForm } from "@/components/settings-password-form";
 import { CancelSubscriptionButton } from "@/components/cancel-subscription-button";
@@ -17,7 +17,7 @@ export default async function SettingsPage() {
 
     const { data: profile } = await supabase
         .from("users")
-        .select("name, email, subscription_status, trial_ends_at, cancel_at_period_end, current_period_end")
+        .select("name, email, subscription_status, trial_ends_at, mainframe_ends_at, cancel_at_period_end, current_period_end")
         .eq("id", user.id)
         .single();
 
@@ -28,13 +28,34 @@ export default async function SettingsPage() {
     const trialDaysLeft =
         profile.subscription_status === "TRIAL" ? getTrialDaysLeft(profile.trial_ends_at) : 0;
 
-    const formattedPeriodEnd = profile.current_period_end
-        ? new Date(profile.current_period_end).toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-          })
-        : null;
+    const formatDate = (iso: string | null) =>
+        iso
+            ? new Date(iso).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+              })
+            : null;
+
+    const formattedPeriodEnd = formatDate(profile.current_period_end);
+
+    // Le statut stocké LIFETIME peut être en retard sur la date de fin (le cron ne passe qu'une
+    // fois par jour) : on se fie à la date, comme le reste de l'application.
+    const status = getEffectiveStatus(profile);
+    const formattedMainframeEnd = formatDate(profile.mainframe_ends_at);
+    const isRecurringActive = status === "ACTIVE" || status === "LIFETIME_ADDON";
+    const isAddon = status === "LIFETIME_ADDON";
+
+    // Un abonné peut passer à l'offre à vie, une fois celle-ci configurée dans l'admin.
+    let showLifetimeUpgrade = false;
+    if (status === "ACTIVE") {
+        const { data: lifetimeOffer } = await supabase
+            .from("offer_settings")
+            .select("stripe_price_id")
+            .eq("kind", "LIFETIME")
+            .maybeSingle();
+        showLifetimeUpgrade = !!lifetimeOffer?.stripe_price_id;
+    }
 
     return (
         <div className="max-w-5xl mx-auto space-y-8">
@@ -74,33 +95,58 @@ export default async function SettingsPage() {
                 <h2 className="text-lg font-bold text-slate-900 mb-1">Subscription</h2>
                 <p className="text-sm text-slate-500 mb-6">Manage your billing and access.</p>
 
-                {profile.subscription_status === "ACTIVE" ? (
+                {isRecurringActive ? (
                     profile.cancel_at_period_end ? (
                         <div className="space-y-4">
                             <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-amber-50 text-amber-700 text-sm font-bold">
                                 Cancellation scheduled
                             </div>
                             <p className="text-sm text-slate-500">
-                                Your subscription will end
+                                Your {isAddon ? "Mainframe + Feedback plan" : "subscription"} will end
                                 {formattedPeriodEnd ? ` on ${formattedPeriodEnd}` : " at the end of your current billing period"}.
-                                You&apos;ll keep full access until then.
+                                {isAddon
+                                    ? " You'll keep your Mainframe access and feedback until then, and your lifetime access to all courses stays yours."
+                                    : " You'll keep full access until then."}
                             </p>
+                            {showLifetimeUpgrade && <SubscribeButton>Upgrade to Lifetime</SubscribeButton>}
                         </div>
                     ) : (
                         <div className="space-y-4">
                             <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-bold">
-                                Active{formattedPeriodEnd ? ` — renews on ${formattedPeriodEnd}` : ""}
+                                {isAddon ? "Lifetime + Mainframe" : "Active"}{formattedPeriodEnd ? ` — renews on ${formattedPeriodEnd}` : ""}
                             </div>
-                            <CancelSubscriptionButton />
+                            {showLifetimeUpgrade && <SubscribeButton>Upgrade to Lifetime</SubscribeButton>}
+                            <CancelSubscriptionButton isAddon={isAddon} />
                         </div>
                     )
+                ) : status === "LIFETIME" ? (
+                    <div className="space-y-4">
+                        <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-violet-50 text-violet-700 text-sm font-bold">
+                            Lifetime access
+                        </div>
+                        <p className="text-sm text-slate-500">
+                            You have lifetime access to all courses. Mainframe (TSO) access and personalized feedback are included
+                            {formattedMainframeEnd ? ` until ${formattedMainframeEnd}` : " for a limited period"}.
+                        </p>
+                    </div>
+                ) : status === "LIFETIME_EXPIRED" ? (
+                    <div className="space-y-4">
+                        <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-violet-50 text-violet-700 text-sm font-bold">
+                            Lifetime access
+                        </div>
+                        <p className="text-sm text-slate-500">
+                            You have lifetime access to all courses. Your included Mainframe (TSO) access and personalized feedback have ended —
+                            you can add them back at a special rate reserved for lifetime members.
+                        </p>
+                        <SubscribeButton />
+                    </div>
                 ) : profile.subscription_status === "UNPAID" ? (
                     <div className="space-y-4">
                         <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-red-50 text-red-700 text-sm font-bold">
                             Payment failed — access suspended
                         </div>
                         <p className="text-sm text-slate-500">
-                            Your last payment couldn&apos;t be processed. Subscribe again to restore access to your courses and Mainframe (TSO) account.
+                            Your last payment couldn&apos;t be processed. Upgrade again to restore access to your courses and Mainframe (TSO) account.
                         </p>
                         <SubscribeButton />
                     </div>

@@ -9,6 +9,7 @@ import { ensureTrialStarted, recordLoginEvent } from "@/app/actions/auth";
 import { LogoCtIcon } from "@/components/logo-ct-icon";
 import { MobileSidebarButton } from "@/components/mobile-sidebar";
 import { getFirstName } from "@/utils/first-name";
+import { getDaysLeft } from "@/utils/subscription";
 
 export default async function DashboardLayout({
                                                   children,
@@ -19,6 +20,8 @@ export default async function DashboardLayout({
     let userName = "Student";
     let subscriptionStatus: string | null = null;
     let trialDaysLeft = 0;
+    let mainframeDaysLeft = 0;
+    let lifetimeOfferAvailable = false;
     let unreadMessagesCount = 0;
     let userId: string | null = null;
     let badgesCount = 0;
@@ -46,7 +49,7 @@ export default async function DashboardLayout({
             // 2. Récupération de son profil public (rôle, nom et statut d'abonnement)
             const { data: profile } = await supabase
                 .from("users")
-                .select("role, name, subscription_status, trial_ends_at")
+                .select("role, name, subscription_status, trial_ends_at, mainframe_ends_at")
                 .eq("id", user.id)
                 .single();
 
@@ -56,9 +59,21 @@ export default async function DashboardLayout({
                     userName = profile.name;
                 }
                 subscriptionStatus = profile.subscription_status;
-                if (subscriptionStatus === "TRIAL" && profile.trial_ends_at) {
-                    const diffMs = new Date(profile.trial_ends_at).getTime() - Date.now();
-                    trialDaysLeft = diffMs > 0 ? Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24))) : 0;
+                if (subscriptionStatus === "TRIAL") {
+                    trialDaysLeft = getDaysLeft(profile.trial_ends_at);
+                }
+                if (subscriptionStatus === "LIFETIME") {
+                    mainframeDaysLeft = getDaysLeft(profile.mainframe_ends_at);
+                }
+                if (subscriptionStatus === "ACTIVE") {
+                    // Un abonné peut passer à l'offre à vie, mais seulement une fois celle-ci configurée
+                    // (prix Stripe renseigné dans l'admin) : sinon le bouton mènerait à une page vide.
+                    const { data: lifetimeOffer } = await supabase
+                        .from("offer_settings")
+                        .select("stripe_price_id")
+                        .eq("kind", "LIFETIME")
+                        .maybeSingle();
+                    lifetimeOfferAvailable = !!lifetimeOffer?.stripe_price_id;
                 }
             }
 
@@ -93,6 +108,8 @@ export default async function DashboardLayout({
                     isAdmin={isAdmin}
                     subscriptionStatus={subscriptionStatus}
                     trialDaysLeft={trialDaysLeft}
+                    mainframeDaysLeft={mainframeDaysLeft}
+                    lifetimeOfferAvailable={lifetimeOfferAvailable}
                     unreadMessagesCount={unreadMessagesCount}
                 />
             }
@@ -110,6 +127,10 @@ export default async function DashboardLayout({
                             <p className="text-sm font-bold text-slate-900">Welcome, {firstName}</p>
                             {subscriptionStatus === "ACTIVE" ? (
                                 <Badge className="border-none bg-emerald-100 text-emerald-700">Subscribed</Badge>
+                            ) : subscriptionStatus === "LIFETIME_ADDON" ? (
+                                <Badge className="border-none bg-violet-100 text-violet-700">Lifetime + Mainframe</Badge>
+                            ) : subscriptionStatus === "LIFETIME" || subscriptionStatus === "LIFETIME_EXPIRED" ? (
+                                <Badge className="border-none bg-violet-100 text-violet-700">Lifetime</Badge>
                             ) : subscriptionStatus === "TRIAL" && trialDaysLeft > 0 ? (
                                 <Badge className="border-none bg-amber-100 text-amber-700">Trial</Badge>
                             ) : subscriptionStatus === "UNPAID" ? (

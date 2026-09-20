@@ -5,10 +5,12 @@ import { Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { createCheckoutSession } from "@/app/actions/stripe";
+import type { OfferKind } from "@/utils/offers";
 
 interface CheckoutButtonProps {
     className?: string;
     children?: React.ReactNode;
+    offerKind?: OfferKind;
     promoCode?: string;
 }
 
@@ -16,7 +18,7 @@ interface CheckoutButtonProps {
  * Déclenche réellement la session de paiement Stripe (contrairement à SubscribeButton,
  * qui se contente de rediriger vers la page de présentation de l'offre /dashboard/subscribe).
  */
-export function CheckoutButton({ className, children, promoCode }: CheckoutButtonProps) {
+export function CheckoutButton({ className, children, offerKind = "SUBSCRIPTION", promoCode }: CheckoutButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +26,7 @@ export function CheckoutButton({ className, children, promoCode }: CheckoutButto
         setIsLoading(true);
         setError(null);
         try {
-            const { url } = await createCheckoutSession(promoCode);
+            const { url } = await createCheckoutSession(offerKind, promoCode);
             window.location.href = url;
         } catch (err) {
             setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -44,7 +46,7 @@ export function CheckoutButton({ className, children, promoCode }: CheckoutButto
                 ) : (
                     <Sparkles className="mr-2 h-4 w-4" />
                 )}
-                {children || "Subscribe"}
+                {children || "Upgrade"}
             </Button>
             {error && <p className="text-xs text-red-500 font-medium text-center max-w-[280px]">{error}</p>}
         </div>

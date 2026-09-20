@@ -7,7 +7,7 @@ import { Terminal, Lock, Play, BookOpen, CheckCircle } from "lucide-react";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
 import { ensureTrialStarted, triggerWelcomeEmailAction } from "@/app/actions/auth";
-import { hasActiveAccess, hasCourseAccess } from "@/utils/subscription";
+import { hasActiveAccess, hasCourseAccess, isLifetimeStatus } from "@/utils/subscription";
 import { TsoUnlockButton } from "@/components/tso-unlock-button";
 import { SubscribeButton } from "@/components/subscribe-button";
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
@@ -38,7 +38,7 @@ export default async function DashboardPage() {
     const [{ data: profile }, { data: tsoAccount }, { data: rawNewBadges }] = await Promise.all([
         supabase
             .from("users")
-            .select("name, subscription_status, trial_ends_at")
+            .select("name, subscription_status, trial_ends_at, mainframe_ends_at")
             .eq("id", user.id)
             .single(),
         supabase
@@ -79,6 +79,7 @@ export default async function DashboardPage() {
     const subscriptionInfo = {
         subscription_status: profile?.subscription_status ?? null,
         trial_ends_at: profile?.trial_ends_at ?? null,
+        mainframe_ends_at: profile?.mainframe_ends_at ?? null,
     };
     const canUnlockTso = hasActiveAccess(subscriptionInfo);
     const hasTsoStep = canUnlockTso && !tsoAccount;
@@ -200,8 +201,11 @@ export default async function DashboardPage() {
                                 <Lock className="h-5 w-5 text-slate-400" />
                             </div>
                             <p className="text-sm text-slate-300 font-medium">
-                                Your trial has ended.<br/>
-                                <span className="text-xs text-slate-400 font-normal">Subscribe to unlock a TSO account.</span>
+                                {isLifetimeStatus(profile?.subscription_status ?? null)
+                                    ? "Your Mainframe access has ended."
+                                    : "Your trial has ended."}
+                                <br/>
+                                <span className="text-xs text-slate-400 font-normal">Upgrade to unlock a TSO account.</span>
                             </p>
                         </div>
                         <SubscribeButton />
@@ -258,7 +262,7 @@ export default async function DashboardPage() {
                                         <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" />
                                         <div className="absolute top-4 right-4">
                                             <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                                <span>{isLocked ? "Subscribers only" : progress === 100 ? "Completed" : "Available"}</span>
+                                                <span>{isLocked ? "Members only" : progress === 100 ? "Completed" : "Available"}</span>
                                             </Badge>
                                         </div>
                                     </div>
@@ -268,7 +272,7 @@ export default async function DashboardPage() {
                                             <Terminal className="h-8 w-8 text-white drop-shadow-md" />
                                         </div>
                                         <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                            <span>{isLocked ? "Subscribers only" : progress === 100 ? "Completed" : "Available"}</span>
+                                            <span>{isLocked ? "Members only" : progress === 100 ? "Completed" : "Available"}</span>
                                         </Badge>
                                     </div>
                                 )}
@@ -297,7 +301,7 @@ export default async function DashboardPage() {
 
                                     {isLocked ? (
                                         <SubscribeButton className="w-full justify-center">
-                                            Reserved for subscribers
+                                            Upgrade to unlock
                                         </SubscribeButton>
                                     ) : (
                                         <Link href={href} className="w-full" id={index === 0 ? "onboarding-course-anchor" : undefined}>

@@ -23,7 +23,7 @@ import type { QuizQuestion } from "@/components/courses/quiz/types";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
-import { hasCourseAccess } from "@/utils/subscription";
+import { hasCourseAccess, hasFeedbackAccess } from "@/utils/subscription";
 
 export default async function CoursePlayer({
                                                params,
@@ -105,16 +105,24 @@ export default async function CoursePlayer({
     // (le griséage sur /dashboard est cosmétique seul — cette vérification empêche l'accès direct par URL)
     const { data: profile } = await supabase
         .from("users")
-        .select("subscription_status, trial_ends_at")
+        .select("subscription_status, trial_ends_at, mainframe_ends_at")
         .eq("id", user.id)
         .single();
 
-    if (!hasCourseAccess({ isFree: rawCourse.isFree }, {
+    const subscriptionInfo = {
         subscription_status: profile?.subscription_status ?? null,
         trial_ends_at: profile?.trial_ends_at ?? null,
-    })) {
+        mainframe_ends_at: profile?.mainframe_ends_at ?? null,
+    };
+
+    if (!hasCourseAccess({ isFree: rawCourse.isFree }, subscriptionInfo)) {
         return redirect("/dashboard");
     }
+
+    // Correction/feedback des exercices : retirée aux membres de l'offre à vie une fois leur
+    // fenêtre terminée (ils gardent l'accès aux modules). Garde réelle côté base : trigger
+    // enforce_feedback_access sur lesson_progress ; ceci ne sert qu'à expliquer l'absence du bouton.
+    const canRequestFeedback = hasFeedbackAccess(subscriptionInfo);
 
 // 3. FORMATAGE DES DONNÉES
 
@@ -274,6 +282,7 @@ export default async function CoursePlayer({
                                                 isCompleted={isCurrentLessonCompleted}
                                                 exerciseStatus={currentLesson.lessonProgress?.[0]?.exerciseStatus}
                                                 reviewFeedback={currentLesson.lessonProgress?.[0]?.reviewFeedback}
+                                                canRequestFeedback={canRequestFeedback}
                                                 nextLessonId={nextLesson?.id}
                                             />
                                         </div>
