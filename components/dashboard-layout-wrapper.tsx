@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { MobileSidebarDrawer, MobileSidebarProvider } from "@/components/mobile-sidebar";
+import { SiteFooter } from "@/components/site-footer";
 
 interface DashboardLayoutWrapperProps {
     header: ReactNode;
@@ -35,6 +36,7 @@ export function DashboardLayoutWrapper({ header, sidebar, children }: DashboardL
                         {children}
                     </section>
                 </main>
+                <SiteFooter className="max-w-[1600px] mx-auto pb-0" />
             </div>
         </MobileSidebarProvider>
     );

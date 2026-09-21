@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans">
+        <div className="flex-1 bg-slate-100 flex items-center justify-center p-4 font-sans">
             <div className="w-full max-w-md bg-white rounded-3xl shadow-sm p-8 flex flex-col">
                 <div className="flex flex-col items-center mb-8 text-center">
                     <LogoCtIcon className="h-14 w-auto mb-4" />
