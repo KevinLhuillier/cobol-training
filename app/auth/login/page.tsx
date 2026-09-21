@@ -187,7 +187,7 @@ function LoginForm() {
 // Export par défaut de la page avec la boundary Suspense
 export default function LoginPage() {
     return (
-        <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans">
+        <div className="flex-1 bg-slate-100 flex items-center justify-center p-4 font-sans">
             <Suspense fallback={<div className="w-full max-w-md bg-white rounded-3xl shadow-sm h-[500px] animate-pulse"></div>}>
                 <LoginForm />
             </Suspense>

@@ -43,8 +43,10 @@ export default async function proxy(request: NextRequest) {
     // Chemins qui doivent rester joignables même en mode maintenance : la page de maintenance
     // elle-même (sinon boucle de redirection), tout /auth (sinon un admin déconnecté ne pourrait
     // plus jamais se reconnecter pour désactiver le mode) et les endpoints API appelés par des
-    // services externes (webhook Stripe, cron) qui doivent continuer à fonctionner.
-    const isMaintenanceExempt = pathname === '/maintenance' || pathname.startsWith('/auth') || pathname.startsWith('/api');
+    // services externes (webhook Stripe, cron) qui doivent continuer à fonctionner. Les conditions
+    // d'utilisation et la politique de confidentialité (/terms, /privacy) restent aussi consultables :
+    // la page de maintenance y renvoie depuis son pied de page.
+    const isMaintenanceExempt = pathname === '/maintenance' || pathname === '/terms' || pathname === '/privacy' || pathname.startsWith('/auth') || pathname.startsWith('/api');
 
     // On ne redirige QUE si l'utilisateur essaie de charger la page visuellement (GET)
     // On laisse passer toutes les autres méthodes (POST, PUT, DELETE) utilisées par les Server Actions et API
