@@ -66,7 +66,7 @@ export function CancelSubscriptionButton({ isAddon = false }: CancelSubscription
                             ) : (
                                 <>
                                     Heads up: the price of this subscription is about to increase to{" "}
-                                    <span className="font-bold text-slate-700">$29/month</span>. Staying subscribed now locks in your current rate for as long as your subscription stays active.
+                                    <span className="font-bold text-slate-700">€59/month</span>. Staying subscribed now locks in your current rate for as long as your subscription stays active.
                                 </>
                             )}
                         </DialogDescription>
