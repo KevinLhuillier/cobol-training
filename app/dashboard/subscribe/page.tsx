@@ -3,30 +3,15 @@ import { redirect } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Sparkles, Tag } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { CheckoutButton } from "@/components/checkout-button";
-import { formatOfferPrice, getPurchasableOffers, type OfferKind } from "@/utils/offers";
+import {
+    DEFAULT_SUBSCRIPTION_OFFER,
+    formatOfferPrice,
+    getAddonRenewalPrice,
+    getPurchasableOffers,
+    type OfferKind,
+    type OfferRow,
+} from "@/utils/offers";
 import { getEffectiveStatus } from "@/utils/subscription";
-
-const DEFAULT_SUBSCRIPTION_OFFER = {
-    title: "Cobol Training subscription",
-    priceCents: 1500,
-    features: [
-        "Access to all modules",
-        "Quizzes, exercises, and a final project",
-        "Mainframe Access",
-        "Personalized feedback on exercises",
-        "Support on Teams with the instructor",
-    ],
-};
-
-interface OfferRow {
-    kind: OfferKind;
-    title: string;
-    price_cents: number;
-    original_price_cents: number | null;
-    features: string[];
-    stripe_price_id: string | null;
-    mainframe_months: number | null;
-}
 
 export default async function SubscribePage({
     searchParams,
@@ -61,8 +46,7 @@ export default async function SubscribePage({
     // "Mainframe + Feedback" (source unique : ce que voit l'acheteur ici est exactement ce qu'il
     // paiera plus tard). Omis tant que cette offre n'est pas configurée/achetable.
     const addonOffer = offersByKind.get("LIFETIME_ADDON");
-    const addonRenewalPrice =
-        addonOffer?.stripe_price_id && addonOffer.price_cents > 0 ? formatOfferPrice(addonOffer.price_cents) : null;
+    const addonRenewalPrice = getAddonRenewalPrice(addonOffer);
 
     // Une offre sans prix Stripe (offre à vie / préférentielle pas encore configurées par l'admin)
     // n'est pas encore achetable : on ne l'affiche pas. L'abonnement standard garde son texte par

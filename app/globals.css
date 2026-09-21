@@ -5,6 +5,14 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Palette de la landing page (reprise de l'ancien site cobol-training.com) */
+  --color-brand-deep: #000c14;
+  --color-brand-navy: #000628;
+  --color-brand-blue: #1e7fcb;
+  --color-brand-sky: #0080ff;
+  --color-brand-tint: #f4f7ff;
+  --color-brand-black: #0f0f10;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
