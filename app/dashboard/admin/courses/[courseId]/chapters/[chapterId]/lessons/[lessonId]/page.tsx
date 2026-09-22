@@ -166,6 +166,7 @@ export default async function LessonDetailsPage({
                                         initialBlocks={(lesson.contentBlocks as LessonBlock[] | null) ?? []}
                                         chapterId={chapterId}
                                         lessonId={lessonId}
+                                        lessonType={lesson.type ?? "VIDEO"}
                                     />
                                 )}
                             </div>

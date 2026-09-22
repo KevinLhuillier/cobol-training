@@ -13,7 +13,9 @@ import { CodeBlockEditor } from "@/components/courses/lesson-blocks/code-block-e
 import { VideoBlockEditor } from "@/components/courses/lesson-blocks/video-block-editor";
 import { CalloutBlockEditor } from "@/components/courses/lesson-blocks/callout-block-editor";
 import { DividerBlockEditor } from "@/components/courses/lesson-blocks/divider-block-editor";
+import { SolutionBlockEditor } from "@/components/courses/lesson-blocks/solution-block-editor";
 import { DIVIDER_DEFAULT_DATA } from "@/components/courses/lesson-blocks/divider-style";
+import { createBlockId } from "@/components/courses/lesson-blocks/create-block-id";
 import type {
     CalloutBlockData,
     CodeBlockData,
@@ -22,6 +24,7 @@ import type {
     ImageBlockData,
     LessonBlock,
     LessonBlockType,
+    SolutionBlockData,
     VideoBlockData,
 } from "@/components/courses/lesson-blocks/types";
 
@@ -42,15 +45,12 @@ interface LessonBuilderProps {
     initialBlocks: LessonBlock[];
     chapterId: string;
     lessonId: string;
+    // Le bloc Solution n'est proposé dans la palette que sur les leçons de type "Exercise" —
+    // c'est le seul type de leçon où l'élève a une soumission à faire approuver avant de la voir.
+    lessonType?: "VIDEO" | "EXERCISE" | "QUIZ";
 }
 
-function createBlockId() {
-    return typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : Math.random().toString(36).slice(2);
-}
-
-export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuilderProps) {
+export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }: LessonBuilderProps) {
     const router = useRouter();
     const supabase = createClient();
 
@@ -85,6 +85,9 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
             setIsDirty(true);
         } else if (type === "divider") {
             setBlocks((prev) => [...prev, { id: createBlockId(), type: "divider", data: { ...DIVIDER_DEFAULT_DATA } }]);
+            setIsDirty(true);
+        } else if (type === "solution") {
+            setBlocks((prev) => [...prev, { id: createBlockId(), type: "solution", data: { title: "", blocks: [] } }]);
             setIsDirty(true);
         }
     };
@@ -127,6 +130,13 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
     const updateDividerBlock = (id: string, patch: Partial<DividerBlockData>) => {
         setBlocks((prev) =>
             prev.map((block) => (block.id === id && block.type === "divider" ? { ...block, data: { ...block.data, ...patch } } : block))
+        );
+        setIsDirty(true);
+    };
+
+    const updateSolutionBlock = (id: string, patch: Partial<SolutionBlockData>) => {
+        setBlocks((prev) =>
+            prev.map((block) => (block.id === id && block.type === "solution" ? { ...block, data: { ...block.data, ...patch } } : block))
         );
         setIsDirty(true);
     };
@@ -257,6 +267,17 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
                             );
                         }
 
+                        if (block.type === "solution") {
+                            return (
+                                <SolutionBlockEditor
+                                    key={block.id}
+                                    block={block}
+                                    onChange={(patch) => updateSolutionBlock(block.id, patch)}
+                                    {...sharedProps}
+                                />
+                            );
+                        }
+
                         return (
                             <TextBlockEditor
                                 key={block.id}
@@ -274,7 +295,7 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId }: LessonBuil
                 bouton "Save content" restent accessibles sur une leçon avec beaucoup de blocs. */}
             <div className="w-full lg:w-36 shrink-0 lg:sticky lg:top-6 lg:self-start">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Components</p>
-                <BlockPalette onAddBlock={addBlock} />
+                <BlockPalette onAddBlock={addBlock} showSolution={lessonType === "EXERCISE"} />
 
                 <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
                     <Button
