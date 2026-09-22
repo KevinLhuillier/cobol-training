@@ -260,9 +260,13 @@ export default async function CoursePlayer({
                             />
                         ) : (
                             <>
-                                {/* blocs (vidéo/texte/image/code, dans l'ordre choisi par l'admin). */}
+                                {/* blocs (vidéo/texte/image/code, dans l'ordre choisi par l'admin). Le bloc
+                                    Solution éventuel n'affiche son contenu que si l'exercice est approuvé. */}
                                 {currentLesson.contentBlocks && currentLesson.contentBlocks.length > 0 ? (
-                                    <LessonBlocksView blocks={currentLesson.contentBlocks} />
+                                    <LessonBlocksView
+                                        blocks={currentLesson.contentBlocks}
+                                        isSolutionUnlocked={currentLesson.lessonProgress?.[0]?.exerciseStatus === "APPROVED"}
+                                    />
                                 ) : (
                                     <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                                         <p className="italic text-slate-500">No instructions or content provided.</p>

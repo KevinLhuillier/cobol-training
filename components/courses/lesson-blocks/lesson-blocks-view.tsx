@@ -4,13 +4,19 @@ import { CodeBlockView } from "./code-block-view";
 import { VideoBlockView } from "./video-block-view";
 import { CalloutBlockView } from "./callout-block-view";
 import { DividerBlockView } from "./divider-block-view";
+import { SolutionBlockView } from "./solution-block-view";
 import type { LessonBlock } from "./types";
 
 interface LessonBlocksViewProps {
     blocks: LessonBlock[];
+    // Déverrouille l'affichage du contenu des blocs Solution — false par défaut car ce
+    // composant est aussi utilisé pour les leçons non-Exercise, qui n'en contiennent jamais.
+    isSolutionUnlocked?: boolean;
+    // Message affiché tant qu'un bloc Solution est verrouillé — cf. solution-block-view.tsx.
+    solutionLockedMessage?: string;
 }
 
-export function LessonBlocksView({ blocks }: LessonBlocksViewProps) {
+export function LessonBlocksView({ blocks, isSolutionUnlocked = false, solutionLockedMessage }: LessonBlocksViewProps) {
     return (
         <div className="space-y-6">
             {blocks.map((block) => {
@@ -45,6 +51,15 @@ export function LessonBlocksView({ blocks }: LessonBlocksViewProps) {
                         return <CalloutBlockView key={block.id} data={block.data} />;
                     case "divider":
                         return <DividerBlockView key={block.id} data={block.data} />;
+                    case "solution":
+                        return (
+                            <SolutionBlockView
+                                key={block.id}
+                                data={block.data}
+                                isUnlocked={isSolutionUnlocked}
+                                {...(solutionLockedMessage ? { lockedMessage: solutionLockedMessage } : {})}
+                            />
+                        );
                     default:
                         return null;
                 }

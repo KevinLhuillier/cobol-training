@@ -1,7 +1,12 @@
+import type { LessonBlock } from "@/components/courses/lesson-blocks/types";
+
 export interface Challenge {
     id: string;
     title: string;
-    description: string | null;
+    // Instructions du challenge, construites avec les mêmes composants que le builder de leçon
+    // (cf. components/admin/challenge-builder.tsx). Peut contenir un bloc "solution" dont le
+    // contenu n'est révélé qu'une fois le challenge passé en "previous".
+    contentBlocks: LessonBlock[];
     language: string;
     // Date de début au format "YYYY-MM-DD" (colonne DATE de Postgres)
     startsAt: string;

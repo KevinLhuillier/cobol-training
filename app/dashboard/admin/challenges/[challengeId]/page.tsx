@@ -2,10 +2,12 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Users } from "lucide-react";
 import { ChallengeForm } from "@/components/admin/challenge-form";
+import { ChallengeBuilder } from "@/components/admin/challenge-builder";
 import { ChallengeDeleteButton } from "@/components/admin/challenge-delete-button";
 import { ChallengeStatusBadge } from "@/components/admin/challenge-status-badge";
 import { PublishToggleButton } from "@/components/courses/publish-toggle-button";
 import { todayIsoDate } from "@/components/challenges/types";
+import type { LessonBlock } from "@/components/courses/lesson-blocks/types";
 import { createClient } from "@/utils/supabase/server";
 
 interface SubmissionRow {
@@ -43,7 +45,7 @@ export default async function AdminChallengeDetailsPage({
     const [{ data: challenge }, { data: rawSubmissions }, { data: featured }] = await Promise.all([
         supabase
             .from("challenges")
-            .select("id, title, description, language, startsAt:starts_at, isPublished:is_published")
+            .select("id, title, contentBlocks:content_blocks, language, startsAt:starts_at, isPublished:is_published")
             .eq("id", challengeId)
             .maybeSingle(),
         supabase
@@ -103,6 +105,16 @@ export default async function AdminChallengeDetailsPage({
                 {/* FORMULAIRE */}
                 <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8">
                     <ChallengeForm challenge={challenge} />
+                </div>
+
+                {/* INSTRUCTIONS — mêmes composants que le builder de leçon, avec un bloc Solution
+                    dont le contenu n'est révélé aux élèves qu'une fois le challenge passé en "previous". */}
+                <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6 lg:p-8">
+                    <p className="text-sm font-bold text-slate-500 mb-3">Instructions</p>
+                    <ChallengeBuilder
+                        initialBlocks={(challenge.contentBlocks as LessonBlock[] | null) ?? []}
+                        challengeId={challenge.id}
+                    />
                 </div>
 
                 {/* SOLUTIONS SOUMISES */}

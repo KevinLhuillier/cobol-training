@@ -85,6 +85,24 @@ export interface DividerBlock {
     data: DividerBlockData;
 }
 
-export type LessonBlock = TextBlock | ImageBlock | CodeBlock | VideoBlock | CalloutBlock | DividerBlock;
+// Bloc "Solution" : conteneur affiché/caché (flèche déroulante côté élève, cf.
+// solution-block-view.tsx) qui embarque ses propres blocs enfants — n'importe quel composant
+// du builder, à l'exception d'une autre Solution (pas d'imbrication, cf. solution-block-editor.tsx).
+// Réservé aux leçons de type "Exercise" et affiché côté élève uniquement une fois l'exercice
+// approuvé (lesson_progress.exercise_status === "APPROVED").
+export interface SolutionBlockData {
+    // Libellé du bouton afficher/cacher. Vide sur les blocs créés avant l'ajout de ce champ, ou
+    // laissé vide par l'admin : à traiter comme "Show solution" partout où ce champ est lu.
+    title: string;
+    blocks: LessonBlock[];
+}
+
+export interface SolutionBlock {
+    id: string;
+    type: "solution";
+    data: SolutionBlockData;
+}
+
+export type LessonBlock = TextBlock | ImageBlock | CodeBlock | VideoBlock | CalloutBlock | DividerBlock | SolutionBlock;
 
 export type LessonBlockType = LessonBlock["type"];

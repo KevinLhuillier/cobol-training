@@ -28,16 +28,16 @@ import type {
     VideoBlockData,
 } from "@/components/courses/lesson-blocks/types";
 
-interface LessonBuilderProps {
+interface ChallengeBuilderProps {
     initialBlocks: LessonBlock[];
-    chapterId: string;
-    lessonId: string;
-    // Le bloc Solution n'est proposé dans la palette que sur les leçons de type "Exercise" —
-    // c'est le seul type de leçon où l'élève a une soumission à faire approuver avant de la voir.
-    lessonType?: "VIDEO" | "EXERCISE" | "QUIZ";
+    challengeId: string;
 }
 
-export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }: LessonBuilderProps) {
+// Même builder que components/courses/lesson-builder.tsx (mêmes composants, même bloc
+// Solution), mais persisté sur challenges.content_blocks. Le bloc Solution est toujours proposé
+// ici (contrairement aux leçons, réservé au type "Exercise") : côté élève, son contenu n'est
+// révélé qu'une fois le challenge passé en "previous" (cf. components/challenges/challenge-board.tsx).
+export function ChallengeBuilder({ initialBlocks, challengeId }: ChallengeBuilderProps) {
     const router = useRouter();
     const supabase = createClient();
 
@@ -149,10 +149,9 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }
         setError(null);
         try {
             const { error: updateError } = await supabase
-                .from("lessons")
+                .from("challenges")
                 .update({ content_blocks: blocks })
-                .eq("id", lessonId)
-                .eq("chapter_id", chapterId); // Sécurité
+                .eq("id", challengeId);
 
             if (updateError) throw updateError;
 
@@ -164,7 +163,7 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }
             const orphanedUrls = [...lastSavedImageUrlsRef.current].filter((url) => !currentImageUrls.has(url));
             await Promise.all(
                 orphanedUrls.map((url) =>
-                    deleteLessonImage(url).catch((err) => console.error("Failed to delete orphaned lesson image:", url, err))
+                    deleteLessonImage(url).catch((err) => console.error("Failed to delete orphaned challenge image:", url, err))
                 )
             );
             lastSavedImageUrlsRef.current = currentImageUrls;
@@ -172,8 +171,8 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }
             setIsDirty(false);
             router.refresh();
         } catch (err) {
-            console.error("Lesson content blocks update error:", err);
-            setError("An error occurred while saving the lesson content.");
+            console.error("Challenge content blocks update error:", err);
+            setError("An error occurred while saving the challenge content.");
         } finally {
             setIsSaving(false);
         }
@@ -279,10 +278,10 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }
 
             {/* PALETTE DE COMPOSANTS + SAUVEGARDE — fixée en haut au défilement (lg+ seulement,
                 là où elle est à côté du canvas plutôt qu'au-dessus) pour que la palette et le
-                bouton "Save content" restent accessibles sur une leçon avec beaucoup de blocs. */}
+                bouton "Save content" restent accessibles sur un challenge avec beaucoup de blocs. */}
             <div className="w-full lg:w-36 shrink-0 lg:sticky lg:top-6 lg:self-start">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Components</p>
-                <BlockPalette onAddBlock={addBlock} showSolution={lessonType === "EXERCISE"} />
+                <BlockPalette onAddBlock={addBlock} showSolution />
 
                 <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
                     <Button

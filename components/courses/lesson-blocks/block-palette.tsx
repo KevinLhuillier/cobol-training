@@ -1,6 +1,6 @@
 "use client";
 
-import { Type, Image as ImageIcon, Code2, Video, Info, Minus } from "lucide-react";
+import { Type, Image as ImageIcon, Code2, Video, Info, Minus, Lightbulb } from "lucide-react";
 import type { LessonBlockType } from "./types";
 
 interface PaletteItem {
@@ -21,14 +21,20 @@ const PALETTE_ITEMS: PaletteItem[] = [
     { type: "divider", icon: Minus, label: "Divider", enabled: true },
 ];
 
+// Uniquement proposé sur le canvas principal d'une leçon "Exercise" (cf. LessonBuilder) — jamais
+// dans la palette imbriquée du bloc Solution lui-même (pas d'imbrication, showSolution=false).
+const SOLUTION_PALETTE_ITEM: PaletteItem = { type: "solution", icon: Lightbulb, label: "Solution", enabled: true };
+
 interface BlockPaletteProps {
     onAddBlock: (type: LessonBlockType) => void;
+    showSolution?: boolean;
 }
 
-export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
+export function BlockPalette({ onAddBlock, showSolution = false }: BlockPaletteProps) {
+    const items = showSolution ? [...PALETTE_ITEMS, SOLUTION_PALETTE_ITEM] : PALETTE_ITEMS;
     return (
         <div className="grid grid-cols-2 gap-3 lg:justify-items-center">
-            {PALETTE_ITEMS.map((item) => {
+            {items.map((item) => {
                 const Icon = item.icon;
                 const title = item.enabled ? item.label : `${item.label} (Coming soon)`;
                 return (

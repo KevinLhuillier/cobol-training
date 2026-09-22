@@ -12,8 +12,21 @@ import {
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
 import { TsoDeleteButton } from "@/components/tso-delete-button";
+import { cn } from "@/lib/utils";
 
-export default async function AdminTsoUsersPage() {
+const STATUS_FILTERS = [
+    { value: "ALL", label: "All" },
+    { value: "AVAILABLE", label: "Available" },
+    { value: "ASSIGNED", label: "Assigned" },
+    { value: "BLOCKED", label: "Blocked" },
+    { value: "RESET_REQUIRED", label: "Needs Reset" },
+] as const;
+
+export default async function AdminTsoUsersPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ status?: string }>;
+}) {
     const supabase = await createClient();
 
     // 1. SÉCURITÉ : Vérification stricte du rôle Admin
@@ -70,6 +83,13 @@ export default async function AdminTsoUsersPage() {
     const totalAccounts = formattedTsoUsers.length;
     const availableAccounts = formattedTsoUsers.filter(t => t.status === "AVAILABLE").length;
     const assignedAccounts = formattedTsoUsers.filter(t => t.status === "ASSIGNED").length;
+
+    // 3bis. Filtre par statut (piloté par l'URL : ?status=AVAILABLE)
+    const resolvedSearchParams = await searchParams;
+    const activeStatus = resolvedSearchParams.status?.toUpperCase() || "ALL";
+    const filteredTsoUsers = activeStatus === "ALL"
+        ? formattedTsoUsers
+        : formattedTsoUsers.filter(t => t.status === activeStatus);
 
     // Helper pour générer les badges
     const getStatusBadge = (status: string) => {
@@ -154,6 +174,24 @@ export default async function AdminTsoUsersPage() {
                     </div>
                 </div>
 
+                {/* STATUS FILTER */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                    {STATUS_FILTERS.map((filter) => (
+                        <Link
+                            key={filter.value}
+                            href={filter.value === "ALL" ? "/dashboard/admin/users-tso" : `/dashboard/admin/users-tso?status=${filter.value}`}
+                            className={cn(
+                                "inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-colors border",
+                                activeStatus === filter.value
+                                    ? "bg-slate-900 text-white border-slate-900"
+                                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                            )}
+                        >
+                            {filter.label}
+                        </Link>
+                    ))}
+                </div>
+
                 {/* TSO USERS LIST */}
                 <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                     <div className="p-6 border-b border-slate-100">
@@ -173,14 +211,16 @@ export default async function AdminTsoUsersPage() {
                             </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                            {formattedTsoUsers.length === 0 ? (
+                            {filteredTsoUsers.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="p-8 text-center text-slate-500">
-                                        No TSO accounts found. Click &quot;New Account&quot; to create one.
+                                        {formattedTsoUsers.length === 0
+                                            ? <>No TSO accounts found. Click &quot;New Account&quot; to create one.</>
+                                            : "No TSO accounts found for this status."}
                                     </td>
                                 </tr>
                             ) : (
-                                formattedTsoUsers.map((tso) => (
+                                filteredTsoUsers.map((tso) => (
                                     <tr key={tso.id} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">

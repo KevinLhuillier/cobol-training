@@ -10,9 +10,13 @@ import { createClient } from "@/utils/supabase/client";
 interface ChallengeSubmissionFormProps {
     challengeId: string;
     initialSolution: string | null;
+    // false pour un challenge précédent : la soumission (et la modification) n'est autorisée que
+    // pour le challenge de la semaine en cours (même règle appliquée côté RLS, cf.
+    // 20260922100000_restrict_challenge_submission_to_current.sql).
+    isCurrent?: boolean;
 }
 
-export function ChallengeSubmissionForm({ challengeId, initialSolution }: ChallengeSubmissionFormProps) {
+export function ChallengeSubmissionForm({ challengeId, initialSolution, isCurrent = true }: ChallengeSubmissionFormProps) {
     const router = useRouter();
     const supabase = createClient();
     const [solution, setSolution] = useState(initialSolution || "");
@@ -76,6 +80,12 @@ export function ChallengeSubmissionForm({ challengeId, initialSolution }: Challe
                 )}
             </div>
 
+            {!isCurrent && (
+                <p className="text-xs text-slate-500 font-medium bg-slate-100 rounded-xl px-3 py-2">
+                    This challenge is over — only the current week&apos;s challenge accepts submissions.
+                </p>
+            )}
+
             {error && (
                 <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 font-medium">
                     {error}
@@ -84,33 +94,35 @@ export function ChallengeSubmissionForm({ challengeId, initialSolution }: Challe
 
             <textarea
                 required
-                disabled={isLoading}
+                disabled={isLoading || !isCurrent}
                 value={solution}
                 onChange={(e) => {
                     setSolution(e.target.value);
                     setJustSaved(false);
                 }}
-                placeholder="Type or paste your code here..."
+                placeholder={isCurrent ? "Type or paste your code here..." : "No solution submitted."}
                 className="w-full min-h-[220px] p-4 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all font-mono text-sm text-slate-900 resize-y disabled:bg-slate-100 disabled:text-slate-500"
             />
 
-            <div className="flex items-center justify-end gap-4">
-                {justSaved && (
-                    <p className="text-xs text-emerald-600 font-medium">Solution saved.</p>
-                )}
-                <Button
-                    type="submit"
-                    disabled={isLoading || !solution.trim() || isUnchanged}
-                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 h-11"
-                >
-                    {isLoading ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                        <Send className="h-4 w-4 mr-2" />
+            {isCurrent && (
+                <div className="flex items-center justify-end gap-4">
+                    {justSaved && (
+                        <p className="text-xs text-emerald-600 font-medium">Solution saved.</p>
                     )}
-                    {hasSubmitted ? "Update Solution" : "Submit Solution"}
-                </Button>
-            </div>
+                    <Button
+                        type="submit"
+                        disabled={isLoading || !solution.trim() || isUnchanged}
+                        className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 h-11"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                            <Send className="h-4 w-4 mr-2" />
+                        )}
+                        {hasSubmitted ? "Update Solution" : "Submit Solution"}
+                    </Button>
+                </div>
+            )}
         </form>
     );
 }
