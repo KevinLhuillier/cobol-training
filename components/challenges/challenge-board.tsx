@@ -132,6 +132,7 @@ export function ChallengeBoard({ challenges, submissions, initialOpenId = null }
                                     key={selected.id}
                                     challengeId={selected.id}
                                     initialSolution={submissions[selected.id] ?? null}
+                                    isCurrent={selected.id === featured.id}
                                 />
                             </div>
                         </div>
