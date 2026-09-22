@@ -22,7 +22,7 @@ export default async function ChallengesPage({
     // étudiants (brouillons et challenges programmés se gèrent depuis l'espace admin).
     const { data: rawChallenges, error } = await supabase
         .from("challenges")
-        .select("id, title, description, language, startsAt:starts_at")
+        .select("id, title, contentBlocks:content_blocks, language, startsAt:starts_at")
         .eq("is_published", true)
         .lte("starts_at", todayIsoDate())
         .order("starts_at", { ascending: false })

@@ -5,7 +5,7 @@ import { Flame, CheckCircle2, ChevronRight, Calendar, Target } from "lucide-reac
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Preview } from "@/components/preview";
+import { LessonBlocksView } from "@/components/courses/lesson-blocks/lesson-blocks-view";
 import { ChallengeSubmissionForm } from "@/components/challenges/challenge-submission-form";
 import { formatChallengeDate, type Challenge } from "@/components/challenges/types";
 
@@ -118,9 +118,15 @@ export function ChallengeBoard({ challenges, submissions, initialOpenId = null }
                                 </DialogDescription>
                             </div>
 
-                            <div className="border border-slate-100 rounded-2xl p-2">
-                                {selected.description ? (
-                                    <Preview value={selected.description} />
+                            <div className="border border-slate-100 rounded-2xl p-4">
+                                {selected.contentBlocks && selected.contentBlocks.length > 0 ? (
+                                    <LessonBlocksView
+                                        blocks={selected.contentBlocks}
+                                        // La solution n'est révélée qu'une fois le challenge passé en "previous"
+                                        // (il n'est plus celui mis en avant) — même règle que la soumission ci-dessous.
+                                        isSolutionUnlocked={selected.id !== featured.id}
+                                        solutionLockedMessage="The solution will be revealed once this challenge is no longer the current one."
+                                    />
                                 ) : (
                                     <p className="italic text-slate-500 p-4">No instructions provided.</p>
                                 )}

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Save, Loader2 } from "lucide-react";
-import { Editor } from "@/components/editor";
 import { CHALLENGE_LANGUAGES, todayIsoDate, type Challenge } from "@/components/challenges/types";
 // 🟢 Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
@@ -20,7 +19,6 @@ export function ChallengeForm({ challenge }: ChallengeFormProps) {
     const [title, setTitle] = useState(challenge?.title ?? "");
     const [language, setLanguage] = useState(challenge?.language ?? CHALLENGE_LANGUAGES[0]);
     const [startsAt, setStartsAt] = useState(challenge?.startsAt ?? todayIsoDate());
-    const [description, setDescription] = useState(challenge?.description ?? "");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const [saved, setSaved] = useState(false);
@@ -41,7 +39,6 @@ export function ChallengeForm({ challenge }: ChallengeFormProps) {
                 title: title.trim(),
                 language,
                 starts_at: startsAt,
-                description: description.trim() && description !== "<p><br></p>" ? description : null,
             };
 
             if (challenge) {
@@ -135,12 +132,6 @@ export function ChallengeForm({ challenge }: ChallengeFormProps) {
             <p className="text-xs text-slate-500 font-medium -mt-3">
                 Once published, students see the challenge from its start date. The most recent one becomes the challenge of the week.
             </p>
-
-            {/* DESCRIPTION */}
-            <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-900">Instructions</label>
-                <Editor value={description} onChange={setDescription} />
-            </div>
 
             <div className="pt-4 flex items-center justify-end gap-4 border-t border-slate-100">
                 {saved && <p className="text-sm text-emerald-600 font-medium">Changes saved.</p>}
