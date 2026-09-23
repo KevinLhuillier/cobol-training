@@ -8,6 +8,11 @@ import Script from "next/script";
 // pas appeler siteverify en plus côté serveur, un token n'est utilisable qu'une seule fois.
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAAE-CThSQP2AIqckJ";
 
+// Captcha temporairement désactivé (le bouton restait grisé faute de token). Tant que c'est false,
+// le widget n'est pas chargé et les formulaires n'attendent plus de token : le captcha doit aussi
+// être désactivé côté Supabase (Authentication > Attack Protection), sinon Auth refuse les requêtes.
+export const CAPTCHA_ENABLED = false;
+
 interface TurnstileApi {
     render: (container: HTMLElement, options: Record<string, unknown>) => string;
     reset: (widgetId: string) => void;
@@ -67,6 +72,8 @@ export function Turnstile({ action, onToken, resetSignal = 0 }: TurnstileProps) 
             window.turnstile.reset(widgetIdRef.current);
         }
     }, [resetSignal]);
+
+    if (!CAPTCHA_ENABLED) return null;
 
     return (
         <>
