@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { LogoCtIcon } from "@/components/logo-ct-icon";
-import { Turnstile } from "@/components/turnstile";
+import { CAPTCHA_ENABLED, Turnstile } from "@/components/turnstile";
 
 // Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
@@ -152,7 +152,7 @@ function LoginForm() {
 
                 <Button
                     type="submit"
-                    disabled={isLoading || !captchaToken}
+                    disabled={isLoading || (CAPTCHA_ENABLED && !captchaToken)}
                     className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md text-base font-semibold mt-4 disabled:opacity-80"
                 >
                     {isLoading ? (

@@ -5,7 +5,7 @@ import { Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Turnstile } from "@/components/turnstile";
+import { CAPTCHA_ENABLED, Turnstile } from "@/components/turnstile";
 import { changePassword } from "@/app/actions/auth";
 
 export function PasswordForm() {
@@ -103,7 +103,7 @@ export function PasswordForm() {
 
             <Button
                 type="submit"
-                disabled={isLoading || !captchaToken}
+                disabled={isLoading || (CAPTCHA_ENABLED && !captchaToken)}
                 className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-11 px-5 disabled:opacity-50"
             >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
