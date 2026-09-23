@@ -52,6 +52,13 @@ export default function RegisterPage() {
             return;
         }
 
+        // Même règle que le trigger anti-bot en base (block_bot_signup) : premier mot ≤ 15 caractères.
+        if ((name.trim().split(/\s+/)[0] ?? "").length > 15) {
+            setError("Please enter a valid name.");
+            setIsLoading(false);
+            return;
+        }
+
 // 2. Anti-abus : refuse l'inscription si cette IP a déjà servi à se connecter à un
         // autre compte (évite qu'une même personne cumule plusieurs essais gratuits).
         try {
