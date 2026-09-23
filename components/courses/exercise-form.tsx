@@ -108,7 +108,7 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                 <div className="mb-6 p-4 bg-blue-50/50 border border-blue-100 rounded-xl relative overflow-hidden">
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
                     <h4 className="text-sm font-bold text-blue-900 flex items-center mb-1">
-                        Formateur
+                        Instructor
                     </h4>
                     <p className="text-sm text-blue-800 whitespace-pre-wrap">
                         {reviewFeedback}
