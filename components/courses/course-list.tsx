@@ -15,6 +15,7 @@ interface CourseListProps {
         title: string;
         is_published: boolean;
         is_free: boolean;
+        kind: "COURSE" | "PROJECT";
         image_url: string | null;
         updated_at: string;
         position: number;
@@ -115,6 +116,11 @@ export function CourseList({ items }: CourseListProps) {
                         </td>
                         <td className="p-4">
                             <div className="flex items-center gap-2">
+                                {course.kind === "PROJECT" && (
+                                    <Badge className="border-none bg-rose-100 text-rose-700 hover:bg-rose-100">
+                                        Project
+                                    </Badge>
+                                )}
                                 {course.is_free && (
                                     <Badge className="border-none bg-blue-100 text-blue-700 hover:bg-blue-100">
                                         Free

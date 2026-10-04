@@ -5,10 +5,8 @@ import type { SolutionBlockData } from "./types";
 
 interface SolutionBlockViewProps {
     data: SolutionBlockData;
-    // Solution visible uniquement une fois déverrouillée — condition dépendant du contexte
-    // d'usage : exercice approuvé (lesson_progress.exercise_status === "APPROVED", cf.
-    // app/dashboard/courses/[courseId]/page.tsx) ou challenge devenu "previous" (cf.
-    // components/challenges/challenge-board.tsx).
+    // Solution visible uniquement une fois déverrouillée : exercice approuvé
+    // (lesson_progress.exercise_status === "APPROVED", cf. app/dashboard/courses/[courseId]/page.tsx).
     isUnlocked: boolean;
     // Message affiché tant que la solution est verrouillée, adapté au contexte par l'appelant.
     lockedMessage?: string;

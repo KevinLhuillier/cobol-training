@@ -1,8 +1,5 @@
 import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { Terminal, Lock, Play, BookOpen, CheckCircle } from "lucide-react";
+import { Terminal, Lock, BookOpen } from "lucide-react";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
@@ -12,6 +9,7 @@ import { TsoUnlockButton } from "@/components/tso-unlock-button";
 import { SubscribeButton } from "@/components/subscribe-button";
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
 import { NewBadgeDialog } from "@/components/badges/new-badge-dialog";
+import { CourseGrid } from "@/components/courses/course-grid";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -109,6 +107,8 @@ export default async function DashboardPage() {
             )
         `)
         .eq("is_published", true)
+        // Les projets (kind = PROJECT) sont listés dans le menu Projects (cf. app/dashboard/projects)
+        .eq("kind", "COURSE")
         // Seuls les chapitres et leçons publiés comptent dans la progression (le cours est conservé même sans contenu)
         .eq("chapters.is_published", true)
         .eq("chapters.lessons.is_published", true)
@@ -226,107 +226,12 @@ export default async function DashboardPage() {
                     <p className="text-sm text-slate-500 mt-1">Learning modules will appear here soon.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {courses.map((course, index) => {
-                        const allLessons = course.chapters.flatMap(chap => chap.lessons);
-                        const totalLessons = allLessons.length;
-                        const completedLessons = allLessons.filter(l => l.lessonProgress?.[0]?.isCompleted);
-                        const progress = totalLessons === 0 ? 0 : Math.round((completedLessons.length / totalLessons) * 100);
-                        const nextUncompletedLesson = allLessons.find(l => !l.lessonProgress?.[0]?.isCompleted);
-
-                        let href = `/dashboard/courses/${course.id}`;
-                        if (nextUncompletedLesson) {
-                            href = `/dashboard/courses/${course.id}?lessonId=${nextUncompletedLesson.id}`;
-                        } else if (allLessons.length > 0) {
-                            href = `/dashboard/courses/${course.id}?lessonId=${allLessons[0].id}`;
-                        }
-
-                        const isLocked = !hasCourseAccess({ isFree: course.isFree }, subscriptionInfo);
-                        const gradients = [
-                            "from-blue-500 to-cyan-400",
-                            "from-slate-700 to-slate-900",
-                            "from-purple-500 to-indigo-500",
-                            "from-orange-500 to-red-500"
-                        ];
-                        const randomGradient = gradients[index % gradients.length];
-
-                        return (
-                            <div
-                                key={course.id}
-                                className={`flex flex-col bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 transition-all ${
-                                    isLocked ? "opacity-75 grayscale-[20%]" : "hover:shadow-md hover:-translate-y-1"
-                                }`}
-                            >
-                                {course.imageUrl ? (
-                                    <div className="h-40 w-full relative">
-                                        <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" />
-                                        <div className="absolute top-4 right-4">
-                                            <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                                <span>{isLocked ? "Members only" : progress === 100 ? "Completed" : "Available"}</span>
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className={`h-40 w-full bg-gradient-to-br ${randomGradient} relative p-4 flex items-end justify-between`}>
-                                        <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl">
-                                            <Terminal className="h-8 w-8 text-white drop-shadow-md" />
-                                        </div>
-                                        <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                            <span>{isLocked ? "Members only" : progress === 100 ? "Completed" : "Available"}</span>
-                                        </Badge>
-                                    </div>
-                                )}
-
-                                <div className="p-5 flex flex-col flex-1">
-                                    <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-1">
-                                        {course.title}
-                                    </h3>
-
-                                    <p className="text-xs text-slate-500 mb-6 line-clamp-2">
-                                        {course.description || "No description for this module."}
-                                    </p>
-
-                                    <div className="mb-6 mt-auto">
-                                        <div className="flex justify-between text-xs font-semibold text-slate-600 mb-2">
-                                            <span>Progress</span>
-                                            <span className={progress === 100 ? "text-emerald-600" : ""}>{progress}%</span>
-                                        </div>
-                                        <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
-                                            <div
-                                                className={`h-full rounded-full transition-all duration-500 ${progress === 100 ? 'bg-emerald-500' : 'bg-slate-800'}`}
-                                                style={{ width: `${progress}%` }}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {isLocked ? (
-                                        <SubscribeButton className="w-full justify-center">
-                                            Upgrade to unlock
-                                        </SubscribeButton>
-                                    ) : (
-                                        <Link href={href} className="w-full" id={index === 0 ? "onboarding-course-anchor" : undefined}>
-                                            <Button
-                                                className={`w-full rounded-xl shadow-sm text-white ${
-                                                    progress === 100
-                                                        ? "bg-emerald-600 hover:bg-emerald-700"
-                                                        : "bg-slate-900 hover:bg-slate-800"
-                                                }`}
-                                            >
-                                                {progress === 100 ? (
-                                                    <><CheckCircle className="mr-2 h-4 w-4" /> Completed (Review)</>
-                                                ) : progress > 0 ? (
-                                                    <><Play className="mr-2 h-4 w-4 fill-current" /> Continue</>
-                                                ) : (
-                                                    <><Play className="mr-2 h-4 w-4 fill-current" /> Start</>
-                                                )}
-                                            </Button>
-                                        </Link>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                <CourseGrid
+                    courses={courses}
+                    subscriptionInfo={subscriptionInfo}
+                    kind="COURSE"
+                    firstCardAnchorId="onboarding-course-anchor"
+                />
             )}
         </>
     );

@@ -8,12 +8,15 @@ import { ArrowLeft, Save, Loader2, Image as ImageIcon, Upload, X } from "lucide-
 import { createClient } from "@/utils/supabase/client";
 import { deleteCourseImage, uploadCourseImage } from "@/utils/course-image-storage";
 import { IMAGE_ACCEPT, validateImageFile } from "@/utils/public-image-storage";
+import { COURSE_KIND_OPTIONS, type CourseKind } from "@/components/courses/course-kind";
 
 export default function NewCoursePage() {
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    // Course -> menu "Courses", Project -> menu "Projects" (même structure chapitres/leçons)
+    const [kind, setKind] = useState<CourseKind>("COURSE");
     // L'image n'est envoyée sur S3 qu'à la soumission (pas de fichier orphelin si l'admin abandonne)
     const [imageFile, setImageFile] = useState<File | null>(null);
     const previewUrl = useMemo(() => (imageFile ? URL.createObjectURL(imageFile) : null), [imageFile]);
@@ -76,6 +79,7 @@ export default function NewCoursePage() {
                     description: description || null, // Gestion des champs vides
                     image_url: imageUrl,              // Conversion en snake_case pour Postgres
                     is_published: false,              // Brouillon par défaut
+                    kind,
                     position: newPosition
                 });
 
@@ -118,10 +122,10 @@ export default function NewCoursePage() {
                     </Link>
                     <div>
                         <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                            Create a new course
+                            Create a new course or project
                         </h1>
                         <p className="text-sm text-slate-500">
-                            Start by giving your course a title and a basic description.
+                            Start by choosing its type, then give it a title and a basic description.
                         </p>
                     </div>
                 </div>
@@ -135,10 +139,36 @@ export default function NewCoursePage() {
                     )}
 
                     <form onSubmit={onSubmit} className="space-y-6">
+                        {/* TYPE */}
+                        <div className="space-y-2">
+                            <span className="text-sm font-bold text-slate-900">Type</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {COURSE_KIND_OPTIONS.map((option) => (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => setKind(option.value)}
+                                        disabled={isLoading}
+                                        aria-pressed={kind === option.value}
+                                        className={`text-left p-4 rounded-xl border transition-all ${
+                                            kind === option.value
+                                                ? "border-slate-900 bg-slate-900 text-white shadow-sm"
+                                                : "border-slate-200 bg-slate-50 text-slate-900 hover:bg-slate-100"
+                                        }`}
+                                    >
+                                        <p className="font-bold text-sm">{option.label}</p>
+                                        <p className={`text-xs mt-0.5 ${kind === option.value ? "text-slate-300" : "text-slate-500"}`}>
+                                            {option.description}
+                                        </p>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         {/* TITLE */}
                         <div className="space-y-2">
                             <label htmlFor="title" className="text-sm font-bold text-slate-900">
-                                Course Title <span className="text-red-500">*</span>
+                                Title <span className="text-red-500">*</span>
                             </label>
                             <input
                                 id="title"
@@ -234,7 +264,7 @@ export default function NewCoursePage() {
                                 ) : (
                                     <>
                                         <Save className="h-4 w-4 mr-2" />
-                                        Create Course
+                                        {kind === "PROJECT" ? "Create Project" : "Create Course"}
                                     </>
                                 )}
                             </button>

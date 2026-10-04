@@ -6,6 +6,7 @@ import { FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { deleteLessonImage } from "@/utils/lesson-image-storage";
+import { deleteLessonAttachment } from "@/utils/lesson-attachment-storage";
 import { BlockPalette } from "@/components/courses/lesson-blocks/block-palette";
 import { TextBlockEditor } from "@/components/courses/lesson-blocks/text-block-editor";
 import { ImageBlockEditor } from "@/components/courses/lesson-blocks/image-block-editor";
@@ -13,11 +14,13 @@ import { CodeBlockEditor } from "@/components/courses/lesson-blocks/code-block-e
 import { VideoBlockEditor } from "@/components/courses/lesson-blocks/video-block-editor";
 import { CalloutBlockEditor } from "@/components/courses/lesson-blocks/callout-block-editor";
 import { DividerBlockEditor } from "@/components/courses/lesson-blocks/divider-block-editor";
+import { AttachmentsBlockEditor } from "@/components/courses/lesson-blocks/attachments-block-editor";
 import { SolutionBlockEditor } from "@/components/courses/lesson-blocks/solution-block-editor";
 import { DIVIDER_DEFAULT_DATA } from "@/components/courses/lesson-blocks/divider-style";
 import { createBlockId } from "@/components/courses/lesson-blocks/create-block-id";
-import { collectImageUrls } from "@/components/courses/lesson-blocks/collect-image-urls";
+import { collectAttachmentUrls, collectImageUrls } from "@/components/courses/lesson-blocks/collect-image-urls";
 import type {
+    AttachmentsBlockData,
     CalloutBlockData,
     CodeBlockData,
     DividerBlockData,
@@ -50,6 +53,8 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }
     // la prochaine sauvegarde, quelles images ne sont plus référencées (bloc supprimé, ou image
     // remplacée) et doivent être nettoyées du bucket.
     const lastSavedImageUrlsRef = useRef(collectImageUrls(initialBlocks));
+    // Idem pour les fichiers des blocs "attachments"
+    const lastSavedAttachmentUrlsRef = useRef(collectAttachmentUrls(initialBlocks));
 
     const addBlock = (type: LessonBlockType) => {
         if (type === "text") {
@@ -72,6 +77,9 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }
             setIsDirty(true);
         } else if (type === "divider") {
             setBlocks((prev) => [...prev, { id: createBlockId(), type: "divider", data: { ...DIVIDER_DEFAULT_DATA } }]);
+            setIsDirty(true);
+        } else if (type === "attachments") {
+            setBlocks((prev) => [...prev, { id: createBlockId(), type: "attachments", data: { title: "", files: [] } }]);
             setIsDirty(true);
         } else if (type === "solution") {
             setBlocks((prev) => [...prev, { id: createBlockId(), type: "solution", data: { title: "", blocks: [] } }]);
@@ -117,6 +125,13 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }
     const updateDividerBlock = (id: string, patch: Partial<DividerBlockData>) => {
         setBlocks((prev) =>
             prev.map((block) => (block.id === id && block.type === "divider" ? { ...block, data: { ...block.data, ...patch } } : block))
+        );
+        setIsDirty(true);
+    };
+
+    const updateAttachmentsBlock = (id: string, patch: Partial<AttachmentsBlockData>) => {
+        setBlocks((prev) =>
+            prev.map((block) => (block.id === id && block.type === "attachments" ? { ...block, data: { ...block.data, ...patch } } : block))
         );
         setIsDirty(true);
     };
@@ -168,6 +183,15 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }
                 )
             );
             lastSavedImageUrlsRef.current = currentImageUrls;
+
+            const currentAttachmentUrls = collectAttachmentUrls(blocks);
+            const orphanedAttachmentUrls = [...lastSavedAttachmentUrlsRef.current].filter((url) => !currentAttachmentUrls.has(url));
+            await Promise.all(
+                orphanedAttachmentUrls.map((url) =>
+                    deleteLessonAttachment(url).catch((err) => console.error("Failed to delete orphaned lesson attachment:", url, err))
+                )
+            );
+            lastSavedAttachmentUrlsRef.current = currentAttachmentUrls;
 
             setIsDirty(false);
             router.refresh();
@@ -249,6 +273,17 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }
                                     key={block.id}
                                     block={block}
                                     onChange={(patch) => updateDividerBlock(block.id, patch)}
+                                    {...sharedProps}
+                                />
+                            );
+                        }
+
+                        if (block.type === "attachments") {
+                            return (
+                                <AttachmentsBlockEditor
+                                    key={block.id}
+                                    block={block}
+                                    onChange={(patch) => updateAttachmentsBlock(block.id, patch)}
                                     {...sharedProps}
                                 />
                             );

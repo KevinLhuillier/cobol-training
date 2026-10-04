@@ -1,6 +1,6 @@
 "use client";
 
-import { Type, Image as ImageIcon, Code2, Video, Info, Minus, Lightbulb } from "lucide-react";
+import { Type, Image as ImageIcon, Code2, Video, Info, Minus, Paperclip, Lightbulb } from "lucide-react";
 import type { LessonBlockType } from "./types";
 
 interface PaletteItem {
@@ -19,6 +19,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     { type: "video", icon: Video, label: "Video", enabled: true },
     { type: "callout", icon: Info, label: "Info block", enabled: true },
     { type: "divider", icon: Minus, label: "Divider", enabled: true },
+    { type: "attachments", icon: Paperclip, label: "Attachments", enabled: true },
 ];
 
 // Uniquement proposé sur le canvas principal d'une leçon "Exercise" (cf. LessonBuilder) — jamais

@@ -1,4 +1,4 @@
-type SubscriptionInfo = {
+export type SubscriptionInfo = {
     subscription_status: string | null;
     trial_ends_at: string | null;
     /** Fin de la fenêtre mainframe + feedback incluse dans l'offre à vie (statut LIFETIME). */

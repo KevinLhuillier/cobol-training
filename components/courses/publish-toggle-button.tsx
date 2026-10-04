@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 interface PublishToggleButtonProps {
-    table: "chapters" | "lessons" | "challenges";
+    table: "chapters" | "lessons";
     id: string;
     isPublished: boolean;
 }
