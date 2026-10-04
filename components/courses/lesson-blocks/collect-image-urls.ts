@@ -1,6 +1,6 @@
 import type { LessonBlock } from "./types";
 
-// Partagé entre lesson-builder.tsx et challenge-builder.tsx pour repérer, à la sauvegarde, les
+// Utilisé par lesson-builder.tsx (leçons et projets) pour repérer, à la sauvegarde, les
 // images qui ne sont plus référencées (bloc supprimé, ou image remplacée) et doivent être
 // nettoyées du bucket. Récursif : un bloc "solution" imbrique sa propre liste de blocs (cf.
 // types.ts), qui peut elle-même contenir des blocs "image" à suivre.

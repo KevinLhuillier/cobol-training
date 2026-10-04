@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Lock, Dumbbell, Settings, LayoutGrid, MessageCircle, Target } from "lucide-react";
+import { Lock, Dumbbell, Settings, LayoutGrid, MessageCircle, FolderKanban } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { SubscriptionStatus } from "@/components/subscription-status";
 import { createClient } from "@/utils/supabase/client";
@@ -56,6 +56,9 @@ export default function Sidebar({ userId = null, isAdmin = false, subscriptionSt
 
     const menuItems: { icon: typeof LayoutGrid; label: string; href: string; badge: number; id?: string }[] = [
         { icon: LayoutGrid, label: "Courses", href: "/dashboard", badge: 0 },
+        // Même page pour tous : un admin y voit ce que voient les étudiants (la gestion des
+        // projets se fait depuis /dashboard/admin/projects).
+        { icon: FolderKanban, label: "Projects", href: "/dashboard/projects", badge: 0 },
         {
             icon: MessageCircle,
             label: "Messages",
@@ -66,9 +69,6 @@ export default function Sidebar({ userId = null, isAdmin = false, subscriptionSt
             // (layout vs. page).
             id: "onboarding-messages-anchor",
         },
-        // Même page pour tous : un admin y voit ce que voient les étudiants (la gestion des
-        // challenges se fait depuis /dashboard/admin/challenges).
-        { icon: Target, label: "Challenges", href: "/dashboard/challenges", badge: 0 },
         ...(isAdmin ? [{ icon: Dumbbell, label: "Exercises", href: "/dashboard/review", badge: 0 }] : []),
         ...(isAdmin ? [{ icon: Lock, label: "Admin", href: "/dashboard/admin", badge: 0 }] : []),
         { icon: Settings, label: "Settings", href: "/dashboard/settings", badge: 0 },

@@ -36,6 +36,7 @@ export default async function CourseDetailsPage({ params }: { params: Promise<an
             description,
             isPublished:is_published,
             isFree:is_free,
+            kind,
             imageUrl:image_url,
             badges (
                 id,
@@ -93,6 +94,11 @@ export default async function CourseDetailsPage({ params }: { params: Promise<an
                     </div>
 
                     <div className="flex items-center gap-3">
+                        {course.kind === "PROJECT" && (
+                            <Badge className="px-3 py-1.5 border-none font-bold shadow-sm bg-rose-100 text-rose-700">
+                                Project
+                            </Badge>
+                        )}
                         {course.isFree && (
                             <Badge className="px-3 py-1.5 border-none font-bold shadow-sm bg-blue-100 text-blue-700">
                                 Free
@@ -125,7 +131,7 @@ export default async function CourseDetailsPage({ params }: { params: Promise<an
 
                         <CourseDetailsForm
                             courseId={course.id}
-                            initialData={{ title: course.title, description: course.description }}
+                            initialData={{ title: course.title, description: course.description, kind: course.kind }}
                         />
 
                         <CourseImageForm

@@ -36,6 +36,7 @@ export default async function AdminCoursesPage() {
             title,
             is_published,
             is_free,
+            kind,
             image_url,
             updated_at,
             position,
@@ -85,7 +86,7 @@ export default async function AdminCoursesPage() {
                         <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
                             Courses
                         </h1>
-                        <p className="text-sm text-slate-500">Code Legacy Course Management</p>
+                        <p className="text-sm text-slate-500">Courses and projects management</p>
                     </div>
                 </div>
 

@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { Pencil, Loader2, X } from "lucide-react";
 // 🟢 Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
+import { COURSE_KIND_OPTIONS, type CourseKind } from "@/components/courses/course-kind";
 
 interface CourseDetailsFormProps {
     initialData: {
         title: string;
         description: string | null;
+        kind: CourseKind;
     };
     courseId: string;
 }
@@ -20,19 +22,21 @@ export function CourseDetailsForm({ initialData, courseId }: CourseDetailsFormPr
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(initialData.title);
     const [description, setDescription] = useState(initialData.description || "");
+    const [kind, setKind] = useState<CourseKind>(initialData.kind);
     const [isLoading, setIsLoading] = useState(false);
 
     const toggleEdit = () => {
         setIsEditing((prev) => !prev);
         setTitle(initialData.title); // Réinitialise si on annule
         setDescription(initialData.description || "");
+        setKind(initialData.kind);
     };
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!title.trim()) return;
 
-        if (title === initialData.title && description === (initialData.description || "")) {
+        if (title === initialData.title && description === (initialData.description || "") && kind === initialData.kind) {
             return toggleEdit();
         }
 
@@ -44,7 +48,8 @@ export function CourseDetailsForm({ initialData, courseId }: CourseDetailsFormPr
                 .from("courses")
                 .update({
                     title: title.trim(),
-                    description: description.trim() || null
+                    description: description.trim() || null,
+                    kind
                 })
                 .eq("id", courseId);
 
@@ -81,6 +86,25 @@ export function CourseDetailsForm({ initialData, courseId }: CourseDetailsFormPr
 
             {isEditing ? (
                 <form onSubmit={onSubmit} className="space-y-4">
+                    <div className="space-y-1">
+                        <label htmlFor="course-kind" className="text-sm font-bold text-slate-500">
+                            Type
+                        </label>
+                        <select
+                            id="course-kind"
+                            value={kind}
+                            onChange={(e) => setKind(e.target.value as CourseKind)}
+                            disabled={isLoading}
+                            className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm font-medium"
+                        >
+                            {COURSE_KIND_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label} — {option.description}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="space-y-1">
                         <label htmlFor="course-title" className="text-sm font-bold text-slate-500">
                             Course Title
@@ -130,6 +154,12 @@ export function CourseDetailsForm({ initialData, courseId }: CourseDetailsFormPr
                 </form>
             ) : (
                 <div className="space-y-4">
+                    <div>
+                        <p className="text-sm font-bold text-slate-500 mb-1">Type</p>
+                        <p className="text-slate-900 font-medium">
+                            {COURSE_KIND_OPTIONS.find((option) => option.value === initialData.kind)?.label}
+                        </p>
+                    </div>
                     <div>
                         <p className="text-sm font-bold text-slate-500 mb-1">Course Title</p>
                         <p className="text-slate-900 font-medium">{initialData.title}</p>

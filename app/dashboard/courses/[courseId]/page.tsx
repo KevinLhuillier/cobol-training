@@ -24,6 +24,7 @@ import type { QuizQuestion } from "@/components/courses/quiz/types";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
 import { hasCourseAccess, hasFeedbackAccess } from "@/utils/subscription";
+import { courseKindListHref } from "@/components/courses/course-kind";
 
 export default async function CoursePlayer({
                                                params,
@@ -53,6 +54,7 @@ export default async function CoursePlayer({
             title,
             is_published,
             isFree:is_free,
+            kind,
             chapters (
                 id,
                 title,
@@ -101,6 +103,9 @@ export default async function CoursePlayer({
         return notFound();
     }
 
+    // Liste d'origine (menu Courses ou Projects) pour les liens retour et redirections
+    const listHref = courseKindListHref(rawCourse.kind);
+
     // 2b. GARDE-FOU ABONNEMENT : les cours non-gratuits nécessitent un abonnement actif
     // (le griséage sur /dashboard est cosmétique seul — cette vérification empêche l'accès direct par URL)
     const { data: profile } = await supabase
@@ -116,7 +121,7 @@ export default async function CoursePlayer({
     };
 
     if (!hasCourseAccess({ isFree: rawCourse.isFree }, subscriptionInfo)) {
-        return redirect("/dashboard");
+        return redirect(listHref);
     }
 
     // Correction/feedback des exercices : retirée aux membres de l'offre à vie une fois leur
@@ -195,7 +200,7 @@ export default async function CoursePlayer({
                 <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-sm">
                     <h2 className="text-lg font-bold text-slate-900 mb-2">Cours en cours de création</h2>
                     <p className="text-sm text-slate-500 mb-6">Ce cours ne contient pas encore de leçons publiées.</p>
-                    <Link href="/dashboard">
+                    <Link href={listHref}>
                         <Button className="bg-slate-900 text-white rounded-xl">Retour au tableau de bord</Button>
                     </Link>
                 </div>
@@ -218,7 +223,7 @@ export default async function CoursePlayer({
             {/* HEADER FLOTTANT ET ARRONDI */}
             <header className="bg-white rounded-2xl shadow-sm h-16 flex items-center px-6 shrink-0 justify-between max-w-[1600px] w-full mx-auto">
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard">
+                    <Link href={listHref}>
                         <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-900 rounded-full">
                             <ChevronLeft className="h-5 w-5" />
                         </Button>
