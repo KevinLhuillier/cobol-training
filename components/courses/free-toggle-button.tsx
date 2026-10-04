@@ -6,12 +6,13 @@ import { Loader2 } from "lucide-react";
 // 🟢 Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
 
-interface CourseFreeToggleButtonProps {
-    courseId: string;
+interface FreeToggleButtonProps {
+    table: "courses" | "chapters" | "lessons";
+    id: string;
     isFree: boolean;
 }
 
-export function CourseFreeToggleButton({ courseId, isFree }: CourseFreeToggleButtonProps) {
+export function FreeToggleButton({ table, id, isFree }: FreeToggleButtonProps) {
     const router = useRouter();
     const supabase = createClient();
     const [isLoading, setIsLoading] = useState(false);
@@ -21,9 +22,9 @@ export function CourseFreeToggleButton({ courseId, isFree }: CourseFreeToggleBut
             setIsLoading(true);
 
             const { error } = await supabase
-                .from("courses")
+                .from(table)
                 .update({ is_free: !isFree })
-                .eq("id", courseId);
+                .eq("id", id);
 
             if (error) {
                 throw error;

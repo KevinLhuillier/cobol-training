@@ -48,6 +48,28 @@ export function hasCourseAccess(course: { isFree: boolean }, user: SubscriptionI
 }
 
 /**
+ * Accès à une leçon : celui du cours, ou leçon gratuite dans un chapitre gratuit (permet aux
+ * non-abonnés de commencer un cours payant).
+ */
+export function hasLessonAccess(
+    course: { isFree: boolean },
+    chapter: { isFree: boolean },
+    lesson: { isFree: boolean },
+    user: SubscriptionInfo
+): boolean {
+    return hasCourseAccess(course, user) || (chapter.isFree && lesson.isFree);
+}
+
+/** Le cours peut être ouvert s'il est accessible en entier ou s'il contient au moins une leçon accessible. */
+export function hasAnyLessonAccess(
+    course: { isFree: boolean; chapters: { isFree: boolean; lessons: { isFree: boolean }[] }[] },
+    user: SubscriptionInfo
+): boolean {
+    return hasCourseAccess(course, user)
+        || course.chapters.some(chapter => chapter.lessons.some(lesson => hasLessonAccess(course, chapter, lesson, user)));
+}
+
+/**
  * Droit de soumettre un exercice pour correction. Perdu à la fin de l'essai (EXPIRED), en cas
  * d'échec de paiement (UNPAID) et à la fin de la période de feedback de l'offre à vie ; les autres
  * statuts gardent leur comportement historique (miroir de feedback_access_revoked()).

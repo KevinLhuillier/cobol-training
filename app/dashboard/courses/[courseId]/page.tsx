@@ -11,8 +11,10 @@ import {
 import {
     PlayCircle,
     CheckCircle2,
-    ChevronLeft
+    ChevronLeft,
+    Lock
 } from "lucide-react";
+import { SubscribeButton } from "@/components/subscribe-button";
 import { LessonBlocksView } from "@/components/courses/lesson-blocks/lesson-blocks-view";
 import type { LessonBlock } from "@/components/courses/lesson-blocks/types";
 import { CourseProgressButton } from "@/components/courses/course-progress-button";
@@ -23,7 +25,7 @@ import type { QuizQuestion } from "@/components/courses/quiz/types";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
-import { hasCourseAccess, hasFeedbackAccess } from "@/utils/subscription";
+import { hasAnyLessonAccess, hasFeedbackAccess, hasLessonAccess } from "@/utils/subscription";
 import { courseKindListHref } from "@/components/courses/course-kind";
 
 export default async function CoursePlayer({
@@ -59,10 +61,12 @@ export default async function CoursePlayer({
                 id,
                 title,
                 position,
+                isFree:is_free,
                 lessons (
                     id,
                     title,
                     position,
+                    isFree:is_free,
                     contentBlocks:content_blocks,
                     quizQuestions:quiz_questions,
                     quizPassRate:quiz_pass_rate,
@@ -106,8 +110,9 @@ export default async function CoursePlayer({
     // Liste d'origine (menu Courses ou Projects) pour les liens retour et redirections
     const listHref = courseKindListHref(rawCourse.kind);
 
-    // 2b. GARDE-FOU ABONNEMENT : les cours non-gratuits nécessitent un abonnement actif
-    // (le griséage sur /dashboard est cosmétique seul — cette vérification empêche l'accès direct par URL)
+    // 2b. GARDE-FOU ABONNEMENT : les cours non-gratuits nécessitent un abonnement actif, sauf pour
+    // leurs leçons gratuites (le griséage sur /dashboard est cosmétique seul — les vérifications
+    // ci-dessous empêchent l'accès direct par URL)
     const { data: profile } = await supabase
         .from("users")
         .select("subscription_status, trial_ends_at, mainframe_ends_at")
@@ -119,10 +124,6 @@ export default async function CoursePlayer({
         trial_ends_at: profile?.trial_ends_at ?? null,
         mainframe_ends_at: profile?.mainframe_ends_at ?? null,
     };
-
-    if (!hasCourseAccess({ isFree: rawCourse.isFree }, subscriptionInfo)) {
-        return redirect(listHref);
-    }
 
     // Correction/feedback des exercices : retirée aux membres de l'offre à vie une fois leur
     // fenêtre terminée (ils gardent l'accès aux modules). Garde réelle côté base : trigger
@@ -153,6 +154,7 @@ export default async function CoursePlayer({
         id: string;
         title: string;
         position: number;
+        isFree: boolean;
         contentBlocks: LessonBlock[] | null;
         quizQuestions: QuizQuestion[] | null;
         quizPassRate: number | null;
@@ -165,6 +167,7 @@ export default async function CoursePlayer({
         id: string;
         title: string;
         position: number;
+        isFree: boolean;
         lessons: RawLesson[] | null;
     };
 
@@ -186,11 +189,17 @@ export default async function CoursePlayer({
                 return {
                     ...lesson,
                     lessonProgress: userProgress,
-                    quizAttempts: userQuizAttempts
+                    quizAttempts: userQuizAttempts,
+                    isLocked: !hasLessonAccess(rawCourse, chapter, lesson, subscriptionInfo)
                 };
             })
         })).filter(chapter => chapter.lessons.length > 0) // un chapitre sans leçon publiée n'est pas affiché
     };
+
+    // Aucune leçon accessible (cours payant sans leçon gratuite) : retour à la liste
+    if (!hasAnyLessonAccess(formattedCourse, subscriptionInfo)) {
+        return redirect(listHref);
+    }
 
     const allLessons = formattedCourse.chapters.flatMap(chap => chap.lessons);
 
@@ -208,8 +217,11 @@ export default async function CoursePlayer({
         );
     }
 
-    // Détermination de la leçon courante (celle demandée dans l'URL, ou la première par défaut)
-    const currentLesson = allLessons.find(l => l.id === resolvedSearchParams.lessonId) || allLessons[0];
+    // Détermination de la leçon courante (celle demandée dans l'URL, ou la première accessible par défaut).
+    // Une leçon verrouillée reste affichable : son contenu est remplacé par l'invitation à s'abonner.
+    const currentLesson = allLessons.find(l => l.id === resolvedSearchParams.lessonId)
+        || allLessons.find(l => !l.isLocked)
+        || allLessons[0];
     const currentLessonIndex = allLessons.findIndex(l => l.id === currentLesson.id);
     const nextLesson = allLessons[currentLessonIndex + 1];
     const currentChapter = formattedCourse.chapters.find(chap => chap.lessons.some(l => l.id === currentLesson.id));
@@ -251,8 +263,22 @@ export default async function CoursePlayer({
                             <h2 className="text-2xl font-bold text-slate-900">{currentLesson.title}</h2>
                         </div>
 
-                        {/* CONTENU : une leçon QUIZ n'a pas de blocs de contenu, le quiz remplace toute la zone. */}
-                        {currentLesson.type === "QUIZ" ? (
+                        {/* CONTENU : une leçon verrouillée n'affiche que l'invitation à s'abonner (son contenu n'est
+                            jamais rendu) ; une leçon QUIZ n'a pas de blocs de contenu, le quiz remplace toute la zone. */}
+                        {currentLesson.isLocked ? (
+                            <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100 flex flex-col items-center text-center gap-4">
+                                <div className="h-12 w-12 rounded-full bg-white shadow-sm flex items-center justify-center">
+                                    <Lock className="h-5 w-5 text-slate-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900">Members only</h3>
+                                    <p className="text-sm text-slate-500 mt-1">
+                                        Subscribe to unlock this lesson and the rest of the course.
+                                    </p>
+                                </div>
+                                <SubscribeButton>Upgrade to unlock</SubscribeButton>
+                            </div>
+                        ) : currentLesson.type === "QUIZ" ? (
                             <QuizPlayer
                                 courseId={courseId}
                                 chapterId={currentChapter!.id}
@@ -358,7 +384,9 @@ export default async function CoursePlayer({
 
                                                         <div className="mt-0.5 shrink-0">
                                                             <LessonLinkIndicator>
-                                                                {isCurrent ? (
+                                                                {lesson.isLocked ? (
+                                                                    <Lock className={`h-5 w-5 ${isCurrent ? "text-blue-600" : "text-slate-300"}`} />
+                                                                ) : isCurrent ? (
                                                                     <PlayCircle className="h-5 w-5 text-blue-600" />
                                                                 ) : isCompleted ? (
                                                                     <CheckCircle2 className="h-5 w-5 text-emerald-600" />

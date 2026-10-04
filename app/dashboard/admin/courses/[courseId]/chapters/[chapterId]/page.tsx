@@ -13,6 +13,7 @@ import LessonForm from "@/components/courses/lesson-form";
 import { LessonList } from "@/components/courses/lesson-list";
 import { ChapterTitleForm } from "@/components/courses/chapter-title-form";
 import { PublishToggleButton } from "@/components/courses/publish-toggle-button";
+import { FreeToggleButton } from "@/components/courses/free-toggle-button";
 
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
@@ -51,12 +52,14 @@ export default async function ChapterDetailsPage({
             title,
             position,
             isPublished:is_published,
+            isFree:is_free,
             courseId:course_id,
             lessons (
                 id,
                 title,
                 position,
                 isPublished:is_published,
+                isFree:is_free,
                 type,
                 chapterId:chapter_id
             )
@@ -114,6 +117,11 @@ export default async function ChapterDetailsPage({
                     </div>
 
                     <div className="flex items-center gap-3">
+                        {chapter.isFree && (
+                            <Badge className="px-3 py-1.5 border-none font-bold shadow-sm bg-blue-100 text-blue-700">
+                                Free
+                            </Badge>
+                        )}
                         <Badge
                             className={`px-3 py-1.5 border-none font-bold shadow-sm ${
                                 chapter.isPublished
@@ -123,6 +131,11 @@ export default async function ChapterDetailsPage({
                         >
                             {chapter.isPublished ? "Published" : "Draft"}
                         </Badge>
+                        <FreeToggleButton
+                            table="chapters"
+                            id={chapter.id}
+                            isFree={chapter.isFree}
+                        />
                         <PublishToggleButton
                             table="chapters"
                             id={chapter.id}

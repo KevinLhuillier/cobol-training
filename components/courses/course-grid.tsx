@@ -3,7 +3,7 @@ import { Terminal, FolderKanban, Play, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SubscribeButton } from "@/components/subscribe-button";
-import { hasCourseAccess, type SubscriptionInfo } from "@/utils/subscription";
+import { hasAnyLessonAccess, hasCourseAccess, type SubscriptionInfo } from "@/utils/subscription";
 import type { CourseKind } from "@/components/courses/course-kind";
 
 export interface CourseGridItem {
@@ -13,8 +13,10 @@ export interface CourseGridItem {
     imageUrl: string | null;
     isFree: boolean;
     chapters: {
+        isFree: boolean;
         lessons: {
             id: string;
+            isFree: boolean;
             lessonProgress?: { isCompleted: boolean | null }[] | null;
         }[];
     }[];
@@ -58,7 +60,11 @@ export function CourseGrid({ courses, subscriptionInfo, kind, firstCardAnchorId 
                     href = `/dashboard/courses/${course.id}?lessonId=${allLessons[0].id}`;
                 }
 
-                const isLocked = !hasCourseAccess({ isFree: course.isFree }, subscriptionInfo);
+                // Cours payant sans abonnement : ouvrable s'il contient des leçons gratuites (aperçu),
+                // le lecteur verrouille les autres
+                const isLocked = !hasAnyLessonAccess(course, subscriptionInfo);
+                const isPreview = !isLocked && !hasCourseAccess({ isFree: course.isFree }, subscriptionInfo);
+                const statusLabel = isLocked ? "Members only" : progress === 100 ? "Completed" : isPreview ? "Free preview" : "Available";
                 const randomGradient = GRADIENTS[index % GRADIENTS.length];
 
                 return (
@@ -74,7 +80,7 @@ export function CourseGrid({ courses, subscriptionInfo, kind, firstCardAnchorId 
                                 <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" />
                                 <div className="absolute top-4 right-4">
                                     <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                        <span>{isLocked ? "Members only" : progress === 100 ? "Completed" : "Available"}</span>
+                                        <span>{statusLabel}</span>
                                     </Badge>
                                 </div>
                             </div>
@@ -84,7 +90,7 @@ export function CourseGrid({ courses, subscriptionInfo, kind, firstCardAnchorId 
                                     <FallbackIcon className="h-8 w-8 text-white drop-shadow-md" />
                                 </div>
                                 <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                    <span>{isLocked ? "Members only" : progress === 100 ? "Completed" : "Available"}</span>
+                                    <span>{statusLabel}</span>
                                 </Badge>
                             </div>
                         )}

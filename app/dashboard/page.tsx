@@ -4,7 +4,7 @@ import { Terminal, Lock, BookOpen } from "lucide-react";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
 import { ensureTrialStarted, triggerWelcomeEmailAction } from "@/app/actions/auth";
-import { hasActiveAccess, hasCourseAccess, isLifetimeStatus } from "@/utils/subscription";
+import { hasActiveAccess, hasAnyLessonAccess, isLifetimeStatus } from "@/utils/subscription";
 import { TsoUnlockButton } from "@/components/tso-unlock-button";
 import { SubscribeButton } from "@/components/subscribe-button";
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
@@ -96,9 +96,11 @@ export default async function DashboardPage() {
             chapters (
                 id,
                 position,
+                isFree:is_free,
                 lessons (
                     id,
                     position,
+                    isFree:is_free,
                     lessonProgress:lesson_progress (
                         isCompleted:is_completed,
                         userId:user_id
@@ -127,7 +129,7 @@ export default async function DashboardPage() {
 
     // Étape "course" du parcours d'onboarding : uniquement pertinente si un premier module est
     // affiché et accessible (sinon son bouton "Start" n'existe pas — cf. rendu ci-dessous).
-    const hasCourseStep = courses.length > 0 && hasCourseAccess({ isFree: courses[0].isFree }, subscriptionInfo);
+    const hasCourseStep = courses.length > 0 && hasAnyLessonAccess(courses[0], subscriptionInfo);
 
     return (
         <>

@@ -16,7 +16,7 @@ interface ChapterListProps {
         title: string;
         position: number;
         isPublished: boolean;
-        isFreePreview?: boolean;
+        isFree: boolean;
     }[];
 }
 
@@ -98,6 +98,9 @@ export function ChapterList({ courseId, items }: ChapterListProps) {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        {chapter.isFree && (
+                            <Badge className="border-none bg-blue-100 text-blue-700 hover:bg-blue-100">Free</Badge>
+                        )}
                         <Badge
                             className={`border-none ${
                                 chapter.isPublished

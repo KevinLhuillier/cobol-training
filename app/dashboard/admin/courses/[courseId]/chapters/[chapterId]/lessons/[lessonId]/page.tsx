@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { LessonTitleForm } from "@/components/courses/lesson-title-form";
 import { LessonBuilder } from "@/components/courses/lesson-builder";
 import { PublishToggleButton } from "@/components/courses/publish-toggle-button";
+import { FreeToggleButton } from "@/components/courses/free-toggle-button";
 import { QuizBuilder } from "@/components/courses/quiz/quiz-builder";
 import type { LessonBlock } from "@/components/courses/lesson-blocks/types";
 import type { QuizQuestion } from "@/components/courses/quiz/types";
@@ -53,8 +54,9 @@ export default async function LessonDetailsPage({
             position,
             type,
             isPublished:is_published,
+            isFree:is_free,
             chapterId:chapter_id,
-            chapter:chapters ( isPublished:is_published )
+            chapter:chapters ( isPublished:is_published, isFree:is_free )
         `)
         .eq("id", lessonId)
         .eq("chapter_id", chapterId) // Sécurité : assure que la leçon appartient bien à ce chapitre
@@ -80,6 +82,7 @@ export default async function LessonDetailsPage({
     // Relation to-one : PostgREST peut la renvoyer sous forme d'objet ou de tableau selon le sens d'embedding
     const rawChapter = Array.isArray(lesson.chapter) ? lesson.chapter[0] : lesson.chapter;
     const chapterIsPublished = !!rawChapter?.isPublished;
+    const chapterIsFree = !!rawChapter?.isFree;
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans p-4 md:p-6 lg:p-8">
@@ -107,10 +110,20 @@ export default async function LessonDetailsPage({
                                     This lesson is published but its chapter is a draft, so students cannot see it yet.
                                 </p>
                             )}
+                            {lesson.isFree && !chapterIsFree && (
+                                <p className="text-xs font-medium text-amber-600 mt-1">
+                                    This lesson is free but its chapter is paid, so only subscribers can access it.
+                                </p>
+                            )}
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
+                        {lesson.isFree && (
+                            <Badge className="px-3 py-1.5 border-none font-bold shadow-sm bg-blue-100 text-blue-700">
+                                Free
+                            </Badge>
+                        )}
                         <Badge
                             className={`px-3 py-1.5 border-none font-bold shadow-sm ${
                                 lesson.isPublished
@@ -120,6 +133,11 @@ export default async function LessonDetailsPage({
                         >
                             {lesson.isPublished ? "Published" : "Draft"}
                         </Badge>
+                        <FreeToggleButton
+                            table="lessons"
+                            id={lesson.id}
+                            isFree={lesson.isFree}
+                        />
                         <PublishToggleButton
                             table="lessons"
                             id={lesson.id}
