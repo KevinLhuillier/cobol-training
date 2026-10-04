@@ -17,7 +17,7 @@ interface LessonListProps {
         title: string;
         position: number;
         isPublished: boolean;
-        isFreePreview?: boolean;
+        isFree: boolean;
     }[];
 }
 
@@ -95,8 +95,8 @@ export function LessonList({ courseId, chapterId, items }: LessonListProps) {
                         >
                             {lesson.isPublished ? "Published" : "Draft"}
                         </Badge>
-                        {lesson.isFreePreview && (
-                            <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 border-none">Free Preview</Badge>
+                        {lesson.isFree && (
+                            <Badge className="border-none bg-blue-100 text-blue-700 hover:bg-blue-100">Free</Badge>
                         )}
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             {/* 🟢 Lien mis à jour vers l'espace Dashboard */}

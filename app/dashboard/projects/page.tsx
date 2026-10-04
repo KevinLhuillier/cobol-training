@@ -30,9 +30,11 @@ export default async function ProjectsPage() {
                 chapters (
                     id,
                     position,
+                    isFree:is_free,
                     lessons (
                         id,
                         position,
+                        isFree:is_free,
                         lessonProgress:lesson_progress (
                             isCompleted:is_completed,
                             userId:user_id

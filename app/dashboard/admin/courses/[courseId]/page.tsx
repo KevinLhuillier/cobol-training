@@ -5,7 +5,7 @@ import { ArrowLeft, ListChecks } from "lucide-react";
 import { ChapterForm } from "@/components/courses/chapter-form";
 import { ChapterList } from "@/components/courses/chapter-list";
 import { CoursePublishButton } from "@/components/courses/course-publish-button";
-import { CourseFreeToggleButton } from "@/components/courses/course-free-toggle-button";
+import { FreeToggleButton } from "@/components/courses/free-toggle-button";
 import { CourseDetailsForm } from "@/components/courses/course-details-form";
 import { CourseImageForm } from "@/components/courses/course-image-form";
 import { CourseBadgeForm } from "@/components/courses/course-badge-form";
@@ -49,6 +49,7 @@ export default async function CourseDetailsPage({ params }: { params: Promise<an
                 title,
                 position,
                 isPublished:is_published,
+                isFree:is_free,
                 courseId:course_id
             )
         `)
@@ -113,8 +114,9 @@ export default async function CourseDetailsPage({ params }: { params: Promise<an
                         >
                             {course.isPublished ? "Published" : "Draft"}
                         </Badge>
-                        <CourseFreeToggleButton
-                            courseId={course.id}
+                        <FreeToggleButton
+                            table="courses"
+                            id={course.id}
                             isFree={course.isFree}
                         />
                         <CoursePublishButton
