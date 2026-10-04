@@ -4,6 +4,7 @@ import { CodeBlockView } from "./code-block-view";
 import { VideoBlockView } from "./video-block-view";
 import { CalloutBlockView } from "./callout-block-view";
 import { DividerBlockView } from "./divider-block-view";
+import { AttachmentsBlockView } from "./attachments-block-view";
 import { SolutionBlockView } from "./solution-block-view";
 import type { LessonBlock } from "./types";
 
@@ -51,6 +52,9 @@ export function LessonBlocksView({ blocks, isSolutionUnlocked = false, solutionL
                         return <CalloutBlockView key={block.id} data={block.data} />;
                     case "divider":
                         return <DividerBlockView key={block.id} data={block.data} />;
+                    case "attachments":
+                        if (block.data.files.length === 0) return null;
+                        return <AttachmentsBlockView key={block.id} data={block.data} />;
                     case "solution":
                         return (
                             <SolutionBlockView

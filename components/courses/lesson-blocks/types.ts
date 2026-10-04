@@ -85,6 +85,30 @@ export interface DividerBlock {
     data: DividerBlockData;
 }
 
+// Fichier joint, stocké dans le bucket public "lesson-attachments" (cf.
+// utils/lesson-attachment-storage.ts).
+export interface AttachmentFile {
+    id: string;
+    url: string;
+    // Nom proposé au téléchargement (nom d'origine, modifiable par l'admin)
+    name: string;
+    // Taille en octets, affichée à titre indicatif
+    size: number;
+}
+
+// Bloc "Attachments" : un ou plusieurs fichiers à télécharger (sources, jeux de données, PDF...).
+export interface AttachmentsBlockData {
+    // Titre facultatif affiché au-dessus de la liste. Vide = pas de titre.
+    title: string;
+    files: AttachmentFile[];
+}
+
+export interface AttachmentsBlock {
+    id: string;
+    type: "attachments";
+    data: AttachmentsBlockData;
+}
+
 // Bloc "Solution" : conteneur affiché/caché (flèche déroulante côté élève, cf.
 // solution-block-view.tsx) qui embarque ses propres blocs enfants — n'importe quel composant
 // du builder, à l'exception d'une autre Solution (pas d'imbrication, cf. solution-block-editor.tsx).
@@ -103,6 +127,14 @@ export interface SolutionBlock {
     data: SolutionBlockData;
 }
 
-export type LessonBlock = TextBlock | ImageBlock | CodeBlock | VideoBlock | CalloutBlock | DividerBlock | SolutionBlock;
+export type LessonBlock =
+    | TextBlock
+    | ImageBlock
+    | CodeBlock
+    | VideoBlock
+    | CalloutBlock
+    | DividerBlock
+    | AttachmentsBlock
+    | SolutionBlock;
 
 export type LessonBlockType = LessonBlock["type"];

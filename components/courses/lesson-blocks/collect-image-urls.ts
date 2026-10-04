@@ -17,3 +17,20 @@ export function collectImageUrls(blocks: LessonBlock[]): Set<string> {
     }
     return urls;
 }
+
+// Même principe pour les fichiers des blocs "attachments" (bucket "lesson-attachments").
+export function collectAttachmentUrls(blocks: LessonBlock[]): Set<string> {
+    const urls = new Set<string>();
+    for (const block of blocks) {
+        if (block.type === "attachments") {
+            for (const file of block.data.files) {
+                if (file.url) urls.add(file.url);
+            }
+        } else if (block.type === "solution") {
+            for (const url of collectAttachmentUrls(block.data.blocks)) {
+                urls.add(url);
+            }
+        }
+    }
+    return urls;
+}

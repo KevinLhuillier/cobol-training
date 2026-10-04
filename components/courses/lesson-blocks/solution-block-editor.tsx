@@ -9,9 +9,11 @@ import { CodeBlockEditor } from "./code-block-editor";
 import { VideoBlockEditor } from "./video-block-editor";
 import { CalloutBlockEditor } from "./callout-block-editor";
 import { DividerBlockEditor } from "./divider-block-editor";
+import { AttachmentsBlockEditor } from "./attachments-block-editor";
 import { DIVIDER_DEFAULT_DATA } from "./divider-style";
 import { createBlockId } from "./create-block-id";
 import type {
+    AttachmentsBlockData,
     CalloutBlockData,
     CodeBlockData,
     DividerBlockData,
@@ -66,6 +68,8 @@ export function SolutionBlockEditor({
             ]);
         } else if (type === "divider") {
             setChildren([...children, { id: createBlockId(), type: "divider", data: { ...DIVIDER_DEFAULT_DATA } }]);
+        } else if (type === "attachments") {
+            setChildren([...children, { id: createBlockId(), type: "attachments", data: { title: "", files: [] } }]);
         }
     };
 
@@ -180,6 +184,17 @@ export function SolutionBlockEditor({
                                         key={child.id}
                                         block={child}
                                         onChange={(patch: Partial<DividerBlockData>) => updateChildData(child.id, patch)}
+                                        {...sharedProps}
+                                    />
+                                );
+                            }
+
+                            if (child.type === "attachments") {
+                                return (
+                                    <AttachmentsBlockEditor
+                                        key={child.id}
+                                        block={child}
+                                        onChange={(patch: Partial<AttachmentsBlockData>) => updateChildData(child.id, patch)}
                                         {...sharedProps}
                                     />
                                 );
