@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { Terminal, FolderKanban, Play, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Terminal, FolderKanban, Play, CheckCircle, Lock } from "lucide-react";
 import { SubscribeButton } from "@/components/subscribe-button";
 import { hasAnyLessonAccess, hasCourseAccess, type SubscriptionInfo } from "@/utils/subscription";
 import type { CourseKind } from "@/components/courses/course-kind";
@@ -32,20 +30,13 @@ interface CourseGridProps {
     firstCardAnchorId?: string;
 }
 
-const GRADIENTS = [
-    "from-blue-500 to-cyan-400",
-    "from-slate-700 to-slate-900",
-    "from-purple-500 to-indigo-500",
-    "from-orange-500 to-red-500",
-];
-
 // Grille de cartes des cours (menu Courses) ou des projets (menu Projects) : mêmes cartes,
 // même progression et même lecteur (/dashboard/courses/[courseId]).
 export function CourseGrid({ courses, subscriptionInfo, kind, firstCardAnchorId }: CourseGridProps) {
     const FallbackIcon = kind === "PROJECT" ? FolderKanban : Terminal;
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {courses.map((course, index) => {
                 const allLessons = course.chapters.flatMap(chap => chap.lessons);
                 const totalLessons = allLessons.length;
@@ -64,84 +55,101 @@ export function CourseGrid({ courses, subscriptionInfo, kind, firstCardAnchorId 
                 // le lecteur verrouille les autres
                 const isLocked = !hasAnyLessonAccess(course, subscriptionInfo);
                 const isPreview = !isLocked && !hasCourseAccess({ isFree: course.isFree }, subscriptionInfo);
-                const statusLabel = isLocked ? "Members only" : progress === 100 ? "Completed" : isPreview ? "Free preview" : "Available";
-                const randomGradient = GRADIENTS[index % GRADIENTS.length];
+                const isCompleted = progress === 100;
+                const statusLabel = isLocked
+                    ? "Members only"
+                    : isCompleted
+                        ? "Completed"
+                        : isPreview
+                            ? "Free preview"
+                            : progress > 0
+                                ? "In progress"
+                                : "Available";
+                // Visuel de repli (pas d'image de couverture) : aplat teinté selon l'état du module.
+                const fallbackTint = isLocked ? "bg-slate-100" : isCompleted ? "bg-emerald-50" : progress > 0 ? "bg-ui-accent-soft" : "bg-slate-100";
 
                 return (
-                    <div
+                    <article
                         key={course.id}
-                        className={`flex flex-col bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 transition-all ${
-                            isLocked ? "opacity-75 grayscale-[20%]" : "hover:shadow-md hover:-translate-y-1"
-                        }`}
+                        className="flex flex-col bg-white rounded-xl overflow-hidden border border-ui-line transition-colors hover:border-ui-line-strong"
                     >
-                        {course.imageUrl ? (
-                            <div className="h-40 w-full relative">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={course.imageUrl} alt={course.title} className="w-full h-full object-cover" />
-                                <div className="absolute top-4 right-4">
-                                    <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                        <span>{statusLabel}</span>
-                                    </Badge>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className={`h-40 w-full bg-gradient-to-br ${randomGradient} relative p-4 flex items-end justify-between`}>
-                                <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl">
-                                    <FallbackIcon className="h-8 w-8 text-white drop-shadow-md" />
-                                </div>
-                                <Badge variant="secondary" className="bg-white text-slate-900 shadow-sm border-none font-semibold">
-                                    <span>{statusLabel}</span>
-                                </Badge>
-                            </div>
-                        )}
+                        <div className={`h-[132px] w-full relative flex items-center justify-center ${course.imageUrl ? "" : fallbackTint}`}>
+                            {course.imageUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={course.imageUrl}
+                                    alt=""
+                                    className={`absolute inset-0 w-full h-full object-cover ${isLocked ? "grayscale-[40%] opacity-80" : ""}`}
+                                />
+                            ) : isLocked ? (
+                                <Lock className="h-6 w-6 text-slate-400" />
+                            ) : (
+                                <FallbackIcon className="h-8 w-8 text-slate-400" />
+                            )}
+                            <span
+                                className={`absolute top-3 right-3 inline-flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-md text-xs font-semibold ${
+                                    isCompleted ? "text-emerald-700" : "text-slate-700"
+                                }`}
+                            >
+                                {isCompleted && <CheckCircle className="h-3 w-3" />}
+                                {statusLabel}
+                            </span>
+                        </div>
 
-                        <div className="p-5 flex flex-col flex-1">
-                            <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-1">
-                                {course.title}
-                            </h3>
-
-                            <p className="text-xs text-slate-500 mb-6 line-clamp-2">
-                                {course.description || (kind === "PROJECT" ? "No description for this project." : "No description for this module.")}
-                            </p>
-
-                            <div className="mb-6 mt-auto">
-                                <div className="flex justify-between text-xs font-semibold text-slate-600 mb-2">
-                                    <span>Progress</span>
-                                    <span className={progress === 100 ? "text-emerald-600" : ""}>{progress}%</span>
-                                </div>
-                                <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
-                                    <div
-                                        className={`h-full rounded-full transition-all duration-500 ${progress === 100 ? 'bg-emerald-500' : 'bg-slate-800'}`}
-                                        style={{ width: `${progress}%` }}
-                                    />
-                                </div>
+                        <div className="p-5 flex flex-col gap-3.5 flex-1">
+                            <div>
+                                {kind === "COURSE" && <p className="text-xs text-ui-muted">Module {index + 1}</p>}
+                                <h3 className={`mt-1 text-[17px] font-semibold line-clamp-1 ${isLocked ? "text-slate-600" : "text-slate-900"}`}>
+                                    {course.title}
+                                </h3>
+                                <p className="mt-1.5 text-[13px] leading-relaxed text-ui-muted line-clamp-2">
+                                    {course.description || (kind === "PROJECT" ? "No description for this project." : "No description for this module.")}
+                                </p>
                             </div>
+
+                            {!isLocked && (
+                                <div className="mt-auto">
+                                    <div className="flex justify-between text-xs text-slate-600 mb-1.5">
+                                        <span>Progress</span>
+                                        <span className={`font-semibold ${isCompleted ? "text-emerald-700" : ""}`}>{progress}%</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-slate-200/70 rounded-full overflow-hidden">
+                                        <div
+                                            className={`h-full rounded-full transition-all duration-500 ${isCompleted ? "bg-emerald-500" : "bg-ui-accent"}`}
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
                             {isLocked ? (
-                                <SubscribeButton className="w-full justify-center">
-                                    Upgrade to unlock
-                                </SubscribeButton>
+                                // SubscribeButton s'enveloppe dans son propre Link : le mt-auto doit être sur un parent.
+                                <div className="mt-auto">
+                                    <SubscribeButton className="w-full justify-center h-[42px] rounded-lg shadow-none bg-ui-accent-soft text-ui-accent hover:bg-[#dbe9f8]">
+                                        Upgrade to unlock
+                                    </SubscribeButton>
+                                </div>
                             ) : (
-                                <Link href={href} className="w-full" id={index === 0 ? firstCardAnchorId : undefined}>
-                                    <Button
-                                        className={`w-full rounded-xl shadow-sm text-white ${
-                                            progress === 100
-                                                ? "bg-emerald-600 hover:bg-emerald-700"
-                                                : "bg-slate-900 hover:bg-slate-800"
-                                        }`}
-                                    >
-                                        {progress === 100 ? (
-                                            <><CheckCircle className="mr-2 h-4 w-4" /> Completed (Review)</>
-                                        ) : progress > 0 ? (
-                                            <><Play className="mr-2 h-4 w-4 fill-current" /> Continue</>
-                                        ) : (
-                                            <><Play className="mr-2 h-4 w-4 fill-current" /> Start</>
-                                        )}
-                                    </Button>
+                                <Link
+                                    href={href}
+                                    id={index === 0 ? firstCardAnchorId : undefined}
+                                    className={`w-full h-[42px] inline-flex items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-colors ${
+                                        isCompleted
+                                            ? "bg-white border border-ui-line-strong text-slate-900 hover:bg-ui-page"
+                                            : "bg-ui-ink hover:bg-ui-ink-hover text-white"
+                                    }`}
+                                >
+                                    {isCompleted ? (
+                                        "Review"
+                                    ) : progress > 0 ? (
+                                        <><Play className="h-3.5 w-3.5 fill-current" /> Continue</>
+                                    ) : (
+                                        <><Play className="h-3.5 w-3.5 fill-current" /> Start</>
+                                    )}
                                 </Link>
                             )}
                         </div>
-                    </div>
+                    </article>
                 );
             })}
         </div>

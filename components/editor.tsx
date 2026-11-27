@@ -27,12 +27,12 @@ export const Editor = ({ onChange, value }: EditorProps) => {
     }), []);
 
     return (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm transition-all focus-within:ring-2 focus-within:ring-slate-900 focus-within:border-transparent">
+        <div className="bg-white rounded-lg border border-ui-line overflow-hidden transition-all focus-within:ring-2 focus-within:ring-slate-900 focus-within:border-transparent">
             {/* Ton design Tailwind conservé intact */}
             <div className="
                 [&_.ql-toolbar.ql-snow]:border-none
                 [&_.ql-toolbar.ql-snow]:border-b
-                [&_.ql-toolbar.ql-snow]:border-slate-200
+                [&_.ql-toolbar.ql-snow]:border-ui-line
                 [&_.ql-toolbar.ql-snow]:bg-slate-50/50
                 [&_.ql-toolbar.ql-snow]:p-3
 

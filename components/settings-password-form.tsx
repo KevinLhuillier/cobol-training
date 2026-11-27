@@ -61,7 +61,7 @@ export function PasswordForm() {
                     placeholder="••••••••"
                     required
                     disabled={isLoading}
-                    className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                    className="text-slate-900 rounded-lg border-ui-line-strong bg-white focus-visible:ring-ui-accent/30 focus-visible:border-ui-accent h-11 disabled:opacity-50"
                 />
             </div>
 
@@ -75,7 +75,7 @@ export function PasswordForm() {
                     required
                     minLength={8}
                     disabled={isLoading}
-                    className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                    className="text-slate-900 rounded-lg border-ui-line-strong bg-white focus-visible:ring-ui-accent/30 focus-visible:border-ui-accent h-11 disabled:opacity-50"
                 />
                 <p className="text-xs text-slate-500 font-medium">8 characters minimum</p>
             </div>
@@ -90,7 +90,7 @@ export function PasswordForm() {
                     required
                     minLength={8}
                     disabled={isLoading}
-                    className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                    className="text-slate-900 rounded-lg border-ui-line-strong bg-white focus-visible:ring-ui-accent/30 focus-visible:border-ui-accent h-11 disabled:opacity-50"
                 />
             </div>
 
@@ -104,7 +104,7 @@ export function PasswordForm() {
             <Button
                 type="submit"
                 disabled={isLoading || (CAPTCHA_ENABLED && !captchaToken)}
-                className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-11 px-5 disabled:opacity-50"
+                className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg h-11 px-5 disabled:opacity-50"
             >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Update password

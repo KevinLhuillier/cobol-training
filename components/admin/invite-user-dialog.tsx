@@ -63,7 +63,7 @@ export function InviteUserDialog() {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <Button
                 onClick={() => setOpen(true)}
-                className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-4"
+                className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg px-4"
             >
                 <UserPlus className="h-4 w-4 mr-2" />
                 Invite
@@ -84,7 +84,7 @@ export function InviteUserDialog() {
                         <DialogFooter>
                             <Button
                                 onClick={() => setOpen(false)}
-                                className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl"
+                                className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg"
                             >
                                 Done
                             </Button>
@@ -105,7 +105,7 @@ export function InviteUserDialog() {
 
                         <form onSubmit={onSubmit} className="space-y-4">
                             {error && (
-                                <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 font-medium">
+                                <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 font-medium">
                                     {error}
                                 </div>
                             )}
@@ -122,7 +122,7 @@ export function InviteUserDialog() {
                                     placeholder="John Doe"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="text-slate-900 h-11 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white"
+                                    className="text-slate-900 h-11 rounded-lg border-ui-line-strong bg-white focus-visible:ring-ui-accent/30 focus-visible:border-ui-accent"
                                 />
                             </div>
 
@@ -138,7 +138,7 @@ export function InviteUserDialog() {
                                     placeholder="student@example.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="text-slate-900 h-11 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white"
+                                    className="text-slate-900 h-11 rounded-lg border-ui-line-strong bg-white focus-visible:ring-ui-accent/30 focus-visible:border-ui-accent"
                                 />
                             </div>
 
@@ -155,7 +155,7 @@ export function InviteUserDialog() {
                                 <Button
                                     type="submit"
                                     disabled={isLoading || !name || !email}
-                                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6"
+                                    className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg px-6"
                                 >
                                     {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                                     Send

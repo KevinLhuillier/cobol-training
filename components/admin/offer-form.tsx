@@ -116,22 +116,29 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
         }
     };
 
+    // Aperçu en direct de la carte vue par les élèves (cf. /dashboard/subscribe).
+    const previewPrice = parseFloat(price.replace(",", "."));
+    const previewOriginal = originalPrice.trim() ? parseFloat(originalPrice.replace(",", ".")) : null;
+    const formatPreview = (value: number) => (Number.isFinite(value) ? value.toFixed(2).replace(/\.00$/, "") : "—");
+    const previewFeatures = features.map((feature) => feature.trim()).filter(Boolean);
+
     return (
-        <form onSubmit={onSubmit} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 space-y-6">
+        <div className="flex flex-col xl:flex-row gap-6 items-start">
+        <form onSubmit={onSubmit} className="flex-1 min-w-0 w-full bg-white rounded-xl border border-ui-line p-6 md:p-7 space-y-6">
             {error && (
-                <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100">
+                <div className="p-4 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100">
                     {error}
                 </div>
             )}
             {success && !error && (
-                <div className="p-4 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-medium border border-emerald-100">
+                <div className="p-4 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium border border-emerald-100">
                     Offer updated successfully.
                 </div>
             )}
 
             {/* TITLE */}
             <div className="space-y-2">
-                <label htmlFor={`offer-title-${kind}`} className="text-sm font-bold text-slate-900">
+                <label htmlFor={`offer-title-${kind}`} className="text-[13px] font-semibold text-slate-900">
                     Title
                 </label>
                 <input
@@ -140,13 +147,13 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     disabled={isLoading}
-                    className="text-slate-900 w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all outline-none"
+                    className="text-slate-900 w-full h-11 px-4 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent transition-all outline-none"
                 />
             </div>
 
             {/* PRICE */}
             <div className="space-y-2">
-                <label htmlFor={`offer-price-${kind}`} className="text-sm font-bold text-slate-900">
+                <label htmlFor={`offer-price-${kind}`} className="text-[13px] font-semibold text-slate-900">
                     Price (€, excl. VAT{isLifetime ? ", one-time" : ", per month"})
                 </label>
                 <div className="relative max-w-[200px]">
@@ -159,10 +166,10 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
                         disabled={isLoading}
-                        className="text-slate-900 w-full h-12 pl-8 pr-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all outline-none"
+                        className="text-slate-900 w-full h-11 pl-8 pr-4 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent transition-all outline-none"
                     />
                 </div>
-                <p className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl p-3 mt-2">
+                <p className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg p-3 mt-2">
                     <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
                     This is only what students see on the offer page. It must match the amount configured on the Stripe Price below — Stripe is what actually gets charged at checkout.
                 </p>
@@ -170,7 +177,7 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
 
             {/* ORIGINAL PRICE (STRUCK THROUGH) */}
             <div className="space-y-2">
-                <label htmlFor={`offer-original-price-${kind}`} className="text-sm font-bold text-slate-900">
+                <label htmlFor={`offer-original-price-${kind}`} className="text-[13px] font-semibold text-slate-900">
                     Original price (€, optional)
                 </label>
                 <div className="relative max-w-[200px]">
@@ -184,7 +191,7 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
                         onChange={(e) => setOriginalPrice(e.target.value)}
                         disabled={isLoading}
                         placeholder="—"
-                        className="text-slate-900 w-full h-12 pl-8 pr-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all outline-none"
+                        className="text-slate-900 w-full h-11 pl-8 pr-4 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent transition-all outline-none"
                     />
                 </div>
                 <p className="text-xs text-slate-500">
@@ -195,7 +202,7 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
             {/* MAINFRAME DURATION (LIFETIME ONLY) */}
             {isLifetime && (
                 <div className="space-y-2">
-                    <label htmlFor={`offer-mainframe-months-${kind}`} className="text-sm font-bold text-slate-900">
+                    <label htmlFor={`offer-mainframe-months-${kind}`} className="text-[13px] font-semibold text-slate-900">
                         Mainframe + feedback included (months)
                     </label>
                     <input
@@ -206,7 +213,7 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
                         value={mainframeMonths}
                         onChange={(e) => setMainframeMonths(e.target.value)}
                         disabled={isLoading}
-                        className="text-slate-900 w-full max-w-[200px] h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all outline-none"
+                        className="text-slate-900 w-full max-w-[200px] h-11 px-4 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent transition-all outline-none"
                     />
                     <p className="text-xs text-slate-500">
                         How long Mainframe (TSO) access and personalized feedback last after purchase. Read at purchase time: changing it only affects future buyers. The offer card shows it as &quot;N months of Mainframe access &amp; feedback on exercises&quot;, followed by the monthly price of the Mainframe + Feedback offer below (&quot;then preferential rate of €X/month on renewal&quot;) once that offer has a price and a Stripe Price ID.
@@ -216,7 +223,7 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
 
             {/* STRIPE PRICE ID */}
             <div className="space-y-2">
-                <label htmlFor={`offer-stripe-price-id-${kind}`} className="text-sm font-bold text-slate-900">
+                <label htmlFor={`offer-stripe-price-id-${kind}`} className="text-[13px] font-semibold text-slate-900">
                     Stripe Price ID{isPriceIdOptional ? " (optional)" : ""}
                 </label>
                 <input
@@ -227,7 +234,7 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
                     disabled={isLoading}
                     placeholder="price_..."
                     spellCheck={false}
-                    className="text-slate-900 w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all outline-none font-mono text-sm"
+                    className="text-slate-900 w-full h-11 px-4 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent transition-all outline-none font-mono text-sm"
                 />
                 <p className="text-xs text-slate-500">
                     {isLifetime
@@ -240,7 +247,7 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
 
             {/* FEATURES */}
             <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-900">Features</label>
+                <label className="text-[13px] font-semibold text-slate-900">Features</label>
                 <div className="space-y-2">
                     {features.map((feature, index) => (
                         <div key={index} className="flex items-center gap-2">
@@ -250,14 +257,14 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
                                 onChange={(e) => updateFeature(index, e.target.value)}
                                 disabled={isLoading}
                                 placeholder="e.g., Access to all modules"
-                                className="text-slate-900 w-full h-11 px-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all outline-none"
+                                className="text-slate-900 w-full h-11 px-4 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent transition-all outline-none"
                             />
                             <button
                                 type="button"
                                 onClick={() => removeFeature(index)}
                                 disabled={isLoading || features.length <= 1}
                                 title="Remove feature"
-                                className="h-11 w-11 shrink-0 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-30 disabled:hover:text-slate-400 disabled:hover:bg-transparent"
+                                className="h-11 w-11 shrink-0 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:hover:text-slate-400 disabled:hover:bg-transparent"
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -275,11 +282,11 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
                 </button>
             </div>
 
-            <div className="pt-4 flex items-center justify-end border-t border-slate-100">
+            <div className="pt-4 flex items-center justify-end border-t border-ui-line">
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="px-6 h-12 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
+                    className="px-5 h-10 rounded-lg font-semibold text-sm text-white bg-ui-ink hover:bg-ui-ink-hover transition-colors flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
@@ -292,5 +299,33 @@ export function OfferForm({ kind, initialData }: OfferFormProps) {
                 </button>
             </div>
         </form>
+
+        <aside aria-label="Preview" className="w-full xl:w-80 shrink-0 xl:sticky xl:top-6 flex flex-col gap-2.5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-ui-muted">Preview</p>
+            <div className={`bg-white rounded-xl p-5 ${isLifetime ? "border-[1.5px] border-violet-600" : "border border-ui-line"}`}>
+                <p className="text-base font-bold text-slate-900">{title.trim() || "Untitled offer"}</p>
+                <p className="mt-3 mb-4 flex items-baseline gap-2">
+                    {previewOriginal !== null && Number.isFinite(previewOriginal) && previewOriginal > previewPrice && (
+                        <span className="text-sm font-semibold text-slate-400 line-through">€{formatPreview(previewOriginal)}</span>
+                    )}
+                    <span className="text-3xl font-bold text-slate-900 tracking-tight">€{formatPreview(previewPrice)}</span>
+                    <span className="text-[13px] text-ui-muted">{isLifetime ? "one-time" : "/ month"}</span>
+                </p>
+                <ul className="space-y-1.5 text-[13px] text-slate-700 list-disc pl-4">
+                    {isLifetime && mainframeMonths && (
+                        <li className="font-semibold text-slate-900">
+                            {mainframeMonths} month{Number(mainframeMonths) > 1 ? "s" : ""} of Mainframe access &amp; feedback on exercises
+                        </li>
+                    )}
+                    {previewFeatures.map((feature, index) => (
+                        <li key={index}>{feature}</li>
+                    ))}
+                </ul>
+            </div>
+            {isPriceIdOptional && !stripePriceId.trim() && (
+                <p className="text-xs text-amber-800">Hidden from students until a Stripe Price ID is set.</p>
+            )}
+        </aside>
+        </div>
     );
 }

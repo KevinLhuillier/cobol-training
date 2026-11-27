@@ -68,7 +68,7 @@ export function MobileSidebarButton() {
             aria-label="Open menu"
             aria-expanded={open}
             aria-controls="mobile-sidebar"
-            className="lg:hidden h-10 w-10 shrink-0 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+            className="lg:hidden h-10 w-10 shrink-0 flex items-center justify-center rounded-lg bg-white border border-ui-line text-slate-700 hover:bg-slate-50 transition-colors"
         >
             <Menu className="h-5 w-5" />
         </button>
@@ -94,7 +94,7 @@ export function MobileSidebarDrawer({ children }: { children: React.ReactNode })
             <div
                 id="mobile-sidebar"
                 className={cn(
-                    "fixed inset-y-0 left-0 z-50 w-[85%] max-w-sm overflow-y-auto p-3",
+                    "fixed inset-y-0 left-0 z-50 w-[85%] max-w-xs overflow-y-auto bg-white flex flex-col",
                     "transition-[transform,visibility] duration-200 ease-out",
                     // Fermé : hors écran ET invisible, pour que ses liens ne restent pas
                     // atteignables au clavier. `lg:visible` car visibility s'hérite.
@@ -102,12 +102,12 @@ export function MobileSidebarDrawer({ children }: { children: React.ReactNode })
                     "lg:contents lg:visible"
                 )}
             >
-                <div className="flex justify-end mb-2 lg:hidden">
+                <div className="flex justify-end px-3 pt-3 lg:hidden">
                     <button
                         type="button"
                         onClick={close}
                         aria-label="Close menu"
-                        className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-slate-600 shadow-sm hover:text-slate-900 transition-colors"
+                        className="h-9 w-9 flex items-center justify-center rounded-lg border border-ui-line bg-white text-slate-600 hover:text-slate-900 transition-colors"
                     >
                         <X className="h-5 w-5" />
                     </button>

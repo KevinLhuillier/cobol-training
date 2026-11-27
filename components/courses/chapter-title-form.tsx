@@ -60,13 +60,13 @@ export function ChapterTitleForm({ initialData, courseId, chapterId }: ChapterTi
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     disabled={isLoading}
-                    className="flex-1 max-w-[300px] h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm font-medium"
+                    className="flex-1 max-w-[300px] h-9 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm font-medium"
                     autoFocus
                 />
                 <button type="button" onClick={toggleEdit} disabled={isLoading} className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
                     <X className="h-4 w-4" />
                 </button>
-                <button type="submit" disabled={isLoading || !title.trim()} className="h-9 px-4 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50 flex items-center">
+                <button type="submit" disabled={isLoading || !title.trim()} className="h-9 px-4 rounded-lg bg-ui-ink text-white text-sm font-medium hover:bg-ui-ink-hover disabled:opacity-50 flex items-center">
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
                 </button>
             </form>

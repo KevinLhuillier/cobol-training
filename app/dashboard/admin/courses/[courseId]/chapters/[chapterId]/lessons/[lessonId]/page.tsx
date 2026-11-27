@@ -1,9 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import {
-    ArrowLeft,
-    LayoutDashboard,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { LessonTitleForm } from "@/components/courses/lesson-title-form";
 import { LessonBuilder } from "@/components/courses/lesson-builder";
@@ -67,7 +64,7 @@ export default async function LessonDetailsPage({
         console.error("🔥 ERREUR SUPABASE (Lesson Details):", error);
         return (
             <div className="min-h-screen flex items-center justify-center p-4">
-                <div className="bg-red-50 border border-red-200 text-red-700 p-8 rounded-2xl max-w-lg">
+                <div className="bg-red-50 border border-red-200 text-red-700 p-8 rounded-xl max-w-lg">
                     <h1 className="font-bold text-xl mb-4">Erreur SQL Supabase</h1>
                     <p className="font-mono text-sm bg-white p-4 rounded-lg border border-red-100">{error.message}</p>
                 </div>
@@ -85,24 +82,22 @@ export default async function LessonDetailsPage({
     const chapterIsFree = !!rawChapter?.isFree;
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans p-4 md:p-6 lg:p-8">
-            <div className="max-w-6xl mx-auto">
+        <div className="font-sans">
+            <div className="max-w-7xl mx-auto">
 
                 {/* EN TÊTE */}
-                <div className="mb-8 flex items-center justify-between gap-4">
+                <div className="mb-8 flex flex-col lg:flex-row lg:items-end justify-between gap-4">
                     <div className="flex items-center gap-4">
                         {/* 🟢 Lien mis à jour vers le nouvel espace Dashboard */}
                         <Link
                             href={`/dashboard/admin/courses/${courseId}/chapters/${chapterId}`}
-                            className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
+                            className="h-10 w-10 bg-white border border-ui-line rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
                         >
                             <ArrowLeft className="h-5 w-5" />
                         </Link>
                         <div>
-                            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                                Lesson Setup
-                            </h1>
-                            <p className="text-sm text-slate-500">
+                            <h1 className="text-2xl md:text-[26px] font-bold text-slate-900 tracking-tight">{lesson.title}</h1>
+                            <p className="mt-1 text-sm text-ui-muted">Lesson setup · 
                                 Manage your lesson title and content.
                             </p>
                             {lesson.isPublished && !chapterIsPublished && (
@@ -118,17 +113,17 @@ export default async function LessonDetailsPage({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
                         {lesson.isFree && (
-                            <Badge className="px-3 py-1.5 border-none font-bold shadow-sm bg-blue-100 text-blue-700">
+                            <Badge className="px-2 py-0.5 rounded-md text-xs font-semibold border-none bg-ui-accent-soft text-ui-accent">
                                 Free
                             </Badge>
                         )}
                         <Badge
-                            className={`px-3 py-1.5 border-none font-bold shadow-sm ${
+                            className={`px-2 py-0.5 rounded-md text-xs font-semibold border-none ${
                                 lesson.isPublished
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : "bg-amber-100 text-amber-700"
+                                    ? "bg-emerald-50 text-emerald-800"
+                                    : "bg-amber-50 text-amber-800"
                             }`}
                         >
                             {lesson.isPublished ? "Published" : "Draft"}
@@ -145,34 +140,25 @@ export default async function LessonDetailsPage({
                         />
                     </div>
                 </div>
-
-                <div className="flex flex-col gap-8">
-
-                    {/* BLOC HAUT : Titre & Contenu */}
-                    <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6 lg:p-8">
-                        <div className="flex items-center gap-2 text-slate-900 font-bold text-lg mb-6">
-                            <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                                <LayoutDashboard className="h-4 w-4" />
-                            </div>
-                            Customize lesson
+                {/* Réglages à gauche, contenu (blocs ou questions) à droite. */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+                    <aside className="lg:col-span-1 bg-white rounded-xl border border-ui-line p-5 lg:sticky lg:top-6">
+                        <div className="flex items-center gap-2 text-slate-900 font-semibold text-base mb-4">
+                            Lesson title &amp; type
                         </div>
-
-                        <div className="space-y-6">
-                            <div>
-                                <p className="text-sm font-bold text-slate-500 mb-1">Lesson Title & Type</p>
-                                <LessonTitleForm
+                        <LessonTitleForm
                                     initialData={{ title: lesson.title, type: lesson.type || 'VIDEO' }} // Type par défaut si manquant
                                     courseId={courseId}
                                     chapterId={chapterId}
                                     lessonId={lessonId}
                                 />
-                            </div>
+                    </aside>
 
-                            <div className="w-full">
-                                <p className="text-sm font-bold text-slate-500 mb-3">
-                                    {lesson.type === "QUIZ" ? "Quiz Questions" : "Lesson Content"}
-                                </p>
-                                {lesson.type === "QUIZ" ? (
+                    <section className="lg:col-span-3 bg-white rounded-xl border border-ui-line p-5 lg:p-6 min-w-0">
+                        <div className="flex items-center gap-2 text-slate-900 font-semibold text-base mb-4">
+                            {lesson.type === "QUIZ" ? "Quiz questions" : "Lesson content"}
+                        </div>
+                        {lesson.type === "QUIZ" ? (
                                     <QuizBuilder
                                         initialQuestions={(lesson.quizQuestions as QuizQuestion[] | null) ?? []}
                                         initialPassRate={lesson.quizPassRate ?? 70}
@@ -187,10 +173,7 @@ export default async function LessonDetailsPage({
                                         lessonType={lesson.type ?? "VIDEO"}
                                     />
                                 )}
-                            </div>
-                        </div>
-                    </div>
-
+                    </section>
                 </div>
             </div>
         </div>

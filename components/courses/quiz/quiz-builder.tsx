@@ -129,9 +129,9 @@ export function QuizBuilder({ initialQuestions, initialPassRate, chapterId, less
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3">
+            <div className="flex items-center justify-between bg-slate-50 border border-ui-line rounded-xl px-4 py-3">
                 <div>
-                    <p className="text-sm font-bold text-slate-900">Passing score</p>
+                    <p className="text-[13px] font-semibold text-slate-900">Passing score</p>
                     <p className="text-xs text-slate-500">Minimum percentage of correct answers required to pass this quiz.</p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -141,14 +141,14 @@ export function QuizBuilder({ initialQuestions, initialPassRate, chapterId, less
                         max={100}
                         value={passRate}
                         onChange={(e) => onPassRateChange(Number(e.target.value))}
-                        className="w-16 h-9 px-2 text-center rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm font-bold text-slate-900"
+                        className="w-16 h-9 px-2 text-center rounded-lg border border-ui-line bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm font-bold text-slate-900"
                     />
                     <span className="text-sm font-bold text-slate-500">%</span>
                 </div>
             </div>
 
             {questions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center py-16 border-2 border-dashed border-slate-200 rounded-2xl">
+                <div className="flex flex-col items-center justify-center text-center py-16 border-2 border-dashed border-ui-line rounded-xl">
                     <HelpCircle className="h-8 w-8 text-slate-300 mb-3" />
                     <p className="text-sm font-medium text-slate-500">No questions yet</p>
                     <p className="text-xs text-slate-400 mt-1">Add a question to build this quiz.</p>
@@ -184,7 +184,7 @@ export function QuizBuilder({ initialQuestions, initialPassRate, chapterId, less
                 <Button
                     onClick={onSave}
                     disabled={isSaving || !isDirty}
-                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm"
+                    className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg"
                 >
                     {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     Save quiz

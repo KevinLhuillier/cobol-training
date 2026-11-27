@@ -71,7 +71,7 @@ export function ImageBlockEditor({
                     {block.data.caption?.trim() && (
                         <p className="text-center text-base text-slate-900">{block.data.caption}</p>
                     )}
-                    <div className="relative rounded-xl overflow-hidden border border-slate-100 bg-slate-50 p-2">
+                    <div className="relative rounded-lg overflow-hidden border border-ui-line bg-slate-50 p-2">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={block.data.url}
@@ -82,7 +82,7 @@ export function ImageBlockEditor({
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploading}
-                            className="absolute top-2 right-2 h-8 px-3 rounded-lg bg-white/90 backdrop-blur text-xs font-bold text-slate-700 hover:bg-white shadow-sm flex items-center gap-1.5 disabled:opacity-60"
+                            className="absolute top-2 right-2 h-8 px-3 rounded-lg bg-white/90 backdrop-blur text-xs font-bold text-slate-700 hover:bg-white flex items-center gap-1.5 disabled:opacity-60"
                         >
                             {isUploading ? (
                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -105,7 +105,7 @@ export function ImageBlockEditor({
                                         onClick={() => onChange({ size: option.value })}
                                         className={`h-7 px-3 rounded-md text-xs font-bold transition-colors ${
                                             isActive
-                                                ? "bg-white text-slate-900 shadow-sm"
+                                                ? "bg-white text-slate-900"
                                                 : "text-slate-500 hover:text-slate-900"
                                         }`}
                                     >
@@ -121,7 +121,7 @@ export function ImageBlockEditor({
                         value={block.data.caption ?? ""}
                         onChange={(e) => onChange({ caption: e.target.value })}
                         placeholder="Title (optional, displayed centered above the image)"
-                        className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm"
+                        className="w-full h-9 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm"
                     />
 
                     <input
@@ -129,7 +129,7 @@ export function ImageBlockEditor({
                         value={block.data.alt}
                         onChange={(e) => onChange({ alt: e.target.value })}
                         placeholder="Alt text (describes the image for accessibility)"
-                        className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm"
+                        className="w-full h-9 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm"
                     />
                 </div>
             ) : (
@@ -137,7 +137,7 @@ export function ImageBlockEditor({
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
-                    className="w-full flex flex-col items-center justify-center gap-2 h-40 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-colors disabled:opacity-60"
+                    className="w-full flex flex-col items-center justify-center gap-2 h-40 rounded-lg border-2 border-dashed border-ui-line bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-colors disabled:opacity-60"
                 >
                     {isUploading ? (
                         <Loader2 className="h-6 w-6 text-slate-400 animate-spin" />

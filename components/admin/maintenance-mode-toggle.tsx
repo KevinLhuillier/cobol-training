@@ -41,9 +41,9 @@ export function MaintenanceModeToggle({ initialEnabled }: MaintenanceModeToggleP
     };
 
     return (
-        <div className="mb-8 bg-slate-900 rounded-3xl p-6 shadow-md border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-ui-ink rounded-xl p-6 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-                <div className="h-12 w-12 shrink-0 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700">
+                <div className="h-12 w-12 shrink-0 bg-slate-800 rounded-lg flex items-center justify-center border border-slate-700">
                     <Wrench className="h-6 w-6 text-amber-400" />
                 </div>
                 <div>
@@ -62,7 +62,7 @@ export function MaintenanceModeToggle({ initialEnabled }: MaintenanceModeToggleP
                     setError(null);
                     setIsDialogOpen(true);
                 }}
-                className="rounded-xl h-10 shrink-0"
+                className="rounded-lg h-10 shrink-0"
             >
                 {enabled ? "Disable maintenance mode" : "Enable maintenance mode"}
             </Button>
@@ -83,14 +83,14 @@ export function MaintenanceModeToggle({ initialEnabled }: MaintenanceModeToggleP
                     {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
 
                     <DialogFooter>
-                        <DialogClose className="h-10 px-4 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                        <DialogClose className="h-10 px-4 rounded-lg font-bold text-slate-600 hover:bg-slate-100 transition-colors">
                             Cancel
                         </DialogClose>
                         <Button
                             variant={target ? "destructive" : "default"}
                             disabled={isSubmitting}
                             onClick={onConfirm}
-                            className="h-10 px-4 rounded-xl font-bold"
+                            className="h-10 px-4 rounded-lg font-bold"
                         >
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {target ? "Yes, enable it" : "Yes, disable it"}

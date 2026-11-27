@@ -70,7 +70,7 @@ export function LessonTitleForm({ initialData, courseId, chapterId, lessonId }: 
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     disabled={isLoading}
-                    className="flex-1 min-w-[200px] h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm font-medium"
+                    className="flex-1 min-w-[200px] h-9 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm font-medium"
                     autoFocus
                 />
 
@@ -78,7 +78,7 @@ export function LessonTitleForm({ initialData, courseId, chapterId, lessonId }: 
                     value={type}
                     onChange={(e) => setType(e.target.value as "VIDEO" | "EXERCISE" | "QUIZ")}
                     disabled={isLoading}
-                    className="h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm font-medium"
+                    className="h-9 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm font-medium"
                 >
                     <option value="VIDEO">Video</option>
                     <option value="EXERCISE">Exercise</option>
@@ -89,7 +89,7 @@ export function LessonTitleForm({ initialData, courseId, chapterId, lessonId }: 
                     <button type="button" onClick={toggleEdit} disabled={isLoading} className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
                         <X className="h-4 w-4" />
                     </button>
-                    <button type="submit" disabled={isLoading || !title.trim()} className="h-9 px-4 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50 flex items-center">
+                    <button type="submit" disabled={isLoading || !title.trim()} className="h-9 px-4 rounded-lg bg-ui-ink text-white text-sm font-medium hover:bg-ui-ink-hover disabled:opacity-50 flex items-center">
                         {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
                     </button>
                 </div>

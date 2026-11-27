@@ -46,10 +46,10 @@ export function BlockPalette({ onAddBlock, showSolution = false }: BlockPaletteP
                         onClick={() => item.enabled && onAddBlock(item.type)}
                         title={title}
                         aria-label={title}
-                        className={`h-11 w-11 shrink-0 rounded-xl border flex items-center justify-center transition-all ${
+                        className={`h-11 w-11 shrink-0 rounded-lg border flex items-center justify-center transition-all ${
                             item.enabled
-                                ? "border-slate-200 bg-slate-900 text-white hover:bg-slate-800 hover:shadow-sm cursor-pointer"
-                                : "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed"
+                                ? "border-ui-line bg-ui-ink text-white hover:bg-ui-ink-hover cursor-pointer"
+                                : "border-ui-line bg-slate-50 text-slate-300 cursor-not-allowed"
                         }`}
                     >
                         <Icon className="h-5 w-5" />

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Lock, Dumbbell, Settings, LayoutGrid, MessageCircle, FolderKanban } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
+import { LogoCtIcon } from "@/components/logo-ct-icon";
 import { SubscriptionStatus } from "@/components/subscription-status";
 import { createClient } from "@/utils/supabase/client";
 
@@ -74,25 +75,42 @@ export default function Sidebar({ userId = null, isAdmin = false, subscriptionSt
         { icon: Settings, label: "Settings", href: "/dashboard/settings", badge: 0 },
     ];
 
-    return (
-        <aside className="w-full lg:w-[280px] xl:w-[320px] bg-white rounded-3xl shadow-sm p-6 flex flex-col shrink-0 lg:sticky lg:top-8 lg:max-h-[calc(100vh-4rem)] border border-slate-100">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-3">
-                Main Menu
-            </h3>
+    // Entrée active = celle dont le lien est le plus long préfixe de l'URL courante : une sous-page
+    // (ex. /dashboard/admin/users) garde son entrée surlignée, et /dashboard/admin/messages active
+    // "Messages" plutôt que "Admin". "Courses" (/dashboard) couvre aussi le lecteur de cours.
+    const matches = (href: string) =>
+        href === "/dashboard"
+            ? pathname === "/dashboard" || pathname.startsWith("/dashboard/courses")
+            : pathname === href || pathname.startsWith(`${href}/`);
+    const activeHref = menuItems
+        .map((item) => item.href)
+        .filter(matches)
+        .sort((a, b) => b.length - a.length)[0];
 
-            <nav className="flex flex-col gap-1">
+    return (
+        <aside className="w-full lg:w-[260px] shrink-0 bg-white lg:border-r border-ui-line flex flex-col gap-7 px-4 py-6 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
+            <Link href="/dashboard" className="hidden lg:flex items-center gap-2.5 px-2 text-base font-bold text-slate-900 tracking-tight">
+                <LogoCtIcon className="h-8 w-auto shrink-0" />
+                <span>Cobol Training</span>
+            </Link>
+
+            <nav className="flex flex-col gap-0.5 flex-1">
+                <p className="text-[11px] font-semibold text-ui-muted uppercase tracking-wider mb-2 px-3">
+                    Menu
+                </p>
                 {menuItems.map((item, index) => {
                     const MenuIcon = item.icon;
-                    const isActive = pathname === item.href;
+                    const isActive = item.href === activeHref;
 
                     return (
                         <Link
                             key={index}
                             href={item.href}
-                            className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${
+                            aria-current={isActive ? "page" : undefined}
+                            className={`flex items-center gap-3 h-11 px-3 rounded-lg transition-colors text-sm ${
                                 isActive
-                                    ? "bg-slate-100 text-slate-900"
-                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                                    ? "bg-ui-accent-soft text-slate-900 font-semibold shadow-[inset_3px_0_0_var(--color-ui-accent)]"
+                                    : "text-slate-600 font-medium hover:bg-ui-page hover:text-slate-900"
                             }`}
                         >
                             {/* id posé sur l'icône + le libellé seulement (pas tout le Link, qui
@@ -100,31 +118,30 @@ export default function Sidebar({ userId = null, isAdmin = false, subscriptionSt
                                 parcours d'onboarding pointe vers le bord droit de la sidebar au
                                 lieu du mot "Messages". */}
                             <span id={item.id} className="flex items-center gap-3">
-                                <MenuIcon className={`h-5 w-5 ${isActive ? "text-slate-900" : "text-slate-400"}`} />
+                                <MenuIcon className={`h-[18px] w-[18px] ${isActive ? "text-ui-accent" : "text-slate-400"}`} />
                                 {item.label}
                             </span>
                             {item.badge > 0 && (
-                                <span className="ml-auto h-5 min-w-5 px-1 rounded-full bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center">
+                                <span className="ml-auto h-5 min-w-5 px-1.5 rounded-full bg-ui-ink text-white text-[11px] font-bold flex items-center justify-center">
                                     {item.badge}
                                 </span>
                             )}
                         </Link>
                     );
                 })}
+            </nav>
 
-                <div className="[&>button]:w-full [&>button]:justify-start [&>button]:px-4 [&>button]:py-2.5 [&>button]:h-auto [&>button]:border-transparent [&>button]:shadow-none [&>button]:text-sm mt-auto pt-4 border-t border-slate-100">
+            <div className="flex flex-col gap-3">
+                <SubscriptionStatus
+                    subscriptionStatus={subscriptionStatus}
+                    trialDaysLeft={trialDaysLeft}
+                    mainframeDaysLeft={mainframeDaysLeft}
+                    canUpgradeToLifetime={lifetimeOfferAvailable}
+                />
+                <div className="[&>button]:w-full [&>button]:justify-start [&>button]:gap-3 [&>button]:px-3 [&>button]:h-11 [&>button]:rounded-lg [&>button]:border-transparent [&>button]:shadow-none [&>button]:text-sm [&>button]:font-medium [&>button]:text-slate-600 pt-3 border-t border-ui-line">
                     <LogoutButton />
                 </div>
-
-                <div className="px-1">
-                    <SubscriptionStatus
-                        subscriptionStatus={subscriptionStatus}
-                        trialDaysLeft={trialDaysLeft}
-                        mainframeDaysLeft={mainframeDaysLeft}
-                        canUpgradeToLifetime={lifetimeOfferAvailable}
-                    />
-                </div>
-            </nav>
+            </div>
         </aside>
     );
 }

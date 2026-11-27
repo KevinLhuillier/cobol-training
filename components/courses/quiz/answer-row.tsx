@@ -41,7 +41,7 @@ export function AnswerRow({
 
     return (
         <div className="space-y-2">
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2 bg-slate-50 border border-ui-line rounded-lg px-3 py-2">
                 <input
                     type={questionType === "SINGLE_CHOICE" ? "radio" : "checkbox"}
                     name={questionType === "SINGLE_CHOICE" ? `correct-${questionId}` : undefined}
@@ -56,7 +56,7 @@ export function AnswerRow({
                     value={answer.text}
                     onChange={(e) => onChange({ text: e.target.value })}
                     placeholder="Answer text"
-                    className="flex-1 h-8 px-2 rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm text-slate-900"
+                    className="flex-1 h-8 px-2 rounded-lg border border-ui-line bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm text-slate-900"
                 />
 
                 <div className="flex items-center gap-0.5 shrink-0">
@@ -120,7 +120,7 @@ export function AnswerRow({
                         onChange={(e) => onChange({ explanation: e.target.value })}
                         placeholder="Explanation shown to students after they answer (optional)"
                         rows={2}
-                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm text-slate-700 resize-y"
+                        className="flex-1 px-3 py-2 rounded-lg border border-ui-line bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm text-slate-700 resize-y"
                     />
                     <button
                         type="button"

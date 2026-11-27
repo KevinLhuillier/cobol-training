@@ -21,7 +21,7 @@ export function SolutionBlockView({
 
     if (!isUnlocked) {
         return (
-            <div className="flex items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-slate-400">
+            <div className="flex items-center gap-3 rounded-xl border border-dashed border-ui-line bg-slate-50 p-4 text-slate-400">
                 <Lock className="h-4 w-4 shrink-0" />
                 <p className="text-sm">{lockedMessage}</p>
             </div>
@@ -30,7 +30,7 @@ export function SolutionBlockView({
 
     return (
         // @ts-expect-error - Contournement conflit type Radix/React 19
-        <Accordion type="multiple" className="w-full rounded-2xl border border-slate-200 bg-white px-4">
+        <Accordion type="multiple" className="w-full rounded-xl border border-ui-line bg-white px-4">
             <AccordionItem value="solution" className="border-none">
                 <AccordionTrigger className="hover:no-underline py-3 text-left cursor-pointer">
                     <span className="flex items-center gap-2 font-bold text-slate-900">

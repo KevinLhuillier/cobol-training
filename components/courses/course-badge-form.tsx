@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Award, Loader2, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 // 🟢 Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
 import { BadgeIcon, BADGE_ICON_NAMES } from "@/components/badges/badge-icon";
@@ -101,12 +101,9 @@ export function CourseBadgeForm({ courseId, initialData }: CourseBadgeFormProps)
     };
 
     return (
-        <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6">
+        <div className="bg-white rounded-xl border border-ui-line p-6">
             <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-slate-900 font-bold text-lg">
-                    <div className="h-8 w-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                        <Award className="h-4 w-4" />
-                    </div>
+                <div className="flex items-center gap-2 text-slate-900 font-semibold text-base">
                     Completion Badge
                 </div>
                 <label className="inline-flex items-center cursor-pointer">
@@ -136,7 +133,7 @@ export function CourseBadgeForm({ courseId, initialData }: CourseBadgeFormProps)
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             disabled={isLoading}
-                            className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm font-medium"
+                            className="w-full h-10 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm font-medium"
                             autoFocus
                         />
                     </div>
@@ -151,7 +148,7 @@ export function CourseBadgeForm({ courseId, initialData }: CourseBadgeFormProps)
                             onChange={(e) => setDescription(e.target.value)}
                             disabled={isLoading}
                             rows={2}
-                            className="w-full p-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm resize-none"
+                            className="w-full p-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm resize-none"
                         />
                     </div>
 
@@ -166,8 +163,8 @@ export function CourseBadgeForm({ courseId, initialData }: CourseBadgeFormProps)
                                     disabled={isLoading}
                                     className={`h-10 w-10 flex items-center justify-center rounded-lg border transition-colors ${
                                         icon === name_
-                                            ? "border-slate-900 bg-slate-900 text-white"
-                                            : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                                            ? "border-slate-900 bg-ui-ink text-white"
+                                            : "border-ui-line text-slate-500 hover:bg-slate-50"
                                     }`}
                                 >
                                     <BadgeIcon icon={name_} className="h-5 w-5" />
@@ -190,7 +187,7 @@ export function CourseBadgeForm({ courseId, initialData }: CourseBadgeFormProps)
                         <button
                             type="submit"
                             disabled={isLoading || !name.trim()}
-                            className="h-9 px-4 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50 flex items-center"
+                            className="h-9 px-4 rounded-lg bg-ui-ink text-white text-sm font-medium hover:bg-ui-ink-hover disabled:opacity-50 flex items-center"
                         >
                             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
                         </button>
@@ -200,9 +197,9 @@ export function CourseBadgeForm({ courseId, initialData }: CourseBadgeFormProps)
                 <button
                     type="button"
                     onClick={toggleEdit}
-                    className="w-full flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+                    className="w-full flex items-center gap-4 p-4 rounded-lg border border-ui-line bg-slate-50 hover:bg-slate-100 transition-colors text-left"
                 >
-                    <div className="h-12 w-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                    <div className="h-12 w-12 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
                         <BadgeIcon icon={icon} className="h-6 w-6" />
                     </div>
                     <div className="min-w-0">

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
-import { LogoCtIcon } from "@/components/logo-ct-icon";
+import { AuthShell, authInputClass, authLabelClass, authButtonClass } from "@/components/auth/auth-shell";
 import { requestPasswordReset } from "@/app/actions/auth";
 
 export default function ForgotPasswordPage() {
@@ -39,36 +39,26 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="flex-1 bg-slate-100 flex items-center justify-center p-4 font-sans">
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-sm p-8 flex flex-col">
-                <div className="flex flex-col items-center mb-8 text-center">
-                    <LogoCtIcon className="h-14 w-auto mb-4" />
-                    <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                        Forgot your password?
-                    </h1>
-                    <p className="text-sm text-slate-500 mt-2">
-                        Enter your email and we&apos;ll send you a link to reset it.
-                    </p>
-                </div>
+        <AuthShell title="Forgot your password?" subtitle={<>Enter your email and we&apos;ll send you a link to reset it.</>} footer={<Link href="/auth/login" className="inline-flex items-center gap-1.5 font-semibold text-ui-accent hover:underline"><ArrowLeft className="h-4 w-4" />Back to sign in</Link>}>
 
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 text-red-600">
-                        <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+                    <div className="mb-5 p-3 bg-red-50 rounded-lg flex items-start gap-2.5 text-red-800">
+                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                         <p className="text-sm font-medium">{error}</p>
                     </div>
                 )}
 
                 {isSubmitted ? (
-                    <div className="p-4 bg-green-50 border border-green-100 rounded-xl flex items-start gap-3 text-green-700">
-                        <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5 text-green-600" />
+                    <div className="p-3 bg-emerald-50 rounded-lg flex items-start gap-2.5 text-emerald-800">
+                        <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600" />
                         <p className="text-sm font-medium">
                             If an account exists for this email, we&apos;ve sent a link to reset your password.
                         </p>
                     </div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email" className="text-slate-700 font-semibold">Email Address</Label>
+                            <Label htmlFor="email" className={authLabelClass}>Email Address</Label>
                             <Input
                                 id="email"
                                 name="email"
@@ -76,14 +66,14 @@ export default function ForgotPasswordPage() {
                                 placeholder="student@example.com"
                                 required
                                 disabled={isLoading}
-                                className="text-slate-900 placeholder:text-slate-400 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                                className={authInputClass}
                             />
                         </div>
 
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md text-base font-semibold disabled:opacity-80"
+                            className={authButtonClass}
                         >
                             {isLoading ? (
                                 <>
@@ -96,14 +86,6 @@ export default function ForgotPasswordPage() {
                         </Button>
                     </form>
                 )}
-
-                <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-                    <Link href="/auth/login" className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-900 hover:underline">
-                        <ArrowLeft className="h-4 w-4" />
-                        Back to sign in
-                    </Link>
-                </div>
-            </div>
-        </div>
+            </AuthShell>
     );
 }

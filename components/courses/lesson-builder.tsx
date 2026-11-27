@@ -208,7 +208,7 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }
             {/* CANVAS */}
             <div className="flex-1 min-w-0 space-y-4">
                 {blocks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center text-center py-16 border-2 border-dashed border-slate-200 rounded-2xl">
+                    <div className="flex flex-col items-center justify-center text-center py-16 border-2 border-dashed border-ui-line rounded-xl">
                         <FileText className="h-8 w-8 text-slate-300 mb-3" />
                         <p className="text-sm font-medium text-slate-500">No content yet</p>
                         <p className="text-xs text-slate-400 mt-1">Add a component from the panel to get started.</p>
@@ -319,11 +319,11 @@ export function LessonBuilder({ initialBlocks, chapterId, lessonId, lessonType }
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Components</p>
                 <BlockPalette onAddBlock={addBlock} showSolution={lessonType === "EXERCISE"} />
 
-                <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
+                <div className="mt-6 pt-4 border-t border-ui-line space-y-2">
                     <Button
                         onClick={onSave}
                         disabled={isSaving || !isDirty}
-                        className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm"
+                        className="w-full bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg"
                     >
                         {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                         Save content

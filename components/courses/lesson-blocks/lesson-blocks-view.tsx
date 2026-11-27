@@ -37,7 +37,7 @@ export function LessonBlocksView({ blocks, isSolutionUnlocked = false, solutionL
                                 <img
                                     src={block.data.url}
                                     alt={block.data.alt}
-                                    className={`block mx-auto rounded-2xl ${imageSizeClassName(block.data.size)}`}
+                                    className={`block mx-auto rounded-xl ${imageSizeClassName(block.data.size)}`}
                                 />
                             </figure>
                         );

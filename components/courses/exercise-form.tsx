@@ -94,41 +94,40 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
     };
 
     return (
-        <div className="mt-8 bg-slate-50 border border-slate-100 rounded-2xl p-6">
+        <section aria-labelledby="exercise-title" className="bg-ui-page/60 border border-ui-line rounded-xl p-5">
             {/* En-tête avec statuts */}
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-slate-900">Your Solution</h3>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <h3 id="exercise-title" className="text-[17px] font-semibold text-slate-900">Your solution</h3>
 
                 {isApproved ? (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-800">
                         <CheckCircle className="h-3.5 w-3.5 mr-1.5" /> Approved
                     </span>
                 ) : isPending ? (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100">
-                        <Clock className="h-3.5 w-3.5 mr-1.5" /> Review Pending
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-800">
+                        <Clock className="h-3.5 w-3.5 mr-1.5" /> Review pending
                     </span>
                 ) : (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-700">
-                        Not Submitted
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-white border border-ui-line text-slate-600">
+                        Not submitted
                     </span>
                 )}
             </div>
 
             {reviewFeedback && (
-                <div className="mb-6 p-4 bg-blue-50/50 border border-blue-100 rounded-xl relative overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
-                    <h4 className="text-sm font-bold text-blue-900 flex items-center mb-1">
-                        Instructor
+                <div className="mb-4 p-4 bg-ui-accent-soft rounded-lg">
+                    <h4 className="text-[13px] font-semibold text-slate-900 mb-1">
+                        Feedback from your instructor
                     </h4>
-                    <p className="text-sm text-blue-800 whitespace-pre-wrap">
+                    <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">
                         {reviewFeedback}
                     </p>
                 </div>
             )}
 
-            <form onSubmit={onSubmit} className="space-y-4">
+            <form onSubmit={onSubmit} className="space-y-3">
                 {error && (
-                    <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 font-medium">
+                    <div className="p-3 bg-red-50 text-red-800 text-sm rounded-lg font-medium">
                         {error}
                     </div>
                 )}
@@ -140,22 +139,24 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
                     placeholder="Type or paste your code/answer here..."
-                    className="w-full min-h-[200px] p-4 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all font-mono text-sm text-slate-900 resize-y disabled:bg-slate-100 disabled:text-slate-500"
+                    aria-labelledby="exercise-title"
+                    spellCheck={false}
+                    className="w-full min-h-[200px] p-4 rounded-lg border border-ui-ink bg-ui-ink focus:ring-2 focus:ring-ui-accent/40 outline-none transition-all font-mono text-[13px] leading-relaxed text-slate-100 placeholder:text-slate-500 resize-y disabled:opacity-70"
                 />
 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                     {/* Messages informatifs selon l'état */}
                     {isPending && (
-                        <p className="text-xs text-amber-600 font-medium flex items-center">
+                        <p className="text-[13px] text-amber-800 flex items-center">
                             <AlertCircle className="h-4 w-4 mr-1.5" />
                             Your solution has been sent to your instructor.
                         </p>
                     )}
 
                     {isApproved && (
-                        <div className="flex items-center text-emerald-600 font-bold bg-emerald-50 px-4 py-2 rounded-xl w-fit ml-auto">
-                            <CheckCircle className="h-5 w-5 mr-2" />
-                            Exercise Approved
+                        <div className="flex items-center text-emerald-800 text-sm font-semibold bg-emerald-50 px-3 py-2 rounded-lg w-fit ml-auto">
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Exercise approved
                         </div>
                     )}
 
@@ -166,7 +167,7 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                                 <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-slate-400" />
                                 Submitting exercises for review isn&apos;t included in your current plan. Upgrade to have your exercises reviewed by your instructor.
                             </p>
-                            <SubscribeButton className="shrink-0" />
+                            <SubscribeButton className="shrink-0 rounded-lg shadow-none" />
                         </div>
                     )}
 
@@ -176,19 +177,19 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
                             <Button
                                 type="submit"
                                 disabled={busy || !answer.trim()}
-                                className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6 h-11"
+                                className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg px-5 h-[42px] font-semibold"
                             >
                                 {busy ? (
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                 ) : (
                                     <Send className="h-4 w-4 mr-2" />
                                 )}
-                                Submit Exercise
+                                Submit for review
                             </Button>
                         </div>
                     )}
                 </div>
             </form>
-        </div>
+        </section>
     );
 }

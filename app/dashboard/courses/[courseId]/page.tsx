@@ -204,12 +204,12 @@ export default async function CoursePlayer({
 
     if (allLessons.length === 0) {
         return (
-            <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans">
-                <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-sm">
+            <div className="min-h-screen bg-ui-page flex items-center justify-center p-4 font-sans">
+                <div className="bg-white rounded-xl border border-ui-line p-8 text-center max-w-md">
                     <h2 className="text-lg font-bold text-slate-900 mb-2">Cours en cours de création</h2>
                     <p className="text-sm text-slate-500 mb-6">Ce cours ne contient pas encore de leçons publiées.</p>
                     <Link href={listHref}>
-                        <Button className="bg-slate-900 text-white rounded-xl">Retour au tableau de bord</Button>
+                        <Button className="bg-ui-ink text-white rounded-lg">Retour au tableau de bord</Button>
                     </Link>
                 </div>
             </div>
@@ -228,54 +228,68 @@ export default async function CoursePlayer({
     // La progression est validée si le tableau lessonProgress n'est pas vide et que isCompleted est true
     const isCurrentLessonCompleted = !!currentLesson?.lessonProgress?.[0]?.isCompleted;
 
-    return (
-        <div className="min-h-screen bg-slate-100 p-4 md:p-6 lg:p-8 flex flex-col gap-6 font-sans">
+    const isLessonDone = (lesson: (typeof allLessons)[number]) => !!lesson.lessonProgress?.[0]?.isCompleted;
+    const completedCount = allLessons.filter(isLessonDone).length;
+    const courseProgress = Math.round((completedCount / allLessons.length) * 100);
 
-            {/* HEADER FLOTTANT ET ARRONDI */}
-            <header className="bg-white rounded-2xl shadow-sm h-16 flex items-center px-6 shrink-0 justify-between max-w-[1600px] w-full mx-auto">
-                <div className="flex items-center gap-4">
-                    <Link href={listHref}>
-                        <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-900 rounded-full">
-                            <ChevronLeft className="h-5 w-5" />
-                        </Button>
-                    </Link>
-                    <h1 className="font-semibold text-slate-800 line-clamp-1">
-                        {formattedCourse.title}
-                    </h1>
-                </div>
-                <div className="text-sm text-slate-500 font-medium bg-blue-50 px-4 py-1.5 rounded-full shrink-0">
-                    Training
+    return (
+        <div className="min-h-screen bg-ui-page flex flex-col font-sans">
+
+            {/* EN-TÊTE : retour, cours + leçon courante, progression globale */}
+            <header className="bg-white border-b border-ui-line shrink-0">
+                <div className="max-w-[1600px] mx-auto h-16 px-4 md:px-6 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 min-w-0">
+                        <Link
+                            href={listHref}
+                            className="inline-flex items-center gap-1.5 h-10 px-3 rounded-lg border border-ui-line text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-ui-page transition-colors shrink-0"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                            <span className="hidden sm:inline">Dashboard</span>
+                        </Link>
+                        <div className="min-w-0">
+                            <p className="text-xs text-ui-muted truncate">{formattedCourse.title}</p>
+                            <h1 className="text-[15px] font-semibold text-slate-900 truncate">{currentLesson.title}</h1>
+                        </div>
+                    </div>
+                    <div className="hidden md:flex items-center gap-3 shrink-0">
+                        <span className="text-[13px] text-ui-muted">
+                            {completedCount} / {allLessons.length} lessons
+                        </span>
+                        <div className="w-32 h-1.5 bg-slate-200/70 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full bg-ui-accent" style={{ width: `${courseProgress}%` }} />
+                        </div>
+                    </div>
                 </div>
             </header>
 
             {/* LAYOUT PRINCIPAL */}
-            <main className="flex-1 max-w-[1600px] w-full mx-auto flex flex-col lg:flex-row gap-6 overflow-hidden">
+            <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 flex flex-col lg:flex-row gap-6 items-start">
 
                 {/* ZONE DE CONTENU (Panneau central) */}
-                <section className="flex-1 bg-white rounded-3xl shadow-sm p-6 lg:p-8 flex flex-col overflow-y-auto">
-                    <div className="max-w-5xl mx-auto w-full space-y-6">
+                <section className="flex-1 min-w-0 w-full bg-white rounded-xl border border-ui-line p-6 lg:p-7">
+                    <div className="max-w-5xl w-full mx-auto space-y-6">
 
                         <div>
-                            <p className="text-sm font-medium text-blue-600 mb-1">
-                                {currentChapter?.title} • Lesson {currentLesson.position}
+                            <p className="text-xs font-semibold uppercase tracking-wider text-ui-accent">
+                                {currentChapter?.title} · Lesson {currentLesson.position}
                             </p>
-                            <h2 className="text-2xl font-bold text-slate-900">{currentLesson.title}</h2>
+                            <h2 className="mt-2 text-2xl md:text-[26px] font-bold text-slate-900 tracking-tight">{currentLesson.title}</h2>
                         </div>
 
                         {/* CONTENU : une leçon verrouillée n'affiche que l'invitation à s'abonner (son contenu n'est
                             jamais rendu) ; une leçon QUIZ n'a pas de blocs de contenu, le quiz remplace toute la zone. */}
                         {currentLesson.isLocked ? (
-                            <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100 flex flex-col items-center text-center gap-4">
-                                <div className="h-12 w-12 rounded-full bg-white shadow-sm flex items-center justify-center">
+                            <div className="bg-ui-page p-8 rounded-xl border border-ui-line flex flex-col items-center text-center gap-4">
+                                <div className="h-12 w-12 rounded-full bg-white border border-ui-line flex items-center justify-center">
                                     <Lock className="h-5 w-5 text-slate-500" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900">Members only</h3>
-                                    <p className="text-sm text-slate-500 mt-1">
+                                    <h3 className="text-base font-semibold text-slate-900">Members only</h3>
+                                    <p className="text-sm text-ui-muted mt-1">
                                         Subscribe to unlock this lesson and the rest of the course.
                                     </p>
                                 </div>
-                                <SubscribeButton>Upgrade to unlock</SubscribeButton>
+                                <SubscribeButton className="rounded-lg shadow-none">Upgrade to unlock</SubscribeButton>
                             </div>
                         ) : currentLesson.type === "QUIZ" ? (
                             <QuizPlayer
@@ -298,16 +312,15 @@ export default async function CoursePlayer({
                                         isSolutionUnlocked={currentLesson.lessonProgress?.[0]?.exerciseStatus === "APPROVED"}
                                     />
                                 ) : (
-                                    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                                        <p className="italic text-slate-500">No instructions or content provided.</p>
+                                    <div className="bg-ui-page p-6 rounded-lg border border-ui-line">
+                                        <p className="italic text-ui-muted">No instructions or content provided.</p>
                                     </div>
                                 )}
 
                                 {/* 3. ACTIONS DE VALIDATION */}
-                                <div className="pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
+                                <div className="pt-6 border-t border-ui-line flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
                                     {currentLesson.type === "EXERCISE" ? (
                                         <div className="w-full">
-                                            {/* 🟢 Le composant ExerciseForm devra également être migré vers Supabase */}
                                             <ExerciseForm
                                                 courseId={courseId}
                                                 chapterId={currentChapter!.id}
@@ -321,7 +334,6 @@ export default async function CoursePlayer({
                                             />
                                         </div>
                                     ) : (
-                                        /* 🟢 Le composant CourseProgressButton devra également être migré vers Supabase */
                                         <CourseProgressButton
                                             courseId={courseId}
                                             chapterId={currentChapter!.id}
@@ -337,79 +349,91 @@ export default async function CoursePlayer({
                     </div>
                 </section>
 
-                {/* BARRE LATÉRALE (Menu) */}
-                <aside className="w-full lg:w-[400px] xl:w-[430px] bg-white rounded-3xl shadow-sm flex flex-col shrink-0 lg:h-[calc(100vh-10rem)] overflow-hidden">
-
-                    <div className="p-6 bg-slate-50/50 rounded-t-3xl border-b border-slate-100">
-                        <h3 className="font-bold text-slate-900">Course Content</h3>
-                        {/*<div className="space-y-3">*/}
-                        {/*    <div className="flex justify-between text-sm text-slate-600">*/}
-                        {/*        <span>{formattedCourse.chapters.length} chapitres au total</span>*/}
-                        {/*    </div>*/}
-                        {/*</div>*/}
+                {/* BARRE LATÉRALE : contenu du cours */}
+                <aside
+                    aria-label="Course content"
+                    className="w-full lg:w-[360px] xl:w-[380px] bg-white rounded-xl border border-ui-line flex flex-col shrink-0 lg:sticky lg:top-6 lg:h-[calc(100vh-8.5rem)] overflow-hidden"
+                >
+                    <div className="px-5 py-4 border-b border-ui-line flex items-center justify-between">
+                        <h3 className="text-[15px] font-semibold text-slate-900">Course content</h3>
+                        <span className="text-xs font-semibold text-ui-muted">{courseProgress}%</span>
                     </div>
 
                     {/* Défilement natif (et non ScrollArea) : fiable sur tous les navigateurs / tactiles, avec
                         une barre visible aux couleurs du site (utilitaire scrollbar-site, app/globals.css). */}
-                    <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 scrollbar-site">
+                    <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-2 scrollbar-site">
                         {/* @ts-expect-error - Contournement conflit type Radix/React 19 */}
-                        <Accordion key={currentChapter?.id || "accordion"} type="multiple" defaultValue={[currentChapter?.id || ""]} className="w-full space-y-3">
-                            {formattedCourse.chapters.map((chapter, index) => (
-                                <AccordionItem key={chapter.id} value={chapter.id} className="border-none bg-slate-50 rounded-xl px-2">
-                                    <AccordionTrigger className="hover:no-underline py-4 px-3 text-left rounded-xl transition-colors hover:bg-slate-100">
-                                        <div className="flex flex-col gap-1">
-                                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                                Chapter {index + 1}
-                                            </span>
-                                            <span className="text-sm font-bold text-slate-800">
-                                                {chapter.title}
-                                            </span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-1 pb-3 px-1">
-                                        <div className="space-y-1">
-                                            {chapter.lessons.map((lesson) => {
-                                                const isCurrent = lesson.id === currentLesson.id;
-                                                const isCompleted = !!lesson.lessonProgress?.[0]?.isCompleted;
+                        <Accordion key={currentChapter?.id || "accordion"} type="multiple" defaultValue={[currentChapter?.id || ""]} className="w-full space-y-0.5">
+                            {formattedCourse.chapters.map((chapter, index) => {
+                                const chapterDone = chapter.lessons.filter(isLessonDone).length;
+                                const isChapterComplete = chapterDone === chapter.lessons.length;
 
-                                                return (
-                                                    <Link
-                                                        key={lesson.id}
-                                                        href={`/dashboard/courses/${courseId}?lessonId=${lesson.id}`}
-                                                        className={`flex items-start gap-3 p-3 rounded-lg transition-all block ${
-                                                            isCurrent
-                                                                ? "bg-white shadow-sm ring-1 ring-slate-200"
-                                                                : "hover:bg-slate-100/50"
-                                                        }`}
-                                                    >
+                                return (
+                                    <AccordionItem
+                                        key={chapter.id}
+                                        value={chapter.id}
+                                        className={`border-none rounded-lg ${chapter.id === currentChapter?.id ? "bg-ui-page/70" : ""}`}
+                                    >
+                                        <AccordionTrigger className="hover:no-underline py-3 px-3 text-left rounded-lg transition-colors hover:bg-ui-page">
+                                            <div className="flex flex-1 items-center justify-between gap-3 min-w-0">
+                                                <div className="flex flex-col gap-0.5 min-w-0">
+                                                    <span className="text-[11px] font-semibold text-ui-muted uppercase tracking-wider">
+                                                        Chapter {index + 1}
+                                                    </span>
+                                                    <span className="text-sm font-semibold text-slate-900">{chapter.title}</span>
+                                                </div>
+                                                <span className={`text-xs font-semibold shrink-0 ${isChapterComplete ? "text-emerald-700" : "text-ui-muted"}`}>
+                                                    {chapterDone}/{chapter.lessons.length}
+                                                </span>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="pt-0 pb-2 px-2">
+                                            <div className="space-y-0.5">
+                                                {chapter.lessons.map((lesson) => {
+                                                    const isCurrent = lesson.id === currentLesson.id;
+                                                    const isCompleted = isLessonDone(lesson);
 
-                                                        <div className="mt-0.5 shrink-0">
-                                                            <LessonLinkIndicator>
-                                                                {lesson.isLocked ? (
-                                                                    <Lock className={`h-5 w-5 ${isCurrent ? "text-blue-600" : "text-slate-300"}`} />
-                                                                ) : isCurrent ? (
-                                                                    <PlayCircle className="h-5 w-5 text-blue-600" />
-                                                                ) : isCompleted ? (
-                                                                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                                                                ) : (
-                                                                    <CheckCircle2 className="h-5 w-5 text-slate-300" />
-                                                                )}
-                                                            </LessonLinkIndicator>
-                                                        </div>
-                                                        <div className="flex-1">
+                                                    return (
+                                                        <Link
+                                                            key={lesson.id}
+                                                            href={`/dashboard/courses/${courseId}?lessonId=${lesson.id}`}
+                                                            aria-current={isCurrent ? "page" : undefined}
+                                                            className={`flex items-start gap-2.5 px-2.5 py-2.5 rounded-md transition-colors ${
+                                                                isCurrent
+                                                                    ? "bg-ui-accent-soft shadow-[inset_3px_0_0_var(--color-ui-accent)]"
+                                                                    : "hover:bg-ui-page"
+                                                            }`}
+                                                        >
+                                                            <div className="mt-0.5 shrink-0">
+                                                                <LessonLinkIndicator>
+                                                                    {lesson.isLocked ? (
+                                                                        <Lock className={`h-4 w-4 ${isCurrent ? "text-ui-accent" : "text-slate-400"}`} />
+                                                                    ) : isCurrent ? (
+                                                                        <PlayCircle className="h-4 w-4 text-ui-accent" />
+                                                                    ) : isCompleted ? (
+                                                                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                                                                    ) : (
+                                                                        <CheckCircle2 className="h-4 w-4 text-slate-300" />
+                                                                    )}
+                                                                </LessonLinkIndicator>
+                                                            </div>
                                                             <p className={`text-sm ${
-                                                                isCurrent ? "font-bold text-slate-900" : "font-medium text-slate-600"
+                                                                isCurrent
+                                                                    ? "font-semibold text-slate-900"
+                                                                    : lesson.isLocked
+                                                                        ? "text-slate-400"
+                                                                        : "text-slate-600"
                                                             }`}>
                                                                 {lesson.position}. {lesson.title}
                                                             </p>
-                                                        </div>
-                                                    </Link>
-                                                );
-                                            })}
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            ))}
+                                                        </Link>
+                                                    );
+                                                })}
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                );
+                            })}
                         </Accordion>
                     </div>
                 </aside>

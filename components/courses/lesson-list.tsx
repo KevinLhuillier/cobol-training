@@ -66,13 +66,13 @@ export function LessonList({ courseId, chapterId, items }: LessonListProps) {
     return (
         <div className="space-y-3 mt-4 relative">
             {isUpdating && (
-                <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-xl">
+                <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-lg">
                     <Loader2 className="h-6 w-6 animate-spin text-slate-900" />
                 </div>
             )}
 
             {items.map((lesson, index) => (
-                <div key={lesson.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 group">
+                <div key={lesson.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-ui-line group">
                     <div className="flex items-center gap-3">
                         <div className="flex flex-col gap-0.5">
                             <button onClick={() => onMove(index, "up")} disabled={index === 0 || isUpdating} className="p-0.5 text-slate-400 hover:text-slate-900 disabled:opacity-30 disabled:hover:text-slate-400 transition-colors rounded-sm hover:bg-slate-200">

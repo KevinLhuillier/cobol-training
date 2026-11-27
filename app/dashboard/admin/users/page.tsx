@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Users, UserCheck, Clock, AlertTriangle, Infinity as InfinityIcon } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { cn } from "@/lib/utils";
 import { InviteUserDialog } from "@/components/admin/invite-user-dialog";
@@ -48,7 +48,7 @@ function getStatusBadge(status: string | null) {
 export default async function AdminUsersPage({
     searchParams,
 }: {
-    searchParams: Promise<{ status?: string }>;
+    searchParams: Promise<{ status?: string; q?: string }>;
 }) {
     const supabase = await createClient();
 
@@ -103,128 +103,125 @@ export default async function AdminUsersPage({
     // 4. Filtre par statut (piloté par l'URL : ?status=ACTIVE)
     const resolvedSearchParams = await searchParams;
     const activeStatus = resolvedSearchParams.status?.toUpperCase() || "ALL";
-    const filteredUsers = activeStatus === "ALL"
-        ? users
-        : users.filter(u => u.subscription_status === activeStatus);
+    // 4bis. Recherche texte (?q=…) sur le nom et l'email, combinable avec le filtre de statut.
+    const query = (resolvedSearchParams.q ?? "").trim();
+    const needle = query.toLowerCase();
+    const filteredUsers = users.filter((u) => {
+        if (activeStatus !== "ALL" && u.subscription_status !== activeStatus) return false;
+        if (!needle) return true;
+        return (u.name ?? "").toLowerCase().includes(needle) || (u.email ?? "").toLowerCase().includes(needle);
+    });
+
+    const filterHref = (status: string) => {
+        const params = new URLSearchParams();
+        if (status !== "ALL") params.set("status", status);
+        if (query) params.set("q", query);
+        const qs = params.toString();
+        return qs ? `/dashboard/admin/users?${qs}` : "/dashboard/admin/users";
+    };
+
+    const stats = [
+        { label: "Total users", value: totalUsers },
+        { label: "Active", value: activeUsers },
+        { label: "Trial", value: trialUsers },
+        { label: "Unpaid", value: unpaidUsers },
+        { label: "Lifetime", value: lifetimeUsers },
+    ];
 
     return (
         <div className="font-sans">
 
             {/* ADMIN HEADER */}
-            <header className="mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-md">
-                        <Users className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                            Users
-                        </h1>
-                        <p className="text-sm text-slate-500">Students & subscriptions overview</p>
-                    </div>
+            <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <Link href="/dashboard/admin" className="inline-flex items-center gap-1 text-[13px] font-semibold text-ui-accent hover:underline mb-2">
+                        <ChevronLeft className="h-4 w-4" />
+                        Admin
+                    </Link>
+                    <h1 className="text-2xl md:text-[26px] font-bold text-slate-900 tracking-tight">Users</h1>
+                    <p className="mt-1 text-sm text-ui-muted">Students & subscriptions overview</p>
                 </div>
-
                 <div className="flex items-center gap-2">
                     <InviteUserDialog />
-                    <Link
-                        href="/dashboard/admin"
-                        className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors px-4 py-2"
-                    >
-                        Back to admin
-                    </Link>
                 </div>
             </header>
 
             <main className="w-full mx-auto">
 
                 {/* QUICK STATS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600">
-                            <Users className="h-6 w-6" />
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 mb-6">
+                    {stats.map((stat) => (
+                        <div key={stat.label} className="bg-white rounded-xl border border-ui-line px-4 py-3.5">
+                            <p className="text-xs text-ui-muted">{stat.label}</p>
+                            <p className="mt-1 text-[22px] font-bold text-slate-900 tracking-tight">{stat.value}</p>
                         </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-500">Total Users</p>
-                            <p className="text-2xl font-extrabold text-slate-900">{totalUsers}</p>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
-                            <UserCheck className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-500">Active</p>
-                            <p className="text-2xl font-extrabold text-slate-900">{activeUsers}</p>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
-                            <Clock className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-500">Trial</p>
-                            <p className="text-2xl font-extrabold text-slate-900">{trialUsers}</p>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600">
-                            <AlertTriangle className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-500">Unpaid</p>
-                            <p className="text-2xl font-extrabold text-slate-900">{unpaidUsers}</p>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 bg-violet-50 rounded-2xl flex items-center justify-center text-violet-600">
-                            <InfinityIcon className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-500">Lifetime</p>
-                            <p className="text-2xl font-extrabold text-slate-900">{lifetimeUsers}</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* STATUS FILTER */}
-                <div className="flex flex-wrap gap-2 mb-6">
-                    {STATUS_FILTERS.map((filter) => (
-                        <Link
-                            key={filter.value}
-                            href={filter.value === "ALL" ? "/dashboard/admin/users" : `/dashboard/admin/users?status=${filter.value}`}
-                            className={cn(
-                                "inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-colors border",
-                                activeStatus === filter.value
-                                    ? "bg-slate-900 text-white border-slate-900"
-                                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                            )}
-                        >
-                            {filter.label}
-                        </Link>
                     ))}
                 </div>
 
                 {/* USERS LIST */}
-                <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div className="p-6 border-b border-slate-100">
-                        <h2 className="text-lg font-bold text-slate-900">Users List</h2>
+                <div className="bg-white rounded-xl border border-ui-line overflow-hidden">
+                    {/* Recherche + filtres de statut, pilotés par l'URL (?q=…&status=…) */}
+                    <div className="p-4 border-b border-ui-line flex flex-col gap-3">
+                        <form action="/dashboard/admin/users" method="get" role="search" className="flex gap-2">
+                            {activeStatus !== "ALL" && <input type="hidden" name="status" value={activeStatus} />}
+                            <label htmlFor="user-search" className="sr-only">Search users</label>
+                            <input
+                                id="user-search"
+                                name="q"
+                                type="search"
+                                defaultValue={query}
+                                placeholder="Search by name or email"
+                                className="flex-1 min-w-0 h-10 px-3 rounded-lg border border-ui-line-strong bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent"
+                            />
+                            <button
+                                type="submit"
+                                className="h-10 px-4 rounded-lg bg-ui-ink hover:bg-ui-ink-hover text-white text-sm font-semibold transition-colors shrink-0"
+                            >
+                                Search
+                            </button>
+                        </form>
+                        <nav aria-label="Filter by status" className="flex flex-wrap gap-1.5">
+                            {STATUS_FILTERS.map((filter) => (
+                                <Link
+                                    key={filter.value}
+                                    href={filterHref(filter.value)}
+                                    aria-current={activeStatus === filter.value ? "page" : undefined}
+                                    className={cn(
+                                        "inline-flex items-center h-8 px-3 rounded-md text-[13px] transition-colors border",
+                                        activeStatus === filter.value
+                                            ? "bg-ui-ink text-white border-ui-ink font-semibold"
+                                            : "bg-white text-slate-600 border-ui-line font-medium hover:bg-ui-page"
+                                    )}
+                                >
+                                    {filter.label}
+                                </Link>
+                            ))}
+                        </nav>
+                        {query && (
+                            <p className="text-xs text-ui-muted">
+                                {filteredUsers.length} result{filteredUsers.length !== 1 ? "s" : ""} for &ldquo;{query}&rdquo; ·{" "}
+                                <Link href={activeStatus === "ALL" ? "/dashboard/admin/users" : `/dashboard/admin/users?status=${activeStatus}`} className="font-semibold text-ui-accent hover:underline">
+                                    Clear search
+                                </Link>
+                            </p>
+                        )}
                     </div>
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                            <tr className="bg-slate-50/50 text-slate-500 text-xs uppercase tracking-wider">
-                                <th className="p-4 font-bold">Name</th>
-                                <th className="p-4 font-bold">Email</th>
-                                <th className="p-4 font-bold">Status</th>
-                                <th className="p-4 font-bold">Last login</th>
+                            <tr className="bg-ui-page/70 text-ui-muted text-xs">
+                                <th className="px-4 py-2.5 font-semibold">Name</th>
+                                <th className="px-4 py-2.5 font-semibold">Email</th>
+                                <th className="px-4 py-2.5 font-semibold">Status</th>
+                                <th className="px-4 py-2.5 font-semibold">Last login</th>
                             </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-ui-line">
                             {filteredUsers.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} className="p-8 text-center text-slate-500">
-                                        No users found for this status.
+                                        No users match these filters.
                                     </td>
                                 </tr>
                             ) : (
@@ -233,22 +230,22 @@ export default async function AdminUsersPage({
                                     return (
                                         <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
                                             <td className="p-0">
-                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block p-4">
-                                                    <p className="font-bold text-slate-900">{u.name || "—"}</p>
+                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block px-4 py-3">
+                                                    <p className="font-semibold text-slate-900">{u.name || "—"}</p>
                                                 </Link>
                                             </td>
                                             <td className="p-0">
-                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block p-4">
+                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block px-4 py-3">
                                                     <p className="text-sm text-slate-600">{u.email}</p>
                                                 </Link>
                                             </td>
                                             <td className="p-0">
-                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block p-4">
+                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block px-4 py-3">
                                                     {getStatusBadge(u.subscription_status)}
                                                 </Link>
                                             </td>
                                             <td className="p-0">
-                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block p-4">
+                                                <Link href={`/dashboard/admin/users/${u.id}`} className="block px-4 py-3">
                                                     <span className="text-sm text-slate-600">
                                                         {lastLogin
                                                             ? new Date(lastLogin).toLocaleDateString("en-US", {

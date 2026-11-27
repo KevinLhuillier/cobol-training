@@ -13,6 +13,17 @@
   --color-brand-tint: #f4f7ff;
   --color-brand-black: #0f0f10;
 
+  /* Design « Soft Structure » de l'espace connecté (dashboard, sidebar…) : préfixe ui- pour ne pas
+     entrer en collision avec les tokens shadcn (--color-accent, --color-muted…). */
+  --color-ui-ink: #0b1726;
+  --color-ui-ink-hover: #16263b;
+  --color-ui-accent: #1767ae;
+  --color-ui-accent-soft: #eaf2fb;
+  --color-ui-page: #f5f7fa;
+  --color-ui-line: #e6eaf0;
+  --color-ui-line-strong: #d9dfe7;
+  --color-ui-muted: #6b7480;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);

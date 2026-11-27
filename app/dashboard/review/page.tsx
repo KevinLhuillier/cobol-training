@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Terminal, User, BookOpen, Check, Clock } from "lucide-react";
+import { User, BookOpen, Check, Clock } from "lucide-react";
 import { ReviewActionButtons } from "@/components/review-action-button";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
@@ -73,89 +73,76 @@ export default async function AdminReviewsPage() {
     });
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans p-4 md:p-6 lg:p-8">
-            <div className="max-w-6xl mx-auto">
-                {/* HEADER */}
-                <div className="mb-8 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center text-emerald-400 shadow-sm">
-                            <Terminal className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                                Pending Reviews
-                            </h1>
-                            <p className="text-sm text-slate-500">
-                                {pendingReviews.length} exercise{pendingReviews.length !== 1 ? 's' : ''} to review
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* EXERCISES LIST */}
-                {pendingReviews.length === 0 ? (
-                    <div className="bg-white rounded-[2rem] border border-slate-100 p-16 text-center shadow-sm flex flex-col items-center">
-                        <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                            <Check className="h-8 w-8 text-slate-300" />
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-900">No pending reviews</h3>
-                        <p className="text-slate-500 mt-2">Great job, all exercises have been reviewed!</p>
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        {pendingReviews.map((review) => (
-                            <div key={review.id} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-                                {/* Contextual Information */}
-                                <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-wider">
-                                            <BookOpen className="h-3.5 w-3.5" />
-                                            {review.courseTitle}
-                                        </div>
-                                        <h3 className="text-lg font-bold text-slate-900">
-                                            {review.chapterTitle} - {review.lessonTitle}
-                                        </h3>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-medium text-slate-600 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
-                                        <span className="flex items-center gap-2">
-                                            <User className="h-4 w-4 text-slate-400" />
-                                            <span>Student: <span className="font-bold text-slate-900">{review.studentName}</span></span>
-                                        </span>
-                                        {/* updated_at = date de la dernière soumission (la ligne est mise à jour à chaque envoi) */}
-                                        {review.updatedAt && (
-                                            <span className="flex items-center gap-1.5 text-slate-500">
-                                                <Clock className="h-4 w-4 text-slate-400" />
-                                                <time dateTime={review.updatedAt}>
-                                                    {new Date(review.updatedAt).toLocaleString("en-GB", {
-                                                        dateStyle: "medium",
-                                                        timeStyle: "short",
-                                                        timeZone: "Europe/Paris",
-                                                    })}
-                                                </time>
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Student's Code */}
-                                <div className="p-6">
-                                    <p className="text-sm font-bold text-slate-500 mb-3">Submitted solution:</p>
-                                    <div className="bg-slate-900 rounded-xl p-4 overflow-x-auto shadow-inner border border-slate-800">
-                                        <pre className="text-emerald-400 font-mono text-sm whitespace-pre-wrap">
-                                            <code>{review.exerciseAnswer}</code>
-                                        </pre>
-                                    </div>
-                                </div>
-
-                                {/* Actions Bar */}
-                                <div className="p-6 bg-slate-50 border-t border-slate-100">
-                                    <ReviewActionButtons progressId={review.id} />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+        <div className="font-sans max-w-5xl mx-auto flex flex-col gap-6">
+            {/* HEADER */}
+            <div>
+                <h1 className="text-2xl md:text-[26px] font-bold text-slate-900 tracking-tight">Pending reviews</h1>
+                <p className="mt-1 text-sm text-ui-muted">
+                    {pendingReviews.length === 0
+                        ? "Nothing to review right now."
+                        : `${pendingReviews.length} exercise${pendingReviews.length !== 1 ? "s" : ""} to review — oldest first.`}
+                </p>
             </div>
+
+            {/* EXERCISES LIST */}
+            {pendingReviews.length === 0 ? (
+                <div className="bg-white rounded-xl border border-ui-line p-14 text-center flex flex-col items-center">
+                    <div className="h-12 w-12 bg-emerald-50 rounded-lg flex items-center justify-center mb-4">
+                        <Check className="h-6 w-6 text-emerald-600" />
+                    </div>
+                    <h2 className="text-base font-semibold text-slate-900">No pending reviews</h2>
+                    <p className="text-sm text-ui-muted mt-1">Great job, all exercises have been reviewed!</p>
+                </div>
+            ) : (
+                pendingReviews.map((review) => (
+                    <article key={review.id} className="bg-white rounded-xl border border-ui-line overflow-hidden">
+                        {/* Contexte : module, leçon, élève et date de soumission */}
+                        <header className="px-5 py-4 border-b border-ui-line flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div className="min-w-0">
+                                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ui-accent">
+                                    <BookOpen className="h-3.5 w-3.5" />
+                                    {review.courseTitle}
+                                </p>
+                                <h2 className="mt-1 text-[17px] font-semibold text-slate-900">
+                                    {review.chapterTitle} — {review.lessonTitle}
+                                </h2>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-slate-600 shrink-0">
+                                <span className="flex items-center gap-1.5">
+                                    <User className="h-3.5 w-3.5 text-slate-400" />
+                                    <span className="font-semibold text-slate-900">{review.studentName}</span>
+                                </span>
+                                {/* updated_at = date de la dernière soumission (la ligne est mise à jour à chaque envoi) */}
+                                {review.updatedAt && (
+                                    <span className="flex items-center gap-1.5">
+                                        <Clock className="h-3.5 w-3.5 text-slate-400" />
+                                        <time dateTime={review.updatedAt}>
+                                            {new Date(review.updatedAt).toLocaleString("en-GB", {
+                                                dateStyle: "medium",
+                                                timeStyle: "short",
+                                                timeZone: "Europe/Paris",
+                                            })}
+                                        </time>
+                                    </span>
+                                )}
+                            </div>
+                        </header>
+
+                        {/* Solution soumise */}
+                        <div className="p-5">
+                            <p className="text-[13px] font-semibold text-ui-muted mb-2.5">Submitted solution</p>
+                            <pre className="bg-ui-ink rounded-lg p-4 overflow-x-auto font-mono text-[13px] leading-relaxed text-emerald-400 whitespace-pre-wrap">
+                                <code>{review.exerciseAnswer}</code>
+                            </pre>
+                        </div>
+
+                        {/* Feedback + décision */}
+                        <div className="px-5 py-4 bg-ui-page/60 border-t border-ui-line">
+                            <ReviewActionButtons progressId={review.id} />
+                        </div>
+                    </article>
+                ))
+            )}
         </div>
     );
 }

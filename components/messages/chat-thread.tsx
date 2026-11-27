@@ -7,6 +7,7 @@ import { uploadChatImage, getChatImageSignedUrl } from "@/utils/chat-storage";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 export interface ChatMessage {
     id: string;
@@ -25,6 +26,8 @@ interface ChatThreadProps {
     initialMessages: ChatMessage[];
     counterpartName: string;
     counterpartInitial: string;
+    /** Classes ajoutées à la carte racine (ex. intégration dans le volet de la messagerie admin). */
+    className?: string;
 }
 
 function formatTime(isoDate: string) {
@@ -52,14 +55,14 @@ function ChatImage({ path, onOpen }: { path: string; onOpen: (url: string) => vo
 
     if (failed) {
         return (
-            <div className="w-48 h-24 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-xs text-slate-400 text-center px-3">
+            <div className="w-48 h-24 rounded-lg bg-slate-100 border border-ui-line flex items-center justify-center text-xs text-slate-400 text-center px-3">
                 Image no longer available
             </div>
         );
     }
 
     if (!url) {
-        return <div className="w-48 h-32 rounded-xl bg-slate-100 animate-pulse" />;
+        return <div className="w-48 h-32 rounded-lg bg-slate-100 animate-pulse" />;
     }
 
     return (
@@ -68,7 +71,7 @@ function ChatImage({ path, onOpen }: { path: string; onOpen: (url: string) => vo
             src={url}
             alt="Attachment"
             onClick={() => onOpen(url)}
-            className="max-w-[240px] max-h-[240px] rounded-xl border border-slate-100 cursor-pointer object-cover"
+            className="max-w-[240px] max-h-[240px] rounded-lg border border-ui-line cursor-pointer object-cover"
         />
     );
 }
@@ -80,6 +83,7 @@ export function ChatThread({
     initialMessages,
     counterpartName,
     counterpartInitial,
+    className,
 }: ChatThreadProps) {
     const supabase = useMemo(() => createClient(), []);
 
@@ -209,7 +213,7 @@ export function ChatThread({
     };
 
     return (
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col h-[calc(100vh-14rem)]">
+        <div className={cn("bg-white rounded-xl border border-ui-line flex flex-col h-[calc(100vh-14rem)]", className)}>
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {messages.length === 0 && (
                     <p className="text-sm text-slate-400 text-center mt-10">
@@ -229,8 +233,8 @@ export function ChatThread({
                                 </div>
                             )}
                             <div
-                                className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                                    isOwn ? "bg-slate-900 text-white rounded-br-sm" : "bg-slate-100 text-slate-900 rounded-bl-sm"
+                                className={`max-w-[75%] rounded-xl px-4 py-2.5 ${
+                                    isOwn ? "bg-ui-ink text-white rounded-br-sm" : "bg-slate-100 text-slate-900 rounded-bl-sm"
                                 }`}
                             >
                                 {message.image_path && (
@@ -251,9 +255,9 @@ export function ChatThread({
                 <div ref={bottomRef} />
             </div>
 
-            <div className="border-t border-slate-100 p-4">
+            <div className="border-t border-ui-line p-4">
                 {pendingImage && (
-                    <div className="mb-3 inline-flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl p-2">
+                    <div className="mb-3 inline-flex items-center gap-2 bg-slate-50 border border-ui-line rounded-lg p-2">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={pendingImage.previewUrl} alt="Pending attachment" className="h-14 w-14 rounded-lg object-cover" />
                         <button
@@ -277,12 +281,12 @@ export function ChatThread({
                         ref={textareaRef}
                         rows={4}
                         // ~4 lignes par défaut, puis grandit avec le texte jusqu'à 60vh (cf. useLayoutEffect).
-                        className="min-h-24 max-h-[60vh] overflow-y-auto rounded-xl border-slate-200 bg-slate-50 text-slate-900 focus-visible:ring-slate-400 focus-visible:bg-white"
+                        className="min-h-24 max-h-[60vh] overflow-y-auto rounded-lg border-ui-line bg-slate-50 text-slate-900 focus-visible:ring-slate-400 focus-visible:bg-white"
                     />
                     <Button
                         onClick={handleSend}
                         disabled={isSending || isUploading || (!text.trim() && !pendingImage)}
-                        className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-11 w-11 shrink-0 p-0"
+                        className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg h-11 w-11 shrink-0 p-0"
                     >
                         {isSending || isUploading ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -301,7 +305,7 @@ export function ChatThread({
                 <DialogContent className="max-w-2xl p-2 bg-transparent border-none shadow-none">
                     {lightboxUrl && (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={lightboxUrl} alt="Attachment" className="w-full h-auto rounded-2xl" />
+                        <img src={lightboxUrl} alt="Attachment" className="w-full h-auto rounded-xl" />
                     )}
                 </DialogContent>
             </Dialog>

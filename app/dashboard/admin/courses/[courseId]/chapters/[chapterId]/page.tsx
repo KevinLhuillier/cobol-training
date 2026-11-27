@@ -1,14 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import {
-    ArrowLeft,
-    LayoutDashboard,
-    Video,
-    Pencil,
-    Plus,
-    GripVertical
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import LessonForm from "@/components/courses/lesson-form";
 import { LessonList } from "@/components/courses/lesson-list";
 import { ChapterTitleForm } from "@/components/courses/chapter-title-form";
@@ -73,7 +66,7 @@ export default async function ChapterDetailsPage({
         console.error("🔥 ERREUR SUPABASE (Chapter Details):", error);
         return (
             <div className="min-h-screen flex items-center justify-center p-4">
-                <div className="bg-red-50 border border-red-200 text-red-700 p-8 rounded-2xl max-w-lg">
+                <div className="bg-red-50 border border-red-200 text-red-700 p-8 rounded-xl max-w-lg">
                     <h1 className="font-bold text-xl mb-4">Erreur SQL Supabase</h1>
                     <p className="font-mono text-sm bg-white p-4 rounded-lg border border-red-100">{error.message}</p>
                 </div>
@@ -93,40 +86,38 @@ export default async function ChapterDetailsPage({
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans p-4 md:p-6 lg:p-8">
+        <div className="font-sans">
             <div className="max-w-5xl mx-auto">
 
                 {/* EN TÊTE */}
-                <div className="mb-8 flex items-center justify-between gap-4">
+                <div className="mb-8 flex flex-col lg:flex-row lg:items-end justify-between gap-4">
                     <div className="flex items-center gap-4">
                         {/* 🟢 Bouton retour mis à jour vers le nouveau chemin Dashboard Admin */}
                         <Link
                             href={`/dashboard/admin/courses/${courseId}`}
-                            className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
+                            className="h-10 w-10 bg-white border border-ui-line rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
                         >
                             <ArrowLeft className="h-5 w-5" />
                         </Link>
                         <div>
-                            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                                Chapter Setup
-                            </h1>
-                            <p className="text-sm text-slate-500">
+                            <h1 className="text-2xl md:text-[26px] font-bold text-slate-900 tracking-tight">{chapter.title}</h1>
+                            <p className="mt-1 text-sm text-ui-muted">Chapter setup · 
                                 Manage your chapter title and add video lessons.
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
                         {chapter.isFree && (
-                            <Badge className="px-3 py-1.5 border-none font-bold shadow-sm bg-blue-100 text-blue-700">
+                            <Badge className="px-2 py-0.5 rounded-md text-xs font-semibold border-none bg-ui-accent-soft text-ui-accent">
                                 Free
                             </Badge>
                         )}
                         <Badge
-                            className={`px-3 py-1.5 border-none font-bold shadow-sm ${
+                            className={`px-2 py-0.5 rounded-md text-xs font-semibold border-none ${
                                 chapter.isPublished
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : "bg-amber-100 text-amber-700"
+                                    ? "bg-emerald-50 text-emerald-800"
+                                    : "bg-amber-50 text-amber-800"
                             }`}
                         >
                             {chapter.isPublished ? "Published" : "Draft"}
@@ -144,21 +135,18 @@ export default async function ChapterDetailsPage({
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
 
                     {/* COLONNE GAUCHE: Détails du chapitre */}
-                    <div className="space-y-8">
-                        <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6">
-                            <div className="flex items-center gap-2 text-slate-900 font-bold text-lg mb-6">
-                                <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                                    <LayoutDashboard className="h-4 w-4" />
-                                </div>
+                    <div className="lg:col-span-2 space-y-6">
+                        <div className="bg-white rounded-xl border border-ui-line p-6">
+                            <div className="flex items-center gap-2 text-slate-900 font-semibold text-base mb-5">
                                 Customize chapter
                             </div>
 
                             <div className="space-y-4">
                                 <div>
-                                    <p className="text-sm font-bold text-slate-500 mb-1">Chapter Title</p>
+                                    <p className="text-[13px] font-semibold text-slate-900 mb-1.5">Chapter Title</p>
                                     <ChapterTitleForm
                                         initialData={chapter}
                                         courseId={courseId}
@@ -170,13 +158,10 @@ export default async function ChapterDetailsPage({
                     </div>
 
                     {/* COLONNE DROITE: Les leçons (vidéos) */}
-                    <div className="space-y-8">
-                        <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6">
+                    <div className="lg:col-span-3 space-y-6">
+                        <div className="bg-white rounded-xl border border-ui-line p-6">
                             <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-                                <div className="flex items-center gap-2 text-slate-900 font-bold text-lg shrink-0">
-                                    <div className="h-8 w-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-                                        <Video className="h-4 w-4" />
-                                    </div>
+                                <div className="flex items-center gap-2 text-slate-900 font-semibold text-base shrink-0">
                                     Lessons
                                 </div>
 

@@ -45,19 +45,28 @@ export default async function AdminMessageThreadPage({
 
     const studentName = student.name || student.email;
 
+    // Volet de droite de la messagerie admin (la liste des conversations est rendue par layout.tsx).
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
-            <div className="flex items-center gap-3">
+        <>
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-ui-line">
+                {/* Retour à la liste : utile sous lg, où un seul volet est affiché à la fois. */}
                 <Link
                     href="/dashboard/admin/messages"
-                    className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-100 bg-white shadow-sm text-slate-500 hover:text-slate-900 transition-colors shrink-0"
+                    aria-label="Back to conversations"
+                    className="lg:hidden h-9 w-9 flex items-center justify-center rounded-lg border border-ui-line bg-white text-slate-500 hover:text-slate-900 transition-colors shrink-0"
                 >
                     <ArrowLeft className="h-4 w-4" />
                 </Link>
-                <div>
-                    <h1 className="text-xl font-bold text-slate-900">{studentName}</h1>
-                    <p className="text-sm text-slate-500">{student.email}</p>
+                <div className="min-w-0 flex-1">
+                    <h2 className="text-[15px] font-semibold text-slate-900 truncate">{studentName}</h2>
+                    <p className="text-xs text-ui-muted truncate">{student.email}</p>
                 </div>
+                <Link
+                    href={`/dashboard/admin/users/${studentId}`}
+                    className="text-[13px] font-semibold text-ui-accent hover:underline shrink-0"
+                >
+                    View profile
+                </Link>
             </div>
 
             <ChatThread
@@ -67,7 +76,8 @@ export default async function AdminMessageThreadPage({
                 initialMessages={(messages || []) as ChatMessage[]}
                 counterpartName={studentName}
                 counterpartInitial={studentName.charAt(0).toUpperCase()}
+                className="flex-1 min-h-0 h-auto rounded-none border-0"
             />
-        </div>
+        </>
     );
 }

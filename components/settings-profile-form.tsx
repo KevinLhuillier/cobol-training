@@ -47,7 +47,7 @@ export function ProfileForm({ initialName }: ProfileFormProps) {
                     onChange={(e) => setName(e.target.value)}
                     required
                     disabled={isLoading}
-                    className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                    className="text-slate-900 rounded-lg border-ui-line-strong bg-white focus-visible:ring-ui-accent/30 focus-visible:border-ui-accent h-11 disabled:opacity-50"
                 />
             </div>
 
@@ -61,7 +61,7 @@ export function ProfileForm({ initialName }: ProfileFormProps) {
             <Button
                 type="submit"
                 disabled={isLoading || name.trim() === initialName.trim() || name.trim().length === 0}
-                className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-11 px-5 disabled:opacity-50"
+                className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg h-11 px-5 disabled:opacity-50"
             >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save changes

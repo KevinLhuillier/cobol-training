@@ -8,7 +8,7 @@ export default function AuthLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
+        <div className="min-h-screen bg-ui-page flex flex-col font-sans">
             {children}
             <SiteFooter />
         </div>

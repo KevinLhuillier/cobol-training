@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { LogoCtIcon } from "@/components/logo-ct-icon";
+import { AuthShell, authInputClass, authLabelClass, authButtonClass } from "@/components/auth/auth-shell";
 import { createClient } from "@/utils/supabase/client";
 
 export default function ResetPasswordPage() {
@@ -83,21 +83,11 @@ export default function ResetPasswordPage() {
     };
 
     return (
-        <div className="flex-1 bg-slate-100 flex items-center justify-center p-4 font-sans">
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-sm p-8 flex flex-col">
-                <div className="flex flex-col items-center mb-8 text-center">
-                    <LogoCtIcon className="h-14 w-auto mb-4" />
-                    <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                        Choose a new password
-                    </h1>
-                    <p className="text-sm text-slate-500 mt-2">
-                        Make it something you don&apos;t use elsewhere.
-                    </p>
-                </div>
+        <AuthShell title="Choose a new password" subtitle={<>Make it something you don&apos;t use elsewhere.</>}>
 
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 text-red-600">
-                        <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+                    <div className="mb-5 p-3 bg-red-50 rounded-lg flex items-start gap-2.5 text-red-800">
+                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                         <p className="text-sm font-medium">{error}</p>
                     </div>
                 )}
@@ -107,21 +97,21 @@ export default function ResetPasswordPage() {
                         <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
                     </div>
                 ) : !hasValidSession ? (
-                    <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl text-amber-700">
+                    <div className="p-3 bg-amber-50 rounded-lg text-amber-800">
                         <p className="text-sm font-medium">
                             This reset link is invalid or has expired. Please request a new one.
                         </p>
                         <Link
                             href="/auth/forgot-password"
-                            className="inline-block mt-3 text-sm font-bold text-slate-900 hover:underline"
+                            className="inline-block mt-2 text-sm font-semibold text-ui-accent hover:underline"
                         >
                             Request a new link
                         </Link>
                     </div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="password" className="text-slate-700 font-semibold">New Password</Label>
+                            <Label htmlFor="password" className={authLabelClass}>New Password</Label>
                             <Input
                                 id="password"
                                 name="password"
@@ -130,13 +120,13 @@ export default function ResetPasswordPage() {
                                 required
                                 minLength={8}
                                 disabled={isLoading}
-                                className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                                className={authInputClass}
                             />
-                            <p className="text-xs text-slate-500 font-medium">8 characters minimum</p>
+                            <p className="text-xs text-ui-muted">8 characters minimum</p>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="confirmPassword" className="text-slate-700 font-semibold">Confirm New Password</Label>
+                            <Label htmlFor="confirmPassword" className={authLabelClass}>Confirm New Password</Label>
                             <Input
                                 id="confirmPassword"
                                 name="confirmPassword"
@@ -145,14 +135,14 @@ export default function ResetPasswordPage() {
                                 required
                                 minLength={8}
                                 disabled={isLoading}
-                                className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                                className={authInputClass}
                             />
                         </div>
 
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md text-base font-semibold disabled:opacity-80"
+                            className={authButtonClass}
                         >
                             {isLoading ? (
                                 <>
@@ -165,7 +155,6 @@ export default function ResetPasswordPage() {
                         </Button>
                     </form>
                 )}
-            </div>
-        </div>
+            </AuthShell>
     );
 }

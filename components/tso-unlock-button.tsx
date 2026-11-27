@@ -82,7 +82,7 @@ export function TsoUnlockButton({ id }: TsoUnlockButtonProps) {
                 <Button
                     onClick={onUnlock}
                     disabled={isLoading}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm h-11 px-5"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg h-11 px-5"
                 >
                     {isLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -104,7 +104,7 @@ export function TsoUnlockButton({ id }: TsoUnlockButtonProps) {
                     </DialogHeader>
 
                     {account && (
-                        <div className="bg-slate-900 rounded-xl p-4 space-y-3">
+                        <div className="bg-ui-ink rounded-lg p-4 space-y-3">
                             <div>
                                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">User ID</p>
                                 <p className="font-mono text-emerald-400 font-bold text-sm">{account.username}</p>
@@ -129,7 +129,7 @@ export function TsoUnlockButton({ id }: TsoUnlockButtonProps) {
                     )}
 
                     <DialogFooter>
-                        <DialogClose className="h-10 px-4 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors">
+                        <DialogClose className="h-10 px-4 rounded-lg font-bold text-white bg-ui-ink hover:bg-ui-ink-hover transition-colors">
                             Got it
                         </DialogClose>
                     </DialogFooter>
