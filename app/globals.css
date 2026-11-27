@@ -147,3 +147,23 @@
 .ql-editor p {
   margin-bottom: 0.75rem;
 }
+/* Barre de défilement verticale discrète, aux couleurs du site (slate), visible seulement quand
+   le contenu déborde (overflow-y-auto). Utilisée par la liste des leçons du lecteur de cours. */
+@utility scrollbar-site {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-slate-300) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--color-slate-300);
+    border-radius: 9999px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-slate-400);
+  }
+}

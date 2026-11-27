@@ -1,7 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     Accordion,
     AccordionContent,
@@ -350,7 +349,9 @@ export default async function CoursePlayer({
                         {/*</div>*/}
                     </div>
 
-                    <ScrollArea className="flex-1 min-h-0 p-4">
+                    {/* Défilement natif (et non ScrollArea) : fiable sur tous les navigateurs / tactiles, avec
+                        une barre visible aux couleurs du site (utilitaire scrollbar-site, app/globals.css). */}
+                    <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 scrollbar-site">
                         {/* @ts-expect-error - Contournement conflit type Radix/React 19 */}
                         <Accordion key={currentChapter?.id || "accordion"} type="multiple" defaultValue={[currentChapter?.id || ""]} className="w-full space-y-3">
                             {formattedCourse.chapters.map((chapter, index) => (
@@ -410,7 +411,7 @@ export default async function CoursePlayer({
                                 </AccordionItem>
                             ))}
                         </Accordion>
-                    </ScrollArea>
+                    </div>
                 </aside>
             </main>
         </div>
