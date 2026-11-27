@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SubscribeButton } from "@/components/subscribe-button";
 // 🟢 Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
+import { notifyExerciseSubmitted } from "@/app/actions/review";
 
 interface ExerciseFormProps {
     courseId: string;
@@ -64,6 +65,15 @@ export function ExerciseForm({ courseId, chapterId, lessonId, initialAnswer, isC
             if (upsertError) {
                 console.error("Upsert Progress Error:", upsertError);
                 throw new Error("Failed to submit exercise.");
+            }
+
+            // 3. Notifie l'admin par email (best-effort). Attendu avant de naviguer : une navigation
+            // lancée pendant qu'une Server Action est en vol fait échouer celle-ci. L'action répond
+            // immédiatement (l'email part dans `after()`).
+            try {
+                await notifyExerciseSubmitted(lessonId);
+            } catch (notifyError) {
+                console.error("Exercise submission notification failed:", notifyError);
             }
 
             startTransition(() => {

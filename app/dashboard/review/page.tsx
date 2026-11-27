@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Terminal, User, BookOpen, Check } from "lucide-react";
+import { Terminal, User, BookOpen, Check, Clock } from "lucide-react";
 import { ReviewActionButtons } from "@/components/review-action-button";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
@@ -116,9 +116,24 @@ export default async function AdminReviewsPage() {
                                             {review.chapterTitle} - {review.lessonTitle}
                                         </h3>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm font-medium text-slate-600 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
-                                        <User className="h-4 w-4 text-slate-400" />
-                                        <span>Student: <span className="font-bold text-slate-900">{review.studentName}</span></span>
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-medium text-slate-600 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
+                                        <span className="flex items-center gap-2">
+                                            <User className="h-4 w-4 text-slate-400" />
+                                            <span>Student: <span className="font-bold text-slate-900">{review.studentName}</span></span>
+                                        </span>
+                                        {/* updated_at = date de la dernière soumission (la ligne est mise à jour à chaque envoi) */}
+                                        {review.updatedAt && (
+                                            <span className="flex items-center gap-1.5 text-slate-500">
+                                                <Clock className="h-4 w-4 text-slate-400" />
+                                                <time dateTime={review.updatedAt}>
+                                                    {new Date(review.updatedAt).toLocaleString("en-GB", {
+                                                        dateStyle: "medium",
+                                                        timeStyle: "short",
+                                                        timeZone: "Europe/Paris",
+                                                    })}
+                                                </time>
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 
