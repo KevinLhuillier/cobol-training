@@ -117,11 +117,16 @@ export default async function AdminMessagesPage() {
                                                     })}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-slate-500 truncate flex items-center gap-1.5 mt-0.5">
+                                            {/* Le texte est dans son propre span `truncate min-w-0` : un `truncate` posé
+                                                sur le conteneur flex ne coupe pas les enfants texte, et un long message
+                                                élargissait toute la ligne (scroll horizontal). */}
+                                            <p className="text-sm text-slate-500 flex items-center gap-1.5 mt-0.5 min-w-0">
                                                 {conversation.lastMessage.image_path && (
                                                     <ImageIcon className="h-3.5 w-3.5 shrink-0" />
                                                 )}
-                                                {preview || (conversation.lastMessage.image_path ? "Image" : "")}
+                                                <span className="truncate min-w-0">
+                                                    {preview || (conversation.lastMessage.image_path ? "Image" : "")}
+                                                </span>
                                             </p>
                                         </div>
 

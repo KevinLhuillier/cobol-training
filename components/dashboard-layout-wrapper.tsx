@@ -32,7 +32,9 @@ export function DashboardLayoutWrapper({ header, sidebar, children }: DashboardL
                 {header}
                 <main className="flex-1 max-w-[1600px] w-full mx-auto flex flex-col lg:flex-row gap-6">
                     <MobileSidebarDrawer>{sidebar}</MobileSidebarDrawer>
-                    <section className="flex-1 bg-white rounded-3xl shadow-sm p-6 lg:p-8">
+                    {/* min-w-0 : sans lui, un contenu non sécable (ex. aperçu `truncate` d'un long message)
+                        élargit la section au lieu d'être tronqué, d'où un scroll horizontal. */}
+                    <section className="flex-1 min-w-0 bg-white rounded-3xl shadow-sm p-6 lg:p-8">
                         {children}
                     </section>
                 </main>
