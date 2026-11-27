@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
-import { LogoCtIcon } from "@/components/logo-ct-icon";
+import { AuthShell, authInputClass, authLabelClass, authButtonClass } from "@/components/auth/auth-shell";
 import { CAPTCHA_ENABLED, Turnstile } from "@/components/turnstile";
 
 // Import du client Supabase
@@ -83,22 +83,12 @@ function LoginForm() {
     };
 
     return (
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-sm p-8 flex flex-col">
-            {/* HEADER / LOGO */}
-            <div className="flex flex-col items-center mb-8 text-center">
-                <LogoCtIcon className="h-14 w-auto mb-4" />
-                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                    Cobol Training
-                </h1>
-                <p className="text-sm text-slate-500 mt-2">
-                    Sign in to your student workspace.
-                </p>
-            </div>
+        <AuthShell title="Sign in" subtitle={<>Welcome back. Continue where you left off.</>} footer={<>New here?{" "}<Link href="/auth/register" className="font-semibold text-ui-accent hover:underline">Create an account</Link>{" "}— 7-day free trial.</>}>
 
             {/* BANDEAU DE SUCCÈS */}
             {isRegistered && !error && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-xl flex items-start gap-3 text-green-700">
-                    <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5 text-green-600" />
+                <div className="mb-5 p-3 bg-emerald-50 rounded-lg flex items-start gap-2.5 text-emerald-800">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600" />
                     <p className="text-sm font-medium">
                         Account created successfully! A confirmation email has been sent to your inbox.
                     </p>
@@ -107,16 +97,16 @@ function LoginForm() {
 
             {/* AFFICHAGE DES ERREURS */}
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 text-red-600">
-                    <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+                <div className="mb-5 p-3 bg-red-50 rounded-lg flex items-start gap-2.5 text-red-800">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                     <p className="text-sm font-medium">{error}</p>
                 </div>
             )}
 
             {/* FORMULAIRE */}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-700 font-semibold">
+                    <Label htmlFor="email" className={authLabelClass}>
                         Email Address
                     </Label>
                     <Input
@@ -126,17 +116,17 @@ function LoginForm() {
                         placeholder="student@example.com"
                         required
                         disabled={isLoading}
-                        className="text-slate-900 placeholder:text-slate-400 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                        className={authInputClass}
                     />
                 </div>
 
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <Label htmlFor="password" className="text-slate-700 font-semibold">
+                        <Label htmlFor="password" className={authLabelClass}>
                             Password
                         </Label>
-                        <Link href="/auth/forgot-password" className="text-sm font-medium text-slate-500 hover:text-slate-900">
-                            Forgot?
+                        <Link href="/auth/forgot-password" className="text-[13px] font-medium text-ui-accent hover:underline">
+                            Forgot password?
                         </Link>
                     </div>
                     <Input
@@ -146,14 +136,14 @@ function LoginForm() {
                         placeholder="••••••••"
                         required
                         disabled={isLoading}
-                        className="text-slate-900 placeholder:text-slate-400 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                        className={authInputClass}
                     />
                 </div>
 
                 <Button
                     type="submit"
                     disabled={isLoading || (CAPTCHA_ENABLED && !captchaToken)}
-                    className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md text-base font-semibold mt-4 disabled:opacity-80"
+                    className={authButtonClass}
                 >
                     {isLoading ? (
                         <>
@@ -167,30 +157,15 @@ function LoginForm() {
 
                 <Turnstile action="login" onToken={setCaptchaToken} resetSignal={captchaReset} />
             </form>
-
-            {/* REDIRECTION INSCRIPTION */}
-            <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-                <p className="text-sm text-slate-600">
-                    Don&apos;t have an account?{" "}
-                    <Link
-                        href="/auth/register"
-                        className="font-bold text-slate-900 hover:underline"
-                    >
-                        Sign Up
-                    </Link>
-                </p>
-            </div>
-        </div>
+        </AuthShell>
     );
 }
 
 // Export par défaut de la page avec la boundary Suspense
 export default function LoginPage() {
     return (
-        <div className="flex-1 bg-slate-100 flex items-center justify-center p-4 font-sans">
-            <Suspense fallback={<div className="w-full max-w-md bg-white rounded-3xl shadow-sm h-[500px] animate-pulse"></div>}>
+        <Suspense fallback={<div className="flex-1" />}>
                 <LoginForm />
             </Suspense>
-        </div>
     );
 }

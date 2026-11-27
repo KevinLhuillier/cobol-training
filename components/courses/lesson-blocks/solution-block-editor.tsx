@@ -112,7 +112,7 @@ export function SolutionBlockEditor({
                         value={block.data.title}
                         onChange={(e) => onChange({ title: e.target.value })}
                         placeholder="Show solution"
-                        className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm font-medium"
+                        className="w-full h-10 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm font-medium"
                     />
                 </div>
 
@@ -121,7 +121,7 @@ export function SolutionBlockEditor({
                     component below to build the solution.
                 </p>
 
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4 space-y-4">
+                <div className="rounded-xl border border-dashed border-ui-line bg-slate-50/60 p-4 space-y-4">
                     {children.length === 0 ? (
                         <p className="text-xs text-slate-400 text-center py-4">No content yet in this solution.</p>
                     ) : (

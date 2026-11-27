@@ -66,12 +66,9 @@ export function CourseDetailsForm({ initialData, courseId }: CourseDetailsFormPr
     };
 
     return (
-        <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6">
+        <div className="bg-white rounded-xl border border-ui-line p-6">
             <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2 text-slate-900 font-bold text-lg">
-                    <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                        <Pencil className="h-4 w-4" />
-                    </div>
+                <div className="flex items-center gap-2 text-slate-900 font-semibold text-base">
                     Customize your course
                 </div>
                 {!isEditing && (
@@ -95,7 +92,7 @@ export function CourseDetailsForm({ initialData, courseId }: CourseDetailsFormPr
                             value={kind}
                             onChange={(e) => setKind(e.target.value as CourseKind)}
                             disabled={isLoading}
-                            className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm font-medium"
+                            className="w-full h-10 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm font-medium"
                         >
                             {COURSE_KIND_OPTIONS.map((option) => (
                                 <option key={option.value} value={option.value}>
@@ -115,7 +112,7 @@ export function CourseDetailsForm({ initialData, courseId }: CourseDetailsFormPr
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             disabled={isLoading}
-                            className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm font-medium"
+                            className="w-full h-10 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm font-medium"
                             autoFocus
                         />
                     </div>
@@ -130,7 +127,7 @@ export function CourseDetailsForm({ initialData, courseId }: CourseDetailsFormPr
                             onChange={(e) => setDescription(e.target.value)}
                             disabled={isLoading}
                             rows={4}
-                            className="w-full p-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm resize-none"
+                            className="w-full p-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm resize-none"
                         />
                     </div>
 
@@ -146,7 +143,7 @@ export function CourseDetailsForm({ initialData, courseId }: CourseDetailsFormPr
                         <button
                             type="submit"
                             disabled={isLoading || !title.trim()}
-                            className="h-9 px-4 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50 flex items-center"
+                            className="h-9 px-4 rounded-lg bg-ui-ink text-white text-sm font-medium hover:bg-ui-ink-hover disabled:opacity-50 flex items-center"
                         >
                             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
                         </button>

@@ -69,7 +69,7 @@ export function NewBadgeDialog({ badges }: NewBadgeDialogProps) {
                     {current.description ? ` ${current.description}` : ""}
                 </DialogDescription>
                 <div className="mt-6">
-                    <Button onClick={onContinue} className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl w-full">
+                    <Button onClick={onContinue} className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg w-full">
                         {isLast ? "Awesome!" : "Next badge"}
                     </Button>
                 </div>

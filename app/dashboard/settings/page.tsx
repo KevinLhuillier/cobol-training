@@ -58,47 +58,37 @@ export default async function SettingsPage() {
     }
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8">
+        <div className="max-w-4xl mx-auto space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
-                <p className="text-slate-500 mt-1">Manage your profile, password, and subscription.</p>
+                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Settings</h1>
+                <p className="text-sm text-ui-muted mt-1">Manage your profile, password, and subscription.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* PROFILE */}
-                <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                    <h2 className="text-lg font-bold text-slate-900 mb-1">Profile</h2>
-                    <p className="text-sm text-slate-500 mb-6">Update your personal information.</p>
+            {/* PROFILE */}
+            <SettingsSection title="Profile" description="Update your personal information.">
+                <div className="space-y-2 mb-6">
+                    <p className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-slate-400" /> Email
+                    </p>
+                    <p className="text-sm text-slate-600 bg-ui-page border border-ui-line rounded-lg h-11 flex items-center px-3">
+                        {profile.email}
+                    </p>
+                </div>
 
-                    <div className="space-y-2 mb-6">
-                        <p className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-slate-400" /> Email
-                        </p>
-                        <p className="text-sm text-slate-600 bg-slate-50 border border-slate-100 rounded-xl h-11 flex items-center px-3">
-                            {profile.email}
-                        </p>
-                    </div>
+                <ProfileForm initialName={profile.name || ""} />
+            </SettingsSection>
 
-                    <ProfileForm initialName={profile.name || ""} />
-                </section>
-
-                {/* PASSWORD */}
-                <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                    <h2 className="text-lg font-bold text-slate-900 mb-1">Password</h2>
-                    <p className="text-sm text-slate-500 mb-6">Choose a strong password you don&apos;t use elsewhere.</p>
-                    <PasswordForm />
-                </section>
-            </div>
+            {/* PASSWORD */}
+            <SettingsSection title="Password" description="Choose a strong password you don't use elsewhere.">
+                <PasswordForm />
+            </SettingsSection>
 
             {/* SUBSCRIPTION */}
-            <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 max-w-md">
-                <h2 className="text-lg font-bold text-slate-900 mb-1">Subscription</h2>
-                <p className="text-sm text-slate-500 mb-6">Manage your billing and access.</p>
-
+            <SettingsSection title="Subscription" description="Manage your billing and access.">
                 {isRecurringActive ? (
                     profile.cancel_at_period_end ? (
                         <div className="space-y-4">
-                            <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-amber-50 text-amber-700 text-sm font-bold">
+                            <div className="inline-flex w-fit px-4 py-3 rounded-lg bg-amber-50 text-amber-700 text-sm font-bold">
                                 Cancellation scheduled
                             </div>
                             <p className="text-sm text-slate-500">
@@ -112,7 +102,7 @@ export default async function SettingsPage() {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-bold">
+                            <div className="inline-flex w-fit px-4 py-3 rounded-lg bg-emerald-50 text-emerald-700 text-sm font-bold">
                                 {isAddon ? "Lifetime + Mainframe" : "Active"}{formattedPeriodEnd ? ` — renews on ${formattedPeriodEnd}` : ""}
                             </div>
                             {showLifetimeUpgrade && <SubscribeButton>Upgrade to Lifetime</SubscribeButton>}
@@ -121,7 +111,7 @@ export default async function SettingsPage() {
                     )
                 ) : status === "LIFETIME" ? (
                     <div className="space-y-4">
-                        <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-violet-50 text-violet-700 text-sm font-bold">
+                        <div className="inline-flex w-fit px-4 py-3 rounded-lg bg-violet-50 text-violet-700 text-sm font-bold">
                             Lifetime access
                         </div>
                         <p className="text-sm text-slate-500">
@@ -131,7 +121,7 @@ export default async function SettingsPage() {
                     </div>
                 ) : status === "LIFETIME_EXPIRED" ? (
                     <div className="space-y-4">
-                        <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-violet-50 text-violet-700 text-sm font-bold">
+                        <div className="inline-flex w-fit px-4 py-3 rounded-lg bg-violet-50 text-violet-700 text-sm font-bold">
                             Lifetime access
                         </div>
                         <p className="text-sm text-slate-500">
@@ -142,7 +132,7 @@ export default async function SettingsPage() {
                     </div>
                 ) : profile.subscription_status === "UNPAID" ? (
                     <div className="space-y-4">
-                        <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-red-50 text-red-700 text-sm font-bold">
+                        <div className="inline-flex w-fit px-4 py-3 rounded-lg bg-red-50 text-red-700 text-sm font-bold">
                             Payment failed — access suspended
                         </div>
                         <p className="text-sm text-slate-500">
@@ -152,7 +142,7 @@ export default async function SettingsPage() {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        <div className="inline-flex w-fit px-4 py-3 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">
+                        <div className="inline-flex w-fit px-4 py-3 rounded-lg bg-slate-100 text-slate-600 text-sm font-bold">
                             {trialDaysLeft > 0
                                 ? `Trial — ${trialDaysLeft} day${trialDaysLeft > 1 ? "s" : ""} left`
                                 : "No active subscription"}
@@ -160,7 +150,20 @@ export default async function SettingsPage() {
                         <SubscribeButton />
                     </div>
                 )}
-            </section>
+            </SettingsSection>
         </div>
+    );
+}
+
+/** Bloc de réglages : titre et description à gauche, contenu à droite (empilés sur mobile). */
+function SettingsSection({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
+    return (
+        <section className="bg-white rounded-xl border border-ui-line flex flex-col md:flex-row">
+            <div className="md:w-64 shrink-0 p-6 border-b md:border-b-0 md:border-r border-ui-line">
+                <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+                <p className="mt-1.5 text-sm leading-relaxed text-ui-muted">{description}</p>
+            </div>
+            <div className="flex-1 min-w-0 p-6">{children}</div>
+        </section>
     );
 }

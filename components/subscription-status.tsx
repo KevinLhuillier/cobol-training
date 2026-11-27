@@ -16,7 +16,7 @@ export function SubscriptionStatus({ subscriptionStatus, trialDaysLeft, mainfram
     if (subscriptionStatus === "LIFETIME" && mainframeDaysLeft > 0) {
         return (
             <div className="space-y-2">
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-violet-50 text-violet-700 text-sm font-bold">
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-violet-50 text-violet-700 text-sm font-semibold">
                     <CheckCircle2 className="h-4 w-4 shrink-0" />
                     Lifetime access
                 </div>
@@ -30,7 +30,7 @@ export function SubscriptionStatus({ subscriptionStatus, trialDaysLeft, mainfram
 
     if (subscriptionStatus === "LIFETIME_ADDON") {
         return (
-            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-violet-50 text-violet-700 text-sm font-bold">
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-violet-50 text-violet-700 text-sm font-semibold">
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
                 Lifetime + Mainframe
             </div>
@@ -42,14 +42,14 @@ export function SubscriptionStatus({ subscriptionStatus, trialDaysLeft, mainfram
     if (subscriptionStatus === "LIFETIME_EXPIRED" || subscriptionStatus === "LIFETIME") {
         return (
             <div className="space-y-3">
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-violet-50 text-violet-700 text-sm font-bold">
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-violet-50 text-violet-700 text-sm font-semibold">
                     <CheckCircle2 className="h-4 w-4 shrink-0" />
                     Lifetime access
                 </div>
 
-                <SubscribeButton className="w-full justify-center bg-blue-800 hover:bg-blue-900 shadow-md" />
+                <SubscribeButton className="w-full justify-center h-10 rounded-lg bg-ui-accent hover:bg-[#0f4f88] shadow-none" />
 
-                <div className="px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+                <div className="px-3 py-3 rounded-lg bg-ui-page border border-ui-line space-y-2">
                     <p className="flex items-start gap-2 text-xs text-slate-500 leading-snug">
                         <Check className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
                         Add Mainframe access and personalized feedback at a special rate for lifetime members.
@@ -68,13 +68,13 @@ export function SubscriptionStatus({ subscriptionStatus, trialDaysLeft, mainfram
     if (subscriptionStatus === "ACTIVE") {
         return (
             <div className="space-y-3">
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-bold">
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-emerald-50 text-emerald-700 text-sm font-semibold">
                     <CheckCircle2 className="h-4 w-4 shrink-0" />
                     Subscribed
                 </div>
 
                 {canUpgradeToLifetime && (
-                    <SubscribeButton className="w-full justify-center bg-blue-800 hover:bg-blue-900 shadow-md">
+                    <SubscribeButton className="w-full justify-center h-10 rounded-lg bg-ui-accent hover:bg-[#0f4f88] shadow-none">
                         Upgrade to Lifetime
                     </SubscribeButton>
                 )}
@@ -85,14 +85,14 @@ export function SubscriptionStatus({ subscriptionStatus, trialDaysLeft, mainfram
     if (subscriptionStatus === "UNPAID") {
         return (
             <div className="space-y-3">
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 text-red-700 text-sm font-bold">
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-red-50 text-red-700 text-sm font-semibold">
                     <Clock className="h-4 w-4 shrink-0" />
                     Payment failed
                 </div>
 
-                <SubscribeButton className="w-full justify-center bg-blue-800 hover:bg-blue-900 shadow-md" />
+                <SubscribeButton className="w-full justify-center h-10 rounded-lg bg-ui-accent hover:bg-[#0f4f88] shadow-none" />
 
-                <div className="px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+                <div className="px-3 py-3 rounded-lg bg-ui-page border border-ui-line space-y-2">
                     <p className="flex items-start gap-2 text-xs text-slate-500 leading-snug">
                         <Check className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
                         Your last payment failed — access to courses and mainframe is suspended until it&apos;s resolved.
@@ -113,7 +113,7 @@ export function SubscriptionStatus({ subscriptionStatus, trialDaysLeft, mainfram
     return (
         <div className="space-y-3">
             <div
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold ${
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold ${
                     isTrialActive ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-500"
                 }`}
             >
@@ -123,9 +123,9 @@ export function SubscriptionStatus({ subscriptionStatus, trialDaysLeft, mainfram
                     : "Trial ended"}
             </div>
 
-            <SubscribeButton className="w-full justify-center bg-blue-800 hover:bg-blue-900 shadow-md" />
+            <SubscribeButton className="w-full justify-center h-10 rounded-lg bg-ui-accent hover:bg-[#0f4f88] shadow-none" />
 
-            <div className="px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+            <div className="px-3 py-3 rounded-lg bg-ui-page border border-ui-line space-y-2">
                 <p className="flex items-start gap-2 text-xs text-slate-500 leading-snug">
                     <Check className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
                     Unlocks all courses and mainframe access for as long as your subscription stays active.

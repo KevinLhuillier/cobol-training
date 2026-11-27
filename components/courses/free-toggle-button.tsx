@@ -43,7 +43,7 @@ export function FreeToggleButton({ table, id, isFree }: FreeToggleButtonProps) {
         <button
             onClick={onClick}
             disabled={isLoading}
-            className="h-10 px-4 flex items-center justify-center rounded-xl font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50 min-w-[100px]"
+            className="h-10 px-4 flex items-center justify-center rounded-lg font-bold text-slate-700 bg-white border border-ui-line hover:bg-slate-50 transition-colors disabled:opacity-50 min-w-[100px]"
         >
             {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

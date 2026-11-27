@@ -114,7 +114,7 @@ export function OnboardingTour({ active, studentName, hasTsoStep, hasCourseStep 
             >
                 <DialogContent showClose={false}>
                     <DialogHeader>
-                        <div className="h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center mb-3">
+                        <div className="h-12 w-12 bg-ui-ink rounded-lg flex items-center justify-center mb-3">
                             <Rocket className="h-6 w-6 text-white" />
                         </div>
                         <DialogTitle>Welcome aboard, {getFirstName(studentName)}!</DialogTitle>
@@ -126,7 +126,7 @@ export function OnboardingTour({ active, studentName, hasTsoStep, hasCourseStep 
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <DialogClose className="h-10 px-4 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors w-full sm:w-auto">
+                        <DialogClose className="h-10 px-4 rounded-lg font-bold text-white bg-ui-ink hover:bg-ui-ink-hover transition-colors w-full sm:w-auto">
                             Let&apos;s go
                         </DialogClose>
                     </DialogFooter>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Sparkles, Tag } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Tag } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { CheckoutButton } from "@/components/checkout-button";
 import {
@@ -69,19 +69,30 @@ export default async function SubscribePage({
         ? new Date(profile.mainframe_ends_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
         : null;
 
+    // Libellés du design « Soft Structure » : petite ligne au-dessus du titre, accent violet pour l'offre à vie.
+    const EYEBROW: Record<string, string> = {
+        SUBSCRIPTION: "Monthly",
+        LIFETIME: "Lifetime",
+        LIFETIME_ADDON: "Special rate for lifetime members",
+    };
+
     return (
-        <div className={`${visibleKinds.length > 1 ? "max-w-4xl" : "max-w-xl"} mx-auto font-sans`}>
-            <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors mb-6"
-            >
-                <ArrowLeft className="h-4 w-4" />
-                Back to dashboard
-            </Link>
+        <div className={`${visibleKinds.length > 1 ? "max-w-4xl" : "max-w-xl"} mx-auto font-sans flex flex-col gap-8`}>
+            <div>
+                <Link
+                    href="/dashboard"
+                    className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ui-accent hover:underline mb-4"
+                >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    Back to dashboard
+                </Link>
+                <h1 className="text-2xl md:text-[26px] font-bold text-slate-900 tracking-tight">Choose your plan</h1>
+                <p className="mt-1 text-sm text-ui-muted">Unlock every module, the mainframe and personal feedback.</p>
+            </div>
 
             {visibleKinds.length === 0 ? (
-                <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8">
-                    <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-bold justify-center">
+                <div className="bg-white rounded-xl border border-ui-line p-8">
+                    <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-emerald-50 text-emerald-800 text-sm font-semibold justify-center">
                         <CheckCircle2 className="h-4 w-4 shrink-0" />
                         {status === "LIFETIME"
                             ? "You have lifetime access"
@@ -92,7 +103,7 @@ export default async function SubscribePage({
                                     : "You're already subscribed"}
                     </div>
                     {status === "LIFETIME" && mainframeEndsOn && (
-                        <p className="mt-4 text-sm text-slate-500 text-center">
+                        <p className="mt-4 text-sm text-ui-muted text-center">
                             Mainframe access and personalized feedback are included until {mainframeEndsOn}.
                         </p>
                     )}
@@ -100,16 +111,17 @@ export default async function SubscribePage({
             ) : (
                 <>
                 {status === "ACTIVE" && (
-                    <div className="mb-6 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-800 text-sm font-medium">
-                        <span className="font-bold">You&apos;re currently subscribed.</span>{" "}
+                    <div className="px-4 py-3 rounded-lg bg-emerald-50 text-emerald-900 text-sm">
+                        <span className="font-semibold">You&apos;re currently subscribed.</span>{" "}
                         If you buy the lifetime offer, your monthly subscription will stop at the end of your current billing period
                         and you won&apos;t be charged for it again.
                     </div>
                 )}
-                <div className={`grid gap-6 ${visibleKinds.length > 1 ? "md:grid-cols-2" : ""}`}>
+                <div className={`grid gap-5 items-stretch ${visibleKinds.length > 1 ? "md:grid-cols-2" : ""}`}>
                     {visibleKinds.map((kind) => {
                         const offer = offersByKind.get(kind);
                         const isSubscription = kind === "SUBSCRIPTION";
+                        const isLifetimeFamily = kind === "LIFETIME" || kind === "LIFETIME_ADDON";
                         const title = offer?.title || (isSubscription ? DEFAULT_SUBSCRIPTION_OFFER.title : "");
                         const priceCents = offer?.price_cents ?? DEFAULT_SUBSCRIPTION_OFFER.priceCents;
                         const features = offer?.features?.length ? offer.features : isSubscription ? DEFAULT_SUBSCRIPTION_OFFER.features : [];
@@ -118,75 +130,85 @@ export default async function SubscribePage({
                         const originalPrice =
                             originalPriceCents != null && originalPriceCents > priceCents ? formatOfferPrice(originalPriceCents) : null;
                         const showPromo = isPromoValid && isSubscription;
+                        const checkColor = isLifetimeFamily ? "text-violet-600" : "text-emerald-600";
 
                         return (
-                            <div key={kind} className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden flex flex-col">
-                                <div className="bg-slate-900 p-8 text-center">
-                                    <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-4">
-                                        <Sparkles className="h-6 w-6 text-emerald-400" />
-                                    </div>
-                                    <h2 className="text-xl font-extrabold text-white">{title}</h2>
-                                    {kind === "LIFETIME_ADDON" && (
-                                        <p className="mt-1 text-xs font-bold text-emerald-400 uppercase tracking-wider">
-                                            Special rate for lifetime members
-                                        </p>
-                                    )}
-                                    <div className="mt-4 flex items-end justify-center gap-1">
-                                        {originalPrice && (
-                                            <span className="text-xl font-bold text-slate-500 line-through decoration-2 mb-1 mr-2">
-                                                <span className="sr-only">Original price: </span>€{originalPrice}
-                                            </span>
-                                        )}
-                                        <span className="text-4xl font-extrabold text-white">€{formatOfferPrice(priceCents)}</span>
-                                        <span className="text-sm font-semibold text-slate-400 mb-1">
-                                            {kind === "LIFETIME" ? " one-time" : " / month"}
-                                        </span>
-                                    </div>
+                            <div
+                                key={kind}
+                                className={`relative bg-white rounded-xl p-7 flex flex-col gap-5 ${
+                                    kind === "LIFETIME" ? "border-[1.5px] border-violet-600" : "border border-ui-line"
+                                }`}
+                            >
+                                {kind === "LIFETIME" && (
+                                    <span className="absolute -top-3 left-6 bg-violet-600 text-white px-2.5 py-1 rounded-md text-xs font-semibold">
+                                        One-time payment
+                                    </span>
+                                )}
+                                <div>
+                                    <p className={`text-xs font-semibold uppercase tracking-wider ${isLifetimeFamily ? "text-violet-700" : "text-ui-muted"}`}>
+                                        {EYEBROW[kind]}
+                                    </p>
+                                    <h2 className="mt-2 text-xl font-bold text-slate-900">{title}</h2>
                                 </div>
 
-                                <div className="p-8 flex flex-col flex-1">
-                                    <ul className="space-y-4 mb-8">
-                                        {kind === "LIFETIME" && offer?.mainframe_months && (
-                                            <li className="flex items-start gap-3">
-                                                <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
-                                                <span className="text-sm font-bold text-slate-900">
-                                                    {offer.mainframe_months} month{offer.mainframe_months > 1 ? "s" : ""}{" "}
-                                                    of Mainframe access &amp; feedback on exercises
-                                                    {addonRenewalPrice && (
-                                                        <span className="font-medium text-slate-500">
-                                                            {" "}(then preferential rate of €{addonRenewalPrice}/month on renewal)
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </li>
-                                        )}
-                                        {features.map((feature: string) => (
-                                            <li key={feature} className="flex items-start gap-3">
-                                                <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
-                                                <span className="text-sm font-medium text-slate-700">{feature}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                <p className="flex items-baseline gap-2">
+                                    {originalPrice && (
+                                        <span className="text-lg font-semibold text-slate-400 line-through">
+                                            <span className="sr-only">Original price: </span>€{originalPrice}
+                                        </span>
+                                    )}
+                                    <span className="text-[40px] leading-none font-bold text-slate-900 tracking-tight">€{formatOfferPrice(priceCents)}</span>
+                                    <span className="text-sm text-ui-muted">{kind === "LIFETIME" ? "one-time" : "/ month"}</span>
+                                </p>
 
-                                    <div className="mt-auto">
-                                        {showPromo && (
-                                            <div className="flex items-center gap-2 px-4 py-3 mb-4 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-bold justify-center">
-                                                <Tag className="h-4 w-4 shrink-0" />
-                                                20% discount applied at checkout
-                                            </div>
-                                        )}
+                                <ul className="space-y-3">
+                                    {kind === "LIFETIME" && offer?.mainframe_months && (
+                                        <li className="flex items-start gap-2.5">
+                                            <CheckCircle2 className={`h-4 w-4 shrink-0 mt-0.5 ${checkColor}`} />
+                                            <span className="text-sm font-semibold text-slate-900">
+                                                {offer.mainframe_months} month{offer.mainframe_months > 1 ? "s" : ""}{" "}
+                                                of Mainframe access &amp; feedback on exercises
+                                                {addonRenewalPrice && (
+                                                    <span className="font-normal text-ui-muted">
+                                                        {" "}(then preferential rate of €{addonRenewalPrice}/month on renewal)
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </li>
+                                    )}
+                                    {features.map((feature: string) => (
+                                        <li key={feature} className="flex items-start gap-2.5">
+                                            <CheckCircle2 className={`h-4 w-4 shrink-0 mt-0.5 ${checkColor}`} />
+                                            <span className="text-sm text-slate-700">{feature}</span>
+                                        </li>
+                                    ))}
+                                </ul>
 
-                                        <CheckoutButton
-                                            className="w-full justify-center h-12 text-base"
-                                            offerKind={kind}
-                                            promoCode={showPromo ? promoCode : undefined}
-                                        />
-                                    </div>
+                                <div className="mt-auto pt-1">
+                                    {showPromo && (
+                                        <div className="flex items-center gap-2 px-3 py-2.5 mb-3 rounded-lg bg-emerald-50 text-emerald-800 text-sm font-semibold justify-center">
+                                            <Tag className="h-4 w-4 shrink-0" />
+                                            20% discount applied at checkout
+                                        </div>
+                                    )}
+
+                                    <CheckoutButton
+                                        className={`w-full justify-center h-[46px] text-[15px] font-semibold ${
+                                            isLifetimeFamily ? "bg-violet-600 hover:bg-violet-700" : ""
+                                        }`}
+                                        offerKind={kind}
+                                        promoCode={showPromo ? promoCode : undefined}
+                                    >
+                                        {kind === "SUBSCRIPTION" ? "Subscribe" : kind === "LIFETIME" ? "Get lifetime access" : "Add Mainframe + Feedback"}
+                                    </CheckoutButton>
                                 </div>
                             </div>
                         );
                     })}
                 </div>
+                <p className="text-center text-[13px] text-ui-muted">
+                    Secure payment with Stripe. Cancel your subscription anytime from Settings.
+                </p>
                 </>
             )}
         </div>

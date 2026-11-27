@@ -62,7 +62,7 @@ export function CodeBlockEditor({
                                 onClick={() => onChange({ language: option.value })}
                                 className={`h-7 px-3 rounded-md text-xs font-bold transition-colors ${
                                     isActive
-                                        ? "bg-white text-slate-900 shadow-sm"
+                                        ? "bg-white text-slate-900"
                                         : "text-slate-500 hover:text-slate-900"
                                 }`}
                             >
@@ -79,7 +79,7 @@ export function CodeBlockEditor({
                     placeholder="Paste or type your code here..."
                     spellCheck={false}
                     rows={8}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm font-mono p-4 resize-y"
+                    className="w-full rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm font-mono p-4 resize-y"
                 />
 
                 {block.data.code && (

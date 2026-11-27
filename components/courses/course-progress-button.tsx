@@ -72,10 +72,10 @@ export function CourseProgressButton({ courseId, chapterId, lessonId, isComplete
             onClick={onClick}
             disabled={busy}
             size="lg"
-            className={`shrink-0 rounded-xl shadow-md transition-colors ${
+            className={`shrink-0 rounded-lg transition-colors ${
                 isCompleted
                     ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                    : "bg-slate-900 hover:bg-slate-800 text-white"
+                    : "bg-ui-ink hover:bg-ui-ink-hover text-white"
             }`}
         >
             {busy ? (

@@ -72,21 +72,21 @@ export default async function ProjectsPage() {
     }));
 
     return (
-        <>
-            <div className="mb-8">
-                <h2 className="text-2xl font-bold text-slate-900">Projects</h2>
-                <p className="text-slate-500 mt-1">Put your skills into practice with hands-on projects.</p>
+        <div className="flex flex-col gap-8">
+            <div>
+                <h1 className="text-2xl md:text-[26px] font-bold text-slate-900 tracking-tight">Projects</h1>
+                <p className="mt-1 text-sm text-ui-muted">Put your skills into practice with hands-on projects.</p>
             </div>
 
             {projects.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center shadow-sm">
-                    <FolderKanban className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-                    <h3 className="text-lg font-bold text-slate-900">No projects available</h3>
-                    <p className="text-sm text-slate-500 mt-1">Projects will appear here soon.</p>
+                <div className="bg-white rounded-xl border border-dashed border-ui-line-strong p-12 text-center">
+                    <FolderKanban className="h-8 w-8 text-slate-400 mx-auto mb-3" />
+                    <h2 className="text-base font-semibold text-slate-900">No projects available</h2>
+                    <p className="text-sm text-ui-muted mt-1">Projects will appear here as they are published.</p>
                 </div>
             ) : (
                 <CourseGrid courses={projects} subscriptionInfo={subscriptionInfo} kind="PROJECT" />
             )}
-        </>
+        </div>
     );
 }

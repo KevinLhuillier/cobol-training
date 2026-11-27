@@ -1,11 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-    Plus,
-    BookOpen,
-    Layers,
-    PlayCircle,
-} from "lucide-react";
+import { Plus, ChevronLeft } from "lucide-react";
 import { CourseList } from "@/components/courses/course-list";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
@@ -77,72 +72,38 @@ export default async function AdminCoursesPage() {
     return (
         <div className="font-sans">
             {/* HEADER */}
-            <header className="mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-md">
-                        <BookOpen className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                            Courses
-                        </h1>
-                        <p className="text-sm text-slate-500">Courses and projects management</p>
-                    </div>
+            <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <Link href="/dashboard/admin" className="inline-flex items-center gap-1 text-[13px] font-semibold text-ui-accent hover:underline mb-2">
+                        <ChevronLeft className="h-4 w-4" />
+                        Admin
+                    </Link>
+                    <h1 className="text-2xl md:text-[26px] font-bold text-slate-900 tracking-tight">Courses</h1>
+                    <p className="mt-1 text-sm text-ui-muted">Courses and projects management</p>
                 </div>
-
                 <div className="flex items-center gap-2">
                     <Link
                         href="/dashboard/admin/courses/new"
-                        className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-10 px-5 text-sm font-medium transition-colors"
+                        className="inline-flex items-center justify-center bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg h-10 px-5 text-sm font-medium transition-colors"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         New Course
-                    </Link>
-                    <Link
-                        href="/dashboard/admin"
-                        className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors px-4 py-2"
-                    >
-                        Back to admin
                     </Link>
                 </div>
             </header>
 
             <main className="w-full mx-auto">
                 {/* QUICK STATS */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
-                            <BookOpen className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-500">Total Courses</p>
-                            <p className="text-2xl font-extrabold text-slate-900">{totalCourses}</p>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
-                            <Layers className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-500">Chapters</p>
-                            <p className="text-2xl font-extrabold text-slate-900">{totalChapters}</p>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600">
-                            <PlayCircle className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-500">Lessons</p>
-                            <p className="text-2xl font-extrabold text-slate-900">{totalLessons}</p>
-                        </div>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div className="bg-white rounded-xl border border-ui-line px-5 py-4"><p className="text-[13px] text-ui-muted">Total Courses</p><p className="mt-1 text-2xl font-bold text-slate-900 tracking-tight">{totalCourses}</p></div>
+                    <div className="bg-white rounded-xl border border-ui-line px-5 py-4"><p className="text-[13px] text-ui-muted">Chapters</p><p className="mt-1 text-2xl font-bold text-slate-900 tracking-tight">{totalChapters}</p></div>
+                    <div className="bg-white rounded-xl border border-ui-line px-5 py-4"><p className="text-[13px] text-ui-muted">Lessons</p><p className="mt-1 text-2xl font-bold text-slate-900 tracking-tight">{totalLessons}</p></div>
                 </div>
 
                 {/* COURSES LIST */}
-                <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div className="p-6 border-b border-slate-100">
-                        <h2 className="text-lg font-bold text-slate-900">Your Courses</h2>
+                <div className="bg-white rounded-xl border border-ui-line overflow-hidden">
+                    <div className="px-5 py-4 border-b border-ui-line">
+                        <h2 className="text-base font-semibold text-slate-900">Your Courses</h2>
                     </div>
 
                     <CourseList items={formattedCourses} />

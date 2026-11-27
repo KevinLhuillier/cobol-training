@@ -17,7 +17,7 @@ export function SubscribeButton({ className, children }: SubscribeButtonProps) {
     return (
         <Link href="/dashboard/subscribe" className="block">
             <Button
-                className={cn("bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-11 px-5 cursor-pointer", className)}
+                className={cn("bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg h-11 px-5 cursor-pointer", className)}
             >
                 <Sparkles className="mr-2 h-4 w-4" />
                 {children || "Upgrade"}

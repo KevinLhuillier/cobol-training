@@ -40,13 +40,13 @@ export function VideoBlockEditor({
                     value={block.data.url}
                     onChange={(e) => onChange({ url: e.target.value })}
                     placeholder="Paste a video URL (YouTube, Vimeo, MP4...)"
-                    className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm"
+                    className="w-full h-10 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm"
                 />
 
                 {block.data.url ? (
                     <VideoBlockView url={block.data.url} />
                 ) : (
-                    <div className="flex items-center justify-center h-40 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+                    <div className="flex items-center justify-center h-40 bg-slate-50 rounded-lg border-2 border-dashed border-ui-line">
                         <VideoIcon className="h-6 w-6 text-slate-300" />
                     </div>
                 )}

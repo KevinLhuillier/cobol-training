@@ -64,7 +64,7 @@ export function TsoEditForm({ initialData, users }: TsoEditFormProps) {
 
     return (
         <form onSubmit={onSubmit} className="space-y-6">
-            {error && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 font-medium">{error}</div>}
+            {error && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 font-medium">{error}</div>}
 
             <div className="space-y-4">
                 <div>
@@ -75,7 +75,7 @@ export function TsoEditForm({ initialData, users }: TsoEditFormProps) {
                         disabled={isLoading}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none font-mono"
+                        className="text-slate-900 w-full p-3 rounded-lg border border-ui-line bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none font-mono"
                     />
                 </div>
 
@@ -88,7 +88,7 @@ export function TsoEditForm({ initialData, users }: TsoEditFormProps) {
                             placeholder="e.g. mainframe.example.com"
                             value={host}
                             onChange={(e) => setHost(e.target.value)}
-                            className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none font-mono"
+                            className="text-slate-900 w-full p-3 rounded-lg border border-ui-line bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none font-mono"
                         />
                     </div>
                     <div>
@@ -99,7 +99,7 @@ export function TsoEditForm({ initialData, users }: TsoEditFormProps) {
                             placeholder="e.g. 23"
                             value={port}
                             onChange={(e) => setPort(e.target.value)}
-                            className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none font-mono"
+                            className="text-slate-900 w-full p-3 rounded-lg border border-ui-line bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none font-mono"
                         />
                     </div>
                 </div>
@@ -110,7 +110,7 @@ export function TsoEditForm({ initialData, users }: TsoEditFormProps) {
                         disabled={isLoading}
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
-                        className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
+                        className="text-slate-900 w-full p-3 rounded-lg border border-ui-line bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
                     >
                         <option value="AVAILABLE">Available</option>
                         <option value="ASSIGNED">Assigned</option>
@@ -125,7 +125,7 @@ export function TsoEditForm({ initialData, users }: TsoEditFormProps) {
                         disabled={isLoading}
                         value={assignedToUserId}
                         onChange={(e) => setAssignedToUserId(e.target.value)}
-                        className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
+                        className="text-slate-900 w-full p-3 rounded-lg border border-ui-line bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none"
                     >
                         <option value="">-- Unassigned --</option>
                         {users.map((user) => (
@@ -135,11 +135,11 @@ export function TsoEditForm({ initialData, users }: TsoEditFormProps) {
                 </div>
             </div>
 
-            <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+            <div className="pt-4 flex items-center justify-end gap-3 border-t border-ui-line">
                 <Link href="/dashboard/admin/users-tso">
                     <Button type="button" variant="ghost" disabled={isLoading} className="text-slate-500">Cancel</Button>
                 </Link>
-                <Button type="submit" disabled={isLoading || !password} className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6">
+                <Button type="submit" disabled={isLoading || !password} className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg px-6">
                     {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                     Save Changes
                 </Button>

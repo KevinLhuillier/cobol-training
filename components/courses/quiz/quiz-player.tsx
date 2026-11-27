@@ -119,8 +119,8 @@ export function QuizPlayer({
 
     if (questions.length === 0) {
         return (
-            <div className="p-6 bg-slate-50 border border-slate-100 rounded-2xl">
-                <p className="italic text-slate-500">This quiz has no questions yet.</p>
+            <div className="p-6 bg-ui-page border border-ui-line rounded-xl">
+                <p className="italic text-ui-muted">This quiz has no questions yet.</p>
             </div>
         );
     }
@@ -130,7 +130,7 @@ export function QuizPlayer({
         return (
             <div className="space-y-6">
                 <div
-                    className={`rounded-2xl border p-6 flex items-center justify-between gap-4 flex-wrap ${
+                    className={`rounded-xl border p-6 flex items-center justify-between gap-4 flex-wrap ${
                         lastResult.passed ? "bg-emerald-50 border-emerald-100" : "bg-red-50 border-red-100"
                     }`}
                 >
@@ -153,7 +153,7 @@ export function QuizPlayer({
                         <Button
                             variant="outline"
                             onClick={onRetry}
-                            className="rounded-xl border-slate-300 bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-50"
+                            className="rounded-lg border-ui-line-strong bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-50"
                         >
                             <RotateCcw className="h-4 w-4 mr-2" />
                             Retry quiz
@@ -164,7 +164,7 @@ export function QuizPlayer({
                                     startTransition(() => router.push(`/dashboard/courses/${courseId}?lessonId=${nextLessonId}`))
                                 }
                                 disabled={isNavigating}
-                                className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm"
+                                className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg"
                             >
                                 Continue
                                 {isNavigating ? (
@@ -177,10 +177,10 @@ export function QuizPlayer({
                     </div>
                 </div>
 
-                <div className="bg-white border border-slate-100 rounded-2xl px-5">
+                <div className="bg-white border border-ui-line rounded-xl px-5">
                     <Accordion>
                         <AccordionItem value="correct-answers" className="border-none">
-                            <AccordionTrigger className="text-sm font-bold text-slate-900 hover:no-underline">
+                            <AccordionTrigger className="text-sm font-semibold text-slate-900 hover:no-underline">
                                 Correct answers
                             </AccordionTrigger>
                             <AccordionContent>
@@ -224,13 +224,13 @@ export function QuizPlayer({
                 </div>
 
                 {attempts.length > 0 && (
-                    <div className="bg-white border border-slate-100 rounded-2xl p-5">
-                        <p className="text-sm font-bold text-slate-900 mb-3">Attempt history</p>
+                    <div className="bg-white border border-ui-line rounded-xl p-5">
+                        <p className="text-[15px] font-semibold text-slate-900 mb-3">Attempt history</p>
                         <div className="space-y-1.5">
                             {attempts.map((attempt) => (
                                 <div
                                     key={attempt.id}
-                                    className="flex items-center justify-between text-sm px-3 py-2 rounded-lg bg-slate-50"
+                                    className="flex items-center justify-between text-sm px-3 py-2 rounded-lg bg-ui-page"
                                 >
                                     <span className="text-slate-500">
                                         {new Date(attempt.createdAt).toLocaleString()}
@@ -260,9 +260,9 @@ export function QuizPlayer({
 
     return (
         <div className="space-y-6">
-            <div className="bg-blue-50/50 border border-blue-100 rounded-xl px-4 py-3">
-                <p className="text-sm text-blue-800">
-                    Answer every question, then submit. You need <span className="font-bold">{passRate}%</span> correct
+            <div className="bg-ui-accent-soft rounded-lg px-4 py-3">
+                <p className="text-sm text-slate-700">
+                    Answer every question, then submit. You need <span className="font-semibold text-slate-900">{passRate}%</span> correct
                     answers to pass — you can retry as many times as you like.
                 </p>
             </div>
@@ -270,8 +270,8 @@ export function QuizPlayer({
             {questions.map((question, index) => {
                 const selected = selections[question.id] ?? [];
                 return (
-                    <div key={question.id} className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-                        <p className="font-bold text-slate-900 mb-3">
+                    <div key={question.id} className="bg-white border border-ui-line rounded-xl p-5">
+                        <p className="text-[15px] font-semibold text-slate-900 mb-3">
                             {index + 1}. {question.text}
                         </p>
                         <div className="space-y-2">
@@ -280,10 +280,10 @@ export function QuizPlayer({
                                 return (
                                     <label
                                         key={answer.id}
-                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-colors ${
+                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors ${
                                             isSelected
-                                                ? "border-slate-900 bg-slate-50"
-                                                : "border-slate-200 hover:bg-slate-50"
+                                                ? "border-ui-accent bg-ui-accent-soft"
+                                                : "border-ui-line hover:bg-slate-50"
                                         }`}
                                     >
                                         <input
@@ -291,7 +291,7 @@ export function QuizPlayer({
                                             name={question.id}
                                             checked={isSelected}
                                             onChange={() => onSelect(question, answer.id)}
-                                            className="h-4 w-4 accent-slate-900"
+                                            className="h-4 w-4 accent-[#1767ae]"
                                         />
                                         <span className="text-sm text-slate-800">{answer.text}</span>
                                     </label>
@@ -303,7 +303,7 @@ export function QuizPlayer({
             })}
 
             {error && (
-                <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 font-medium">
+                <div className="p-3 bg-red-50 text-red-800 text-sm rounded-lg font-medium">
                     {error}
                 </div>
             )}
@@ -313,7 +313,7 @@ export function QuizPlayer({
                     onClick={onSubmit}
                     disabled={isSubmitting || !allAnswered}
                     size="lg"
-                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md"
+                    className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg"
                 >
                     {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     Submit quiz

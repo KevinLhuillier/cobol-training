@@ -45,7 +45,7 @@ export function CancelSubscriptionButton({ isAddon = false }: CancelSubscription
             <Button
                 variant="outline"
                 onClick={() => setIsOpen(true)}
-                className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 rounded-xl h-11 px-5"
+                className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 rounded-lg h-11 px-5"
             >
                 Cancel subscription
             </Button>
@@ -79,14 +79,14 @@ export function CancelSubscriptionButton({ isAddon = false }: CancelSubscription
                     {error && <p className="mt-3 text-sm text-red-500 font-medium">{error}</p>}
 
                     <DialogFooter>
-                        <DialogClose className="h-10 px-4 rounded-xl font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+                        <DialogClose className="h-10 px-4 rounded-lg font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
                             Keep my subscription
                         </DialogClose>
                         <Button
                             onClick={onConfirmCancel}
                             disabled={isLoading}
                             variant="destructive"
-                            className="h-10 px-4 rounded-xl font-bold disabled:opacity-50"
+                            className="h-10 px-4 rounded-lg font-bold disabled:opacity-50"
                         >
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Yes, cancel anyway

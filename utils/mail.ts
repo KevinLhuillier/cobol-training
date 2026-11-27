@@ -116,6 +116,63 @@ export async function sendAdminRegistrationBlockedEmail(name: string, email: str
     });
 }
 
+function escapeHtml(value: string): string {
+    return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+/**
+ * Notifie le propriétaire de l'application qu'un étudiant vient de soumettre un exercice à la
+ * correction (cf. notifyExerciseSubmitted). Les valeurs viennent de l'utilisateur : on les échappe.
+ */
+export async function sendAdminExerciseSubmittedEmail(params: {
+    studentName: string;
+    studentEmail: string;
+    courseTitle: string;
+    lessonTitle: string;
+    submittedAt: string;
+}) {
+    const reviewUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/review`;
+    const submittedAt = new Date(params.submittedAt).toLocaleString("en-GB", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Europe/Paris",
+    });
+
+    return await resend.emails.send({
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject: "New exercise submitted 📝",
+        html: renderAdminNotificationEmail(
+            "New exercise submitted",
+            `
+              <p style="margin: 0 0 4px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                A student just submitted an exercise for review:
+              </p>
+              <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 15px; line-height: 22px;">
+                <strong>${escapeHtml(params.studentName)}</strong> — ${escapeHtml(params.studentEmail)}
+              </p>
+              <p style="margin: 0 0 4px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                Course: <strong style="color: #0f172a;">${escapeHtml(params.courseTitle)}</strong>
+              </p>
+              <p style="margin: 0 0 4px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                Lesson: <strong style="color: #0f172a;">${escapeHtml(params.lessonTitle)}</strong>
+              </p>
+              <p style="margin: 0 0 16px 0; color: #64748b; font-size: 14px; line-height: 20px;">
+                Submitted: <strong style="color: #0f172a;">${submittedAt}</strong> (Paris time)
+              </p>
+              <p style="margin: 0; font-size: 14px; line-height: 20px;">
+                <a href="${reviewUrl}" style="color: #2563eb; font-weight: bold;">Open pending reviews</a>
+              </p>
+            `
+        ),
+    });
+}
+
 /**
  * Notifie le propriétaire de l'application qu'un nouvel abonnement vient d'être souscrit.
  */

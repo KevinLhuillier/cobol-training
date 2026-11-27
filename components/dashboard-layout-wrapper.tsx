@@ -23,20 +23,24 @@ export function DashboardLayoutWrapper({ header, sidebar, children }: DashboardL
         return <>{children}</>;
     }
 
-    // Sinon, on restitue EXACTEMENT ton layout d'origine
-    // Sous lg, la sidebar devient un tiroir ouvert par le hamburger du header ; à partir de lg
-    // elle reste affichée à côté du contenu (cf. components/mobile-sidebar.tsx).
+    // Design « Soft Structure » : la sidebar est un rail blanc collé au bord gauche (à partir de lg),
+    // le contenu est posé sur le fond gris clair. Sous lg, la sidebar devient un tiroir ouvert par
+    // le hamburger du header (cf. components/mobile-sidebar.tsx).
+    //
+    // Chaque page compose elle-même ses cartes blanches sur le fond gris (plus de carte englobante).
     return (
         <MobileSidebarProvider>
-            <div className="min-h-screen bg-slate-100 p-4 md:p-6 lg:p-8 flex flex-col font-sans">
-                {header}
-                <main className="flex-1 max-w-[1600px] w-full mx-auto flex flex-col lg:flex-row gap-6">
-                    <MobileSidebarDrawer>{sidebar}</MobileSidebarDrawer>
-                    <section className="flex-1 bg-white rounded-3xl shadow-sm p-6 lg:p-8">
-                        {children}
-                    </section>
-                </main>
-                <SiteFooter className="max-w-[1600px] mx-auto pb-0" />
+            <div className="min-h-screen bg-ui-page font-sans lg:flex">
+                <MobileSidebarDrawer>{sidebar}</MobileSidebarDrawer>
+                <div className="flex-1 min-w-0 flex flex-col">
+                    <div className="flex-1 w-full max-w-[1280px] mx-auto px-4 py-5 md:px-8 lg:px-10 lg:py-8 flex flex-col gap-6 lg:gap-8">
+                        {header}
+                        {/* min-w-0 : sans lui, un contenu non sécable (ex. aperçu `truncate` d'un long message)
+                            élargit la zone au lieu d'être tronqué, d'où un scroll horizontal. */}
+                        <main className="flex-1 min-w-0">{children}</main>
+                    </div>
+                    <SiteFooter className="max-w-[1280px] mx-auto" />
+                </div>
             </div>
         </MobileSidebarProvider>
     );

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Terminal, Save, Loader2 } from "lucide-react";
+import { Save, Loader2, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 // 🟢 Import du client Supabase
 import { createClient } from "@/utils/supabase/client";
@@ -60,34 +60,26 @@ export default function NewTsoUserPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans p-4 md:p-6 lg:p-8">
+        <div className="font-sans">
             <div className="max-w-2xl mx-auto">
 
                 {/* EN-TÊTE */}
                 <div className="mb-8 flex items-center gap-4">
                     {/* 🟢 Lien mis à jour */}
-                    <Link
-                        href="/dashboard/admin/users-tso"
-                        className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm shrink-0"
-                    >
-                        <ArrowLeft className="h-5 w-5" />
-                    </Link>
                     <div>
-                        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+<Link href="/dashboard/admin/users-tso" className="inline-flex items-center gap-1 text-[13px] font-semibold text-ui-accent hover:underline mb-2"><ChevronLeft className="h-4 w-4" />TSO accounts</Link>
+                        <h1 className="text-2xl md:text-[26px] font-bold text-slate-900 tracking-tight">
                             Create TSO Account
                         </h1>
-                        <p className="text-sm text-slate-500">
+                        <p className="mt-1 text-sm text-ui-muted">
                             Add a new Mainframe credential to your pool.
                         </p>
                     </div>
                 </div>
 
                 {/* FORMULAIRE */}
-                <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6 md:p-8">
-                    <div className="flex items-center gap-2 text-slate-900 font-bold text-lg mb-8">
-                        <div className="h-8 w-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
-                            <Terminal className="h-4 w-4" />
-                        </div>
+                <div className="bg-white rounded-xl border border-ui-line p-6 md:p-8">
+                    <div className="flex items-center gap-2 text-slate-900 font-semibold text-base mb-6">
                         Account Details
                     </div>
 
@@ -95,7 +87,7 @@ export default function NewTsoUserPage() {
 
                         {/* Message d'erreur */}
                         {error && (
-                            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 font-medium">
+                            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 font-medium">
                                 {error}
                             </div>
                         )}
@@ -112,7 +104,7 @@ export default function NewTsoUserPage() {
                                     placeholder="e.g. TSOUSER1"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value.toUpperCase())}
-                                    className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all uppercase"
+                                    className="text-slate-900 w-full p-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none transition-all uppercase"
                                 />
                                 <p className="text-xs text-slate-500 mt-1">
                                     Must match the exact Mainframe ID.
@@ -130,7 +122,7 @@ export default function NewTsoUserPage() {
                                     placeholder="Enter password..."
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all font-mono"
+                                    className="text-slate-900 w-full p-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none transition-all font-mono"
                                 />
                             </div>
 
@@ -145,7 +137,7 @@ export default function NewTsoUserPage() {
                                         placeholder="e.g. mainframe.example.com"
                                         value={host}
                                         onChange={(e) => setHost(e.target.value)}
-                                        className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all font-mono"
+                                        className="text-slate-900 w-full p-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none transition-all font-mono"
                                     />
                                 </div>
                                 <div>
@@ -158,13 +150,13 @@ export default function NewTsoUserPage() {
                                         placeholder="e.g. 23"
                                         value={port}
                                         onChange={(e) => setPort(e.target.value)}
-                                        className="text-slate-900 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all font-mono"
+                                        className="text-slate-900 w-full p-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none transition-all font-mono"
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                        <div className="pt-4 flex items-center justify-end gap-3 border-t border-ui-line">
                             {/* 🟢 Lien mis à jour */}
                             <Link href="/dashboard/admin/users-tso">
                                 <Button type="button" variant="ghost" disabled={isLoading} className="text-slate-500">
@@ -174,7 +166,7 @@ export default function NewTsoUserPage() {
                             <Button
                                 type="submit"
                                 disabled={isLoading || !username || !password}
-                                className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm px-6"
+                                className="bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg px-6"
                             >
                                 {isLoading ? (
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />

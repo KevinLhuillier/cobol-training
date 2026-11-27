@@ -94,7 +94,7 @@ export function AttachmentsBlockEditor({
                     value={block.data.title}
                     onChange={(e) => onChange({ title: e.target.value })}
                     placeholder="Title (optional, e.g. Resources for this exercise)"
-                    className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm"
+                    className="w-full h-9 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm"
                 />
 
                 {files.length > 0 && (
@@ -102,7 +102,7 @@ export function AttachmentsBlockEditor({
                         {files.map((file) => (
                             <li
                                 key={file.id}
-                                className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
+                                className="flex items-center gap-3 rounded-lg border border-ui-line bg-slate-50 px-3 py-2"
                             >
                                 <FileText className="h-4 w-4 text-slate-400 shrink-0" />
                                 <input
@@ -110,7 +110,7 @@ export function AttachmentsBlockEditor({
                                     value={file.name}
                                     onChange={(e) => renameFile(file.id, e.target.value)}
                                     aria-label="File name"
-                                    className="flex-1 min-w-0 h-8 px-2 rounded-md border border-transparent bg-transparent hover:border-slate-200 focus:bg-white focus:border-slate-300 outline-none text-sm font-medium text-slate-900"
+                                    className="flex-1 min-w-0 h-8 px-2 rounded-md border border-transparent bg-transparent hover:border-ui-line focus:bg-white focus:border-slate-300 outline-none text-sm font-medium text-slate-900"
                                 />
                                 <span className="text-xs text-slate-400 shrink-0">{formatAttachmentSize(file.size)}</span>
                                 <button
@@ -130,7 +130,7 @@ export function AttachmentsBlockEditor({
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
-                    className={`w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-colors disabled:opacity-60 ${
+                    className={`w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-ui-line bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-colors disabled:opacity-60 ${
                         files.length === 0 ? "flex-col h-32" : "h-11"
                     }`}
                 >

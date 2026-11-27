@@ -45,7 +45,7 @@ export function PublishToggleButton({ table, id, isPublished }: PublishToggleBut
         <button
             onClick={onClick}
             disabled={isLoading}
-            className="h-10 px-4 flex items-center justify-center rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors shadow-sm disabled:opacity-50 min-w-[100px]"
+            className="h-10 px-4 flex items-center justify-center rounded-lg font-bold text-white bg-ui-ink hover:bg-ui-ink-hover transition-colors disabled:opacity-50 min-w-[100px]"
         >
             {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

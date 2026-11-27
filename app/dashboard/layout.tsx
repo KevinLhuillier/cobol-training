@@ -2,13 +2,11 @@ import Link from "next/link";
 import { Trophy } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { DashboardLayoutWrapper } from "@/components/dashboard-layout-wrapper";
-import { Badge } from "@/components/ui/badge";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
 import { ensureTrialStarted, recordLoginEvent } from "@/app/actions/auth";
 import { LogoCtIcon } from "@/components/logo-ct-icon";
 import { MobileSidebarButton } from "@/components/mobile-sidebar";
-import { getFirstName } from "@/utils/first-name";
 import { getDaysLeft } from "@/utils/subscription";
 
 export default async function DashboardLayout({
@@ -98,7 +96,6 @@ export default async function DashboardLayout({
     // Récupère la première lettre du nom pour l'avatar
     const initial = userName.charAt(0).toUpperCase();
 
-    const firstName = getFirstName(userName);
 
     return (
         <DashboardLayoutWrapper
@@ -114,43 +111,34 @@ export default async function DashboardLayout({
                 />
             }
             header={
-                <header className="max-w-[1600px] w-full mx-auto mb-6 flex items-center justify-between px-2">
-                    <div className="flex items-center gap-3 min-w-0">
+                // Le logo vit dans la sidebar (à partir de lg) ; sous lg, il reste ici à côté du
+                // hamburger. Le statut d'abonnement est affiché en bas de la sidebar, et le message
+                // d'accueil sur le tableau de bord lui-même.
+                <header className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0 lg:hidden">
                         <MobileSidebarButton />
-                        <h1 className="flex items-center gap-2.5 min-w-0 text-lg sm:text-2xl font-extrabold text-slate-800 tracking-tight">
-                            <LogoCtIcon className="h-8 w-auto shrink-0" />
+                        <Link href="/dashboard" className="flex items-center gap-2 min-w-0 text-base font-bold text-slate-900 tracking-tight">
+                            <LogoCtIcon className="h-7 w-auto shrink-0" />
                             <span className="truncate">Cobol Training</span>
-                        </h1>
+                        </Link>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                        <div className="text-right hidden sm:flex sm:flex-col sm:items-end gap-1">
-                            <p className="text-sm font-bold text-slate-900">Welcome, {firstName}</p>
-                            {subscriptionStatus === "ACTIVE" ? (
-                                <Badge className="border-none bg-emerald-100 text-emerald-700">Subscribed</Badge>
-                            ) : subscriptionStatus === "LIFETIME_ADDON" ? (
-                                <Badge className="border-none bg-violet-100 text-violet-700">Lifetime + Mainframe</Badge>
-                            ) : subscriptionStatus === "LIFETIME" || subscriptionStatus === "LIFETIME_EXPIRED" ? (
-                                <Badge className="border-none bg-violet-100 text-violet-700">Lifetime</Badge>
-                            ) : subscriptionStatus === "TRIAL" && trialDaysLeft > 0 ? (
-                                <Badge className="border-none bg-amber-100 text-amber-700">Trial</Badge>
-                            ) : subscriptionStatus === "UNPAID" ? (
-                                <Badge className="border-none bg-red-100 text-red-700">Payment failed</Badge>
-                            ) : (
-                                <Badge className="border-none bg-slate-100 text-slate-500">Trial ended</Badge>
-                            )}
-                        </div>
-                        <div className="h-10 w-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center font-bold text-slate-600">
-                            {initial}
-                        </div>
+                    <div className="ml-auto flex items-center gap-3 shrink-0">
                         {userId && (
                             <Link
                                 href="/dashboard/badges"
-                                className="flex items-center gap-1.5 h-9 px-3 rounded-full bg-amber-50 text-amber-700 border border-amber-100 hover:bg-amber-100 transition-colors font-bold text-sm shrink-0"
+                                aria-label={`${badgesCount} badge${badgesCount > 1 ? "s" : ""}`}
+                                className="flex items-center gap-2 h-10 px-3.5 rounded-lg bg-white border border-ui-line text-amber-800 hover:bg-amber-50 transition-colors font-semibold text-sm shrink-0"
                             >
-                                <Trophy className="h-4 w-4" />
+                                <Trophy className="h-4 w-4 text-amber-600" />
                                 {badgesCount}
                             </Link>
                         )}
+                        <div
+                            title={userName}
+                            className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-700"
+                        >
+                            {initial}
+                        </div>
                     </div>
                 </header>
             }

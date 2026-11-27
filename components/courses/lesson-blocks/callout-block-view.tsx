@@ -10,7 +10,7 @@ export function CalloutBlockView({ data }: CalloutBlockViewProps) {
 
     return (
         <div
-            className={`flex gap-3 rounded-2xl border p-4 max-w-lg ${calloutAlignClassName(data.align)} ${calloutVariantClassName(data.variant)}`}
+            className={`flex gap-3 rounded-xl border p-4 max-w-lg ${calloutAlignClassName(data.align)} ${calloutVariantClassName(data.variant)}`}
         >
             <Icon className="h-5 w-5 shrink-0 mt-0.5" />
             <div className="min-w-0 space-y-1">

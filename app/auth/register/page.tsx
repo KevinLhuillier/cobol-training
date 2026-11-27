@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { LogoCtIcon } from "@/components/logo-ct-icon";
+import { AuthShell, authInputClass, authLabelClass, authButtonClass } from "@/components/auth/auth-shell";
 import { CAPTCHA_ENABLED, Turnstile } from "@/components/turnstile";
 import { notifyAdminNewRegistration, checkRegistrationAllowed, addStudentToResendAudience } from "@/app/actions/auth";
 
@@ -134,32 +134,20 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="flex-1 bg-slate-100 flex items-center justify-center p-4 font-sans">
-            {/* REGISTRATION CARD */}
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-sm p-8 flex flex-col">
-                {/* HEADER / LOGO */}
-                <div className="flex flex-col items-center mb-8 text-center">
-                    <LogoCtIcon className="h-14 w-auto mb-4" />
-                    <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                        Cobol Training
-                    </h1>
-                    <p className="text-sm text-slate-500 mt-2">
-                        Create your account to start your training.
-                    </p>
-                </div>
+        <AuthShell title="Create your account" subtitle={<>Start with a 7-day free trial. No credit card required.</>} footer={<>Already have an account?{" "}<Link href="/auth/login" className="font-semibold text-ui-accent hover:underline">Sign in</Link></>}>
 
                 {/* ERROR DISPLAY */}
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 text-red-600">
-                        <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+                    <div className="mb-5 p-3 bg-red-50 rounded-lg flex items-start gap-2.5 text-red-800">
+                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                         <p className="text-sm font-medium">{error}</p>
                     </div>
                 )}
 
                 {/* FORM */}
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="name" className="text-slate-700 font-semibold">Full Name</Label>
+                        <Label htmlFor="name" className={authLabelClass}>Full Name</Label>
                         <Input
                             id="name"
                             name="name"
@@ -167,12 +155,12 @@ export default function RegisterPage() {
                             placeholder="John Doe"
                             required
                             disabled={isLoading}
-                            className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                            className={authInputClass}
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="email" className="text-slate-700 font-semibold">Email Address</Label>
+                        <Label htmlFor="email" className={authLabelClass}>Email Address</Label>
                         <Input
                             id="email"
                             name="email"
@@ -180,12 +168,12 @@ export default function RegisterPage() {
                             placeholder="student@example.com"
                             required
                             disabled={isLoading}
-                            className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                            className={authInputClass}
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="password" className="text-slate-700 font-semibold">Password</Label>
+                        <Label htmlFor="password" className={authLabelClass}>Password</Label>
                         <Input
                             id="password"
                             name="password"
@@ -194,13 +182,13 @@ export default function RegisterPage() {
                             required
                             minLength={8}
                             disabled={isLoading}
-                            className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                            className={authInputClass}
                         />
-                        <p className="text-xs text-slate-500 font-medium">8 characters minimum</p>
+                        <p className="text-xs text-ui-muted">8 characters minimum</p>
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="confirmPassword" className="text-slate-700 font-semibold">Confirm Password</Label>
+                        <Label htmlFor="confirmPassword" className={authLabelClass}>Confirm Password</Label>
                         <Input
                             id="confirmPassword"
                             name="confirmPassword"
@@ -209,14 +197,14 @@ export default function RegisterPage() {
                             required
                             minLength={8}
                             disabled={isLoading}
-                            className="text-slate-900 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-slate-400 focus-visible:bg-white h-11 disabled:opacity-50"
+                            className={authInputClass}
                         />
                     </div>
 
                     <Button
                         type="submit"
                         disabled={isLoading || (CAPTCHA_ENABLED && !captchaToken)}
-                        className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md text-base font-semibold mt-4 disabled:opacity-80"
+                        className={authButtonClass}
                     >
                         {isLoading ? (
                             <>
@@ -230,17 +218,6 @@ export default function RegisterPage() {
 
                     <Turnstile action="signup" onToken={setCaptchaToken} resetSignal={captchaReset} />
                 </form>
-
-                {/* LOGIN REDIRECTION */}
-                <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-                    <p className="text-sm text-slate-600">
-                        Already have an account?{" "}
-                        <Link href="/auth/login" className="font-bold text-slate-900 hover:underline">
-                            Sign in
-                        </Link>
-                    </p>
-                </div>
-            </div>
-        </div>
+            </AuthShell>
     );
 }

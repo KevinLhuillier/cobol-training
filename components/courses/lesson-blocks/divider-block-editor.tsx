@@ -52,7 +52,7 @@ export function DividerBlockEditor({
                                     onClick={() => onChange({ shape: option.value })}
                                     className={`h-7 px-3 rounded-md text-xs font-bold transition-colors ${
                                         isActive
-                                            ? "bg-white text-slate-900 shadow-sm"
+                                            ? "bg-white text-slate-900"
                                             : "text-slate-500 hover:text-slate-900"
                                     }`}
                                 >
@@ -75,7 +75,7 @@ export function DividerBlockEditor({
                                 step={1}
                                 value={dividerMargin(block.data[field.key])}
                                 onChange={(e) => onChange({ [field.key]: dividerMargin(parseInt(e.target.value, 10)) })}
-                                className="w-28 h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm"
+                                className="w-28 h-9 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm"
                             />
                         </div>
                     ))}
@@ -85,7 +85,7 @@ export function DividerBlockEditor({
                     Margins are added to the default spacing between blocks (max {DIVIDER_MAX_MARGIN}px).
                 </p>
 
-                <div className="rounded-xl bg-slate-50 border border-dashed border-slate-200">
+                <div className="rounded-lg bg-slate-50 border border-dashed border-ui-line">
                     <DividerBlockView data={block.data} />
                 </div>
             </div>

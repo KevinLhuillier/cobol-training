@@ -88,7 +88,7 @@ export function QuestionEditor({
     };
 
     return (
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-4">
+        <div className="bg-white border border-ui-line rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
                 <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                     <HelpCircle className="h-3.5 w-3.5" />
@@ -128,12 +128,12 @@ export function QuestionEditor({
                         value={question.text}
                         onChange={(e) => onChange({ text: e.target.value })}
                         placeholder="Question text"
-                        className="flex-1 h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm font-medium text-slate-900"
+                        className="flex-1 h-9 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-sm font-medium text-slate-900"
                     />
                     <select
                         value={question.type}
                         onChange={(e) => onTypeChange(e.target.value as QuizQuestionType)}
-                        className="h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-sm font-medium text-slate-900 shrink-0"
+                        className="h-9 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-sm font-medium text-slate-900 shrink-0"
                     >
                         <option value="SINGLE_CHOICE">Single choice</option>
                         <option value="MULTIPLE_CHOICE">Multiple choice</option>

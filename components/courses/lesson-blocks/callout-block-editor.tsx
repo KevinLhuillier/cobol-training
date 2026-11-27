@@ -47,7 +47,7 @@ export function CalloutBlockEditor({
                                     onClick={() => onChange({ variant: option.value })}
                                     className={`h-7 px-3 rounded-md text-xs font-bold transition-colors ${
                                         isActive
-                                            ? "bg-white text-slate-900 shadow-sm"
+                                            ? "bg-white text-slate-900"
                                             : "text-slate-500 hover:text-slate-900"
                                     }`}
                                 >
@@ -67,7 +67,7 @@ export function CalloutBlockEditor({
                                     onClick={() => onChange({ align: option.value })}
                                     className={`h-7 px-3 rounded-md text-xs font-bold transition-colors ${
                                         isActive
-                                            ? "bg-white text-slate-900 shadow-sm"
+                                            ? "bg-white text-slate-900"
                                             : "text-slate-500 hover:text-slate-900"
                                     }`}
                                 >
@@ -83,7 +83,7 @@ export function CalloutBlockEditor({
                     value={block.data.title}
                     onChange={(e) => onChange({ title: e.target.value })}
                     placeholder="Title"
-                    className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm font-medium"
+                    className="w-full h-10 px-3 rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm font-medium"
                 />
 
                 <textarea
@@ -91,7 +91,7 @@ export function CalloutBlockEditor({
                     onChange={(e) => onChange({ content: e.target.value })}
                     placeholder="Content"
                     rows={3}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none text-slate-900 text-sm p-3 resize-y"
+                    className="w-full rounded-lg border border-ui-line-strong bg-white focus:ring-2 focus:ring-ui-accent/30 focus:border-ui-accent outline-none text-slate-900 text-sm p-3 resize-y"
                 />
 
                 {(block.data.title || block.data.content) && <CalloutBlockView data={block.data} />}

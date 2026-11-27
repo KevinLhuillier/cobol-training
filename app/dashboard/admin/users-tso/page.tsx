@@ -1,14 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import {
-    Terminal,
-    Plus,
-    Users,
-    CheckCircle,
-    Server,
-    Pencil
-} from "lucide-react";
+import { Terminal, Plus, Pencil, ChevronLeft } from "lucide-react";
 // 🟢 Import du client serveur Supabase
 import { createClient } from "@/utils/supabase/server";
 import { TsoDeleteButton } from "@/components/tso-delete-button";
@@ -111,29 +104,19 @@ export default async function AdminTsoUsersPage({
         <div className="font-sans">
 
             {/* ADMIN HEADER */}
-            <header className="mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-md">
-                        <Terminal className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                            TSO Accounts
-                        </h1>
-                        <p className="text-sm text-slate-500">Mainframe access management</p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <Link
-                        href="/dashboard/admin"
-                        className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors px-4 py-2"
-                    >
-                        Back to admin
+            <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <Link href="/dashboard/admin" className="inline-flex items-center gap-1 text-[13px] font-semibold text-ui-accent hover:underline mb-2">
+                        <ChevronLeft className="h-4 w-4" />
+                        Admin
                     </Link>
+                    <h1 className="text-2xl md:text-[26px] font-bold text-slate-900 tracking-tight">TSO Accounts</h1>
+                    <p className="mt-1 text-sm text-ui-muted">Mainframe access management</p>
+                </div>
+                <div className="flex items-center gap-2">
                     <Link
                         href="/dashboard/admin/users-tso/new"
-                        className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-sm h-10 px-5 text-sm font-medium transition-colors"
+                        className="inline-flex items-center justify-center bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg h-10 px-5 text-sm font-medium transition-colors"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         New Account
@@ -144,73 +127,44 @@ export default async function AdminTsoUsersPage({
             <main className="w-full mx-auto">
 
                 {/* QUICK STATS */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600">
-                            <Server className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-500">Total Accounts</p>
-                            <p className="text-2xl font-extrabold text-slate-900">{totalAccounts}</p>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
-                            <CheckCircle className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-500">Available</p>
-                            <p className="text-2xl font-extrabold text-slate-900">{availableAccounts}</p>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
-                            <Users className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-500">Assigned</p>
-                            <p className="text-2xl font-extrabold text-slate-900">{assignedAccounts}</p>
-                        </div>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div className="bg-white rounded-xl border border-ui-line px-5 py-4"><p className="text-[13px] text-ui-muted">Total Accounts</p><p className="mt-1 text-2xl font-bold text-slate-900 tracking-tight">{totalAccounts}</p></div>
+                    <div className="bg-white rounded-xl border border-ui-line px-5 py-4"><p className="text-[13px] text-ui-muted">Available</p><p className="mt-1 text-2xl font-bold text-slate-900 tracking-tight">{availableAccounts}</p></div>
+                    <div className="bg-white rounded-xl border border-ui-line px-5 py-4"><p className="text-[13px] text-ui-muted">Assigned</p><p className="mt-1 text-2xl font-bold text-slate-900 tracking-tight">{assignedAccounts}</p></div>
                 </div>
 
-                {/* STATUS FILTER */}
-                <div className="flex flex-wrap gap-2 mb-6">
+                {/* TSO USERS LIST */}
+                <div className="bg-white rounded-xl border border-ui-line overflow-hidden">
+                    <nav aria-label="Filter by status" className="p-4 border-b border-ui-line flex flex-wrap gap-1.5">
                     {STATUS_FILTERS.map((filter) => (
                         <Link
                             key={filter.value}
                             href={filter.value === "ALL" ? "/dashboard/admin/users-tso" : `/dashboard/admin/users-tso?status=${filter.value}`}
                             className={cn(
-                                "inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-colors border",
+                                "inline-flex items-center h-8 px-3 rounded-md text-[13px] transition-colors border",
                                 activeStatus === filter.value
-                                    ? "bg-slate-900 text-white border-slate-900"
-                                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                                    ? "bg-ui-ink text-white border-ui-ink font-semibold"
+                                    : "bg-white text-slate-600 border-ui-line font-medium hover:bg-ui-page"
                             )}
                         >
                             {filter.label}
                         </Link>
                     ))}
-                </div>
-
-                {/* TSO USERS LIST */}
-                <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div className="p-6 border-b border-slate-100">
-                        <h2 className="text-lg font-bold text-slate-900">Users List</h2>
-                    </div>
+                    </nav>
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                            <tr className="bg-slate-50/50 text-slate-500 text-xs uppercase tracking-wider">
-                                <th className="p-4 font-bold">Username</th>
-                                <th className="p-4 font-bold">Password</th>
-                                <th className="p-4 font-bold">Host</th>
-                                <th className="p-4 font-bold">Status</th>
-                                <th className="p-4 font-bold">Assigned to</th>
-                                <th className="p-4 font-bold text-right">Actions</th>
+                            <tr className="bg-ui-page/70 text-ui-muted text-xs">
+                                <th className="px-4 py-2.5 font-semibold">Username</th>
+                                <th className="px-4 py-2.5 font-semibold">Password</th>
+                                <th className="px-4 py-2.5 font-semibold">Host</th>
+                                <th className="px-4 py-2.5 font-semibold">Status</th>
+                                <th className="px-4 py-2.5 font-semibold">Assigned to</th>
+                                <th className="px-4 py-2.5 font-semibold text-right">Actions</th>
                             </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-ui-line">
                             {filteredTsoUsers.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="p-8 text-center text-slate-500">
@@ -222,18 +176,18 @@ export default async function AdminTsoUsersPage({
                             ) : (
                                 filteredTsoUsers.map((tso) => (
                                     <tr key={tso.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="p-4">
+                                        <td className="px-4 py-3">
                                             <div className="flex items-center gap-3">
                                                 <Terminal className="h-4 w-4 text-slate-400" />
-                                                <p className="font-bold text-slate-900">{tso.username}</p>
+                                                <p className="font-mono text-sm font-semibold text-slate-900">{tso.username}</p>
                                             </div>
                                         </td>
-                                        <td className="p-4">
-                                            <span className="font-mono text-sm bg-slate-100 text-slate-600 px-2 py-1 rounded">
+                                        <td className="px-4 py-3">
+                                            <span className="font-mono text-[13px] text-slate-600">
                                                 {tso.password}
                                             </span>
                                         </td>
-                                        <td className="p-4">
+                                        <td className="px-4 py-3">
                                             {tso.host ? (
                                                 <span className="font-mono text-sm text-slate-600">
                                                     {tso.host}{tso.port ? `:${tso.port}` : ""}
@@ -242,10 +196,10 @@ export default async function AdminTsoUsersPage({
                                                 <span className="text-sm text-slate-400 italic">Not set</span>
                                             )}
                                         </td>
-                                        <td className="p-4">
+                                        <td className="px-4 py-3">
                                             {getStatusBadge(tso.status)}
                                         </td>
-                                        <td className="p-4">
+                                        <td className="px-4 py-3">
                                             {/* Supabase renvoie les objets liés directement ! */}
                                             {tso.assignedToUser ? (
                                                 <p className="text-sm font-medium text-slate-900">{tso.assignedToUser.email}</p>
@@ -253,14 +207,15 @@ export default async function AdminTsoUsersPage({
                                                 <p className="text-sm text-slate-400 italic">Unassigned</p>
                                             )}
                                         </td>
-                                        <td className="p-4">
+                                        <td className="px-4 py-3">
                                             <div className="flex items-center justify-end gap-2">
                                                 <Link
                                                     href={`/dashboard/admin/users-tso/${tso.id}`}
-                                                    className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                                                    className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[13px] font-semibold text-ui-accent hover:bg-ui-accent-soft transition-colors"
                                                     title="Edit"
                                                 >
-                                                    <Pencil className="h-4 w-4" />
+                                                    <Pencil className="h-3.5 w-3.5" />
+                                                    Edit
                                                 </Link>
                                                 <TsoDeleteButton id={tso.id} />
                                             </div>

@@ -74,14 +74,14 @@ export default function LessonForm({ courseId, chapterId }: LessonFormProps) {
                     placeholder="e.g. 'Introduction to the course'"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 disabled:opacity-50"
+                    className="w-full px-3 py-2 text-sm bg-white border border-ui-line rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 disabled:opacity-50"
                     required
                 />
                 <div className="flex items-center gap-x-2">
                     <button
                         disabled={isLoading || !title.trim()}
                         type="submit"
-                        className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-9 px-4 text-sm font-bold transition-colors disabled:opacity-50"
+                        className="inline-flex items-center justify-center bg-ui-ink hover:bg-ui-ink-hover text-white rounded-lg h-9 px-4 text-sm font-bold transition-colors disabled:opacity-50"
                     >
                         {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
                     </button>
@@ -89,7 +89,7 @@ export default function LessonForm({ courseId, chapterId }: LessonFormProps) {
                         disabled={isLoading}
                         type="button"
                         onClick={toggleEdit}
-                        className="inline-flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl h-9 px-4 text-sm font-medium transition-colors disabled:opacity-50"
+                        className="inline-flex items-center justify-center bg-white border border-ui-line hover:bg-slate-50 text-slate-700 rounded-lg h-9 px-4 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                         Cancel
                     </button>
@@ -101,7 +101,7 @@ export default function LessonForm({ courseId, chapterId }: LessonFormProps) {
     return (
         <button
             onClick={toggleEdit}
-            className="inline-flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-900 rounded-xl h-9 px-4 text-sm font-bold transition-colors shrink-0"
+            className="inline-flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-900 rounded-lg h-9 px-4 text-sm font-bold transition-colors shrink-0"
         >
             <Plus className="mr-2 h-4 w-4" />
             Add Lesson

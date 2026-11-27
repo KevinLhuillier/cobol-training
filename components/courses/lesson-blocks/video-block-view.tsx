@@ -15,7 +15,7 @@ export function VideoBlockView({ url }: VideoBlockViewProps) {
     if (!url) return null;
 
     return (
-        <div className="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden">
+        <div className="relative w-full aspect-video bg-ui-ink rounded-xl overflow-hidden">
             <ReactPlayer src={url} controls width="100%" height="100%" />
         </div>
     );
