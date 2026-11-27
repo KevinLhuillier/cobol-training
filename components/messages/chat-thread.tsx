@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ImageIcon, Loader2, Send, X } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { uploadChatImage, getChatImageSignedUrl } from "@/utils/chat-storage";
@@ -91,6 +91,16 @@ export function ChatThread({
     const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
     const bottomRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Agrandissement automatique : la zone suit la hauteur du texte (bornée par min-h / max-h
+    // en CSS, au-delà elle scrolle). Recalculé à chaque changement, y compris le vidage après envoi.
+    useLayoutEffect(() => {
+        const el = textareaRef.current;
+        if (!el) return;
+        el.style.height = "auto";
+        el.style.height = `${el.scrollHeight}px`;
+    }, [text]);
 
     // Abonnement temps réel : les nouveaux messages (texte ou image) de ce fil
     // apparaissent instantanément des deux côtés, sans recharger la page.
@@ -191,7 +201,8 @@ export function ChatThread({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        // Entrée = retour à la ligne (comportement natif). Ctrl/Cmd+Entrée = envoi rapide.
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
             handleSend();
         }
@@ -263,7 +274,10 @@ export function ChatThread({
                         onKeyDown={handleKeyDown}
                         placeholder={isUploading ? "Uploading image..." : "Write a message... (paste an image with Ctrl+V)"}
                         disabled={isUploading}
-                        className="min-h-11 max-h-40 rounded-xl border-slate-200 bg-slate-50 text-slate-900 focus-visible:ring-slate-400 focus-visible:bg-white"
+                        ref={textareaRef}
+                        rows={4}
+                        // ~4 lignes par défaut, puis grandit avec le texte jusqu'à 60vh (cf. useLayoutEffect).
+                        className="min-h-24 max-h-[60vh] overflow-y-auto rounded-xl border-slate-200 bg-slate-50 text-slate-900 focus-visible:ring-slate-400 focus-visible:bg-white"
                     />
                     <Button
                         onClick={handleSend}
@@ -279,7 +293,7 @@ export function ChatThread({
                 </div>
                 <p className="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
                     <ImageIcon className="h-3.5 w-3.5" />
-                    Paste a screenshot directly in the box to attach it.
+                    Paste a screenshot directly in the box to attach it. Ctrl+Enter to send.
                 </p>
             </div>
 
